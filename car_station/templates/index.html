@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Car Station</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <!-- 右上角時間 -->
+  <div id="clock"></div>
+
+  <!-- 影像區 -->
+  <div id="camDeck">
+    <img id="cam-left"  class="cam" src="{{ url_for('video', cam_id='left')  }}" />
+    <img id="cam-rear"  class="cam" src="{{ url_for('video', cam_id='rear')  }}" />
+    <img id="cam-right" class="cam" src="{{ url_for('video', cam_id='right') }}" />
+  </div>
+
+  <!-- 按鈕列 -->
+  <div id="btnRow">
+    <button data-mode="left"  class="ctrlBtn">左燈</button>
+    <button data-mode="right" class="ctrlBtn">右燈</button>
+    <button data-mode="rear"  class="ctrlBtn">倒車</button>
+  </div>
+
+  <!-- 底部狀態欄 -->
+  <div id="statusBar">　</div>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
