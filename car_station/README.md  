@@ -1,0 +1,64 @@
+# Car Station Dashboard
+
+## 說明
+
+- **Mac 開發階段**：
+  1. 進入專案資料夾 `car_station`
+  2. 安裝套件：
+     ```bash
+     pip3 install -r requirements.txt
+     ```
+  3. 啟動伺服器：
+     ```bash
+     python3 app.py
+     ```
+  4. 在瀏覽器開啟： `http://localhost:5000`
+
+- **Raspberry Pi 部署**：
+  1. 將整個資料夾傳到 Pi：
+     ```bash
+     scp -r ./car_station pi@<Pi_IP>:/home/pi/
+     ```
+  2. 連線 Pi，進入資料夾：
+     ```bash
+     ssh pi@<Pi_IP>
+     cd car_station
+     ```
+  3. 安裝套件：
+     ```bash
+     pip3 install -r requirements.txt
+     ```
+  4. 啟動服務：
+     ```bash
+     python3 app.py
+     ```
+  5. 全螢幕 Kiosk 模式：
+     ```bash
+     chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:5000
+     ```
+
+## 專案結構
+
+```
+car_station/
+├── app.py
+├── camera_config.py
+├── requirements.txt
+├── README.md
+├── templates/
+│   └── index.html
+└── static/
+    ├── css/
+    │   └── style.css
+    └── js/
+        └── script.js
+```
+
+## 功能
+
+1. 三鏡頭畫面並排，帶細邊框與間距，背景為淡奶茶色。
+2. 右上顯示即時日期與時間（秒更新）。
+3. 底部三個按鈕：左燈、倒車、右燈，點擊顯示對應狀態文字。
+4. 互動動畫：按鈕觸發時，放大對應畫面、縮小並靠邊，切換再恢復。
+5. 響應式設計，適用於橫向車機螢幕，預留不同尺寸調整空間。
+
