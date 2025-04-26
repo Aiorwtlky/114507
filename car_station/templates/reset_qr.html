@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>設備重設 - 掃描QR Code</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/install.css') }}">
+    <script src="{{ url_for('static', filename='js/reset_qr.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>請用手機掃描以下 QR Code 以完成重設</h1>
+
+        <div id="qrArea" style="text-align: center; margin-top: 20px;">
+            <img id="qrImage" src="data:image/png;base64,{{ qr_base64 }}" alt="Reset QR Code">
+        </div>
+
+        <div id="countdownArea" style="text-align: center; margin-top: 10px;">
+            <p>剩餘時間：<span id="countdown">900</span> 秒</p>
+        </div>
+    </div>
+</body>
+</html>

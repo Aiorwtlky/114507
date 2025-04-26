@@ -51,13 +51,20 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.status === "bound") {
                     saveDeviceInfoLocally(data);
+                } else if (data.status === "pending") {
+                    console.log("裝置尚未綁定，等待安裝設定");
+                    // 避免無限觸發，可以用 location.href 或手動顯示提示
+                    if (window.location.pathname !== '/install') {
+                        window.location.href = '/install';  //
+                    }
                 }
             })
             .catch(error => {
                 console.error("同步失敗：", error);
             });
-        }, 5000); // 每5秒查一次
+        }, 5000);
     }
+    
 
     function saveDeviceInfoLocally(data) {
         fetch('/save_device_info', {

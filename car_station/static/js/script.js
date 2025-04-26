@@ -73,20 +73,19 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/reset_device_info', {
             method: 'POST'
         })
-        .then(response => {
-            if (response.ok) {
-                // 成功後，前端自己跳到 /reset_success 頁面
-                window.location.href = '/reset_success';
-            } else {
-                alert("重設失敗！");
-            }
+        .then(response => response.text())  // 用 text讀，因為回的是HTML不是JSON
+        .then(html => {
+            document.open();
+            document.write(html);
+            document.close();
         })
         .catch(error => {
             alert("重設失敗！");
             console.error(error);
         });
     }
+  }); 
 });
-});
+
 
   
