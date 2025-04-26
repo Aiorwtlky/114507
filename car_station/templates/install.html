@@ -4,34 +4,27 @@
     <meta charset="UTF-8">
     <title>設備安裝設定</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/install.css') }}">
+    <script src="{{ url_for('static', filename='js/install.js') }}"></script>
 </head>
 <body>
     <div class="container">
         <h1>設備安裝設定</h1>
-        <form action="{{ url_for('install.install') }}" method="post" class="install-form">
-            <label for="car_brand">車輛廠牌：</label><br>
-            <input type="text" id="car_brand" name="car_brand" required><br><br>
 
-            <label for="car_plate">車牌號碼：</label><br>
-            <input type="text" id="car_plate" name="car_plate" required><br><br>
+        <div id="qrArea" style="text-align: center; margin-top: 20px;">
+            {% if qr_base64 %}
+                <img id="qrImage" src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" style="margin-bottom: 20px;">
+            {% else %}
+                <p>⚠️ 無法取得 QR Code，請重新嘗試。</p>
+            {% endif %}
+        </div>
 
-            <label for="vehicle_type">車種：</label><br>
-            <select id="vehicle_type" name="vehicle_type" required>
-                <option value="">--請選擇--</option>
-                <option value="大客車">大客車</option>
-                <option value="大貨車">大貨車</option>
-                <option value="連結車">連結車</option>
-            </select><br><br>
+        <div id="countdownArea" style="text-align: center; margin-top: 10px;">
+            <p>剩餘時間：<span id="countdown">900</span> 秒</p>
+        </div>
 
-            <label for="driver_position">駕駛座方向：</label><br>
-            <select id="driver_position" name="driver_position" required>
-                <option value="">--請選擇--</option>
-                <option value="左駕">左駕</option>
-                <option value="右駕">右駕</option>
-            </select><br><br>
-
-            <button type="submit" class="submit-btn">送出設定</button>
-        </form>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="refreshBtn" class="submit-btn">重新產生QR Code</button>
+        </div>
     </div>
 </body>
 </html>

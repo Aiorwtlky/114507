@@ -1,36 +1,55 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify
 import sqlite3
+import requests
 
 install_bp = Blueprint('install', __name__)
 
-@install_bp.route('/install', methods=['GET', 'POST'])
+DEVICE_SERIAL = "mdgcs001"  # 車機序號
+SERVER_URL = "http://localhost:307"  # Server端位置
+
+@install_bp.route('/install', methods=['GET'])
 def install():
-    if request.method == 'POST':
-        car_brand = request.form.get('car_brand')
-        car_plate = request.form.get('car_plate')
-        vehicle_type = request.form.get('vehicle_type')
-        driver_position = request.form.get('driver_position')
+    try:
+        response = requests.post(f"{SERVER_URL}/register_device", json={"device_serial": DEVICE_SERIAL})
+        if response.status_code == 200:
+            data = response.json()
+            qr_base64 = data.get('qr_base64')
+            return render_template('install.html', qr_base64=qr_base64)
+        else:
+            return "⚠️ 註冊失敗，請稍後再試", 500
+    except Exception as e:
+        print(f"連線錯誤：{e}")
+        return "⚠️ 無法連線伺服器", 500
+    
+@install_bp.route('/save_device_info', methods=['POST'])
+def save_device_info():
+    data = request.get_json()
 
-        conn = sqlite3.connect('device.db')
-        cursor = conn.cursor()
+    car_brand = data.get('car_brand')
+    car_plate = data.get('car_plate')
+    vehicle_type = data.get('vehicle_type')
+    driver_position = data.get('driver_position')
 
-        cursor.execute('''
-            UPDATE devices
-            SET car_brand = ?, car_plate = ?, vehicle_type = ?, driver_position = ?
-            WHERE device_serial = ?
-        ''', (
-            car_brand,
-            car_plate,
-            vehicle_type,
-            driver_position,
-            "mdgcs001"
-        ))
+    conn = sqlite3.connect('device.db')
+    cursor = conn.cursor()
 
-        conn.commit()
-        conn.close()
+    cursor.execute('''
+        UPDATE devices
+        SET car_brand = ?, car_plate = ?, vehicle_type = ?, driver_position = ?, status = 'online'
+        WHERE device_serial = ?
+    ''', (
+        car_brand,
+        car_plate,
+        vehicle_type,
+        driver_position,
+        "mdgcs001"
+    ))
 
-        print("✅ 安裝設定成功，設備資料已更新！")
+    conn.commit()
+    conn.close()
 
-        return render_template('install_success.html')
+    return jsonify({"success": True})
 
-    return render_template('install.html')
+@install_bp.route('/install_success')
+def install_success():
+    return render_template('install_success.html')

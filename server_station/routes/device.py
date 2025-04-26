@@ -33,3 +33,32 @@ def get_device(device_serial):
             return jsonify(device)
         else:
             return jsonify({"message": "查無此設備"})
+
+@device_bp.route('/sync_device', methods=['POST'])
+def sync_device():
+    data = request.get_json()
+    device_serial = data.get('device_serial')
+
+    try:
+        with db.cursor() as cursor:
+            sql = 'SELECT car_brand, car_plate, vehicle_type, driver_position, bind_status FROM devices WHERE device_serial = %s'
+            cursor.execute(sql, (device_serial,))
+            device = cursor.fetchone()
+
+            if not device:
+                return jsonify({"message": "設備不存在"}), 404
+
+            if device['bind_status'] == 1:
+                return jsonify({
+                    "status": "bound",
+                    "car_brand": device['car_brand'],
+                    "car_plate": device['car_plate'],
+                    "vehicle_type": device['vehicle_type'],
+                    "driver_position": device['driver_position']
+                })
+            else:
+                return jsonify({"status": "pending"})
+
+    except Exception as e:
+        print(f"錯誤：{e}")
+        return jsonify({"message": "伺服器錯誤"}), 500

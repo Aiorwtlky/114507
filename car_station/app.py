@@ -69,5 +69,5 @@ def video(cam_id):
 
 if __name__ == '__main__':
     import sys
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 5001
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 730
     app.run(host='0.0.0.0', port=port, threaded=True)
