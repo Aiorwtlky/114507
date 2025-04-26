@@ -6,6 +6,24 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
+
+  <!-- 左上角 查看本車資訊 按鈕 -->
+  <div id="deviceInfoBtnContainer">
+    <button id="deviceInfoBtn">查看本車資訊</button>
+  </div>
+
+  <!-- Modal 彈出視窗 -->
+  <div id="deviceInfoModal" style="display: none;">
+      <div class="modal-content">
+          <h2>本車資訊</h2>
+          <div id="deviceInfoText"></div>
+          <div class="modal-buttons">
+              <button id="closeModalBtn">關閉</button>
+              <button id="resetDeviceBtn">重設資訊</button>
+          </div>
+      </div>
+  </div>
+  
   <!-- 右上角時間 -->
   <div id="clock"></div>
 
