@@ -33,3 +33,7 @@ def reset_device_info():
     except Exception as e:
         print(f"錯誤：{e}")
         return "⚠️ 連線伺服器失敗", 500
+
+@reset_bp.route('/reset_success')
+def reset_success():
+    return render_template('reset_success.html')

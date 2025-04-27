@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
     let countdown = 900; // 15分鐘
-    let timer = null;    // 🔥 timer變全域
+    let timer = null;
     const countdownSpan = document.getElementById('countdown');
     const qrImage = document.getElementById('qrImage');
 
-    const serverUrl = "http://192.168.0.48:307";
-    const deviceSerial = "mdgcs001";             
+    const serverUrl = "http://192.168.0.48:307";  // ⚠️你的S端IP
+    const deviceSerial = "mdgcs001";              // ⚠️你的device序號
 
     function startCountdown() {
         timer = setInterval(() => {
@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             qrImage.src = "data:image/png;base64," + data.qr_base64;
-            clearInterval(timer);  // 🔥 先清掉舊的 timer
-            countdown = 900;       // 重置倒數
-            startCountdown();      // 重新啟動新的倒數
+            clearInterval(timer);
+            countdown = 900;
+            startCountdown();
         })
         .catch(error => {
             alert("⚠️ 重新取得QR失敗，請稍後重試");
@@ -41,5 +41,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function startSyncCheck() {
+        setInterval(() => {
+            fetch(`${serverUrl}/sync_device`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ device_serial: deviceSerial })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "pending") {
+                    console.log("✅ 伺服器回應：設備已重設，顯示成功頁");
+                    window.location.href = '/reset_success';
+                }
+            })            
+            .catch(error => {
+                console.error("同步檢查失敗：", error);
+            });
+        }, 5000); // 每5秒檢查一次
+    }
+
     startCountdown();
+    startSyncCheck(); // 🔥 同步偵測開啟
 });

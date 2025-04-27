@@ -47,7 +47,7 @@ def gen(camera_id):
                jpg_bytes + b'\r\n')
         time.sleep(0.03)  # ≈30 fps
 
-# 🔥 修改 index()，開機時自動檢查是否需要設定
+#修改 index()，開機時自動檢查是否需要設定
 @app.route('/')
 def index():
     conn = sqlite3.connect('device.db')
