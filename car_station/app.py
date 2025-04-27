@@ -4,16 +4,21 @@ import camera_config as cfg
 import numpy as np
 import time
 import sqlite3
+from routes.config import SERVER_URL
 from routes.install import install_bp
 from routes.device import device_bp
 from routes.reset import reset_bp
+from routes.gpio import gpio_bp
+
 
 app = Flask(__name__)
+app.config['SERVER_URL'] = SERVER_URL
 
 #Blueprint
 app.register_blueprint(install_bp)
 app.register_blueprint(device_bp)
 app.register_blueprint(reset_bp)
+app.register_blueprint(gpio_bp)
 
 def open_stream(url):
     cap = cv2.VideoCapture(url)

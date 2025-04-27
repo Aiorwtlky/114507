@@ -34,6 +34,41 @@ btns.forEach(btn=>{
   });
 });
 
+function checkGPIOStatus(){
+  fetch('/gpio_status')
+      .then(response => response.json())
+      .then(data => {
+          let modeFromGPIO = '';
+
+          if (data.rear) {
+              modeFromGPIO = 'rear';
+          } else if (data.left) {
+              modeFromGPIO = 'left';
+          } else if (data.right) {
+              modeFromGPIO = 'right';
+          }
+
+          if (modeFromGPIO !== '') {
+              document.body.className = `${modeFromGPIO}-active`;
+              active = modeFromGPIO;
+              btns.forEach(b => b.classList.toggle('active', b.dataset.mode === modeFromGPIO));
+              statusBar.textContent =
+                  modeFromGPIO === 'left' ? '車輛左轉彎' :
+                  modeFromGPIO === 'right' ? '車輛右轉彎' :
+                  '車輛倒車中';
+          } else {
+              document.body.className = '';
+              active = '';
+              btns.forEach(b => b.classList.remove('active'));
+              statusBar.textContent = '　';
+          }
+      })
+      .catch(error => {
+          console.error('GPIO檢查失敗', error);
+      });
+}
+setInterval(checkGPIOStatus, 200);
+
 document.addEventListener('DOMContentLoaded', function () {
   const deviceInfoBtn = document.getElementById('deviceInfoBtn');
   const deviceInfoModal = document.getElementById('deviceInfoModal');

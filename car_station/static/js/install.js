@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const refreshBtn = document.getElementById('refreshBtn');
     const qrImage = document.getElementById('qrImage');
 
-    const serverUrl = "http://localhost:307"; // ⚠️改你的S端IP
+    const serverUrl = "http://192.168.0.48:307"; // ⚠️改你的S端IP
     const deviceSerial = "mdgcs001";             // ⚠️改你的C端device_serial
 
     function startCountdown() {
