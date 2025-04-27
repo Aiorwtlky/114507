@@ -12,10 +12,14 @@ def draw_detections(frame, results):
 
             # 只標示 person（類別0）
             if cls == 0:
-                height = y2 - y1
-                distance = estimate_distance(height)
+                bbox_height = y2 - y1
 
-                # 判斷危險距離
+                # ✅ 這行是新增的，印出高度
+                print(f"[INFO] BBox高度 = {bbox_height}px")
+
+                # 下面 distance 可以先暫時不管，或者用假的也行
+                distance = estimate_distance(bbox_height)
+
                 color = (0, 255, 0) if distance > 10 else (0, 0, 255)
 
                 cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), color, 2)
@@ -26,14 +30,8 @@ def draw_detections(frame, results):
 
 def estimate_distance(bbox_height_pixels):
     if bbox_height_pixels == 0:
-        return 999
+        return 999  # 避免除以零
 
-    # 區間判斷
-    if bbox_height_pixels > 200:
-        return 2  # 超近距離，2公尺內
-    elif bbox_height_pixels > 120:
-        return 5  # 中距離，5公尺內
-    elif bbox_height_pixels > 60:
-        return 8  # 遠距離，8公尺內
-    else:
-        return 15  # 很遠（無危險）
+    k = 958  # 你自己量出來的
+    distance = k / bbox_height_pixels
+    return distance
