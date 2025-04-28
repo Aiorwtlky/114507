@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const countdownSpan = document.getElementById('countdown');
     const qrImage = document.getElementById('qrImage');
 
-    const serverUrl = "http://192.168.0.48:307";  // ⚠️你的S端IP
+    const serverUrl = "http://172.20.10.2:307";  // ⚠️你的S端IP
     const deviceSerial = "mdgcs001";              // ⚠️你的device序號
 
     function startCountdown() {

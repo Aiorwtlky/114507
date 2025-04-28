@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify
 import sqlite3
 import requests
-from routes.config import SERVER_URL
+
 install_bp = Blueprint('install', __name__)
 
 DEVICE_SERIAL = "mdgcs001"  # 車機序號
-
+SERVER_URL = "http://172.20.10.2:307"  # Server端位置
 
 @install_bp.route('/install', methods=['GET'])
 def install():

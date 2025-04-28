@@ -1,40 +1,83 @@
 /* 時鐘 */
-function updateClock(){
-    const now = new Date();
-    const pad = n => n.toString().padStart(2,'0');
-    const str = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} `
-              + `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    document.getElementById('clock').textContent = str;
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
-  
-/* 控制邏輯 */
+function updateClock() {
+  const now = new Date();
+  const pad = n => n.toString().padStart(2, '0');
+  const str = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} `
+      + `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('clock').textContent = str;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* 全域變數 */
 const statusBar = document.getElementById('statusBar');
 const btns = document.querySelectorAll('.ctrlBtn');
-let active = '';   // 當前模式: left | right | rear | ''
+const deviceInfoBtn = document.getElementById('deviceInfoBtn');
+const deviceInfoModal = document.getElementById('deviceInfoModal');
+const deviceInfoText = document.getElementById('deviceInfoText');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const resetDeviceBtn = document.getElementById('resetDeviceBtn');
 
-btns.forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const mode = btn.dataset.mode;
-    if(active === mode){         // 取消
+let active = '';
+let previousMode = '';
+let currentAudio = null;
+
+/* 播放音效 */
+function playSound(mode) {
+  if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+  }
+
+  let audioSrc = '';
+  if (mode === 'left') {
+      audioSrc = '/static/sounds/left_turn.mp3';
+  } else if (mode === 'right') {
+      audioSrc = '/static/sounds/right_turn.mp3';
+  } else if (mode === 'rear') {
+      audioSrc = '/static/sounds/reverse.mp3';
+  }
+
+  if (audioSrc) {
+      currentAudio = new Audio(audioSrc);
+      currentAudio.loop = true;
+      currentAudio.play();
+  } else {
+      currentAudio = null;
+  }
+}
+
+/* 更新畫面和音效 */
+function updateMode(mode) {
+  if (mode !== previousMode) {
+      if (mode !== '') {
+          playSound(mode);
+      } else if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          currentAudio = null;
+      }
+      previousMode = mode;
+  }
+
+  if (mode !== '') {
+      document.body.className = `${mode}-active`;
+      active = mode;
+      btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      statusBar.textContent =
+          mode === 'left' ? '車輛左轉彎' :
+              mode === 'right' ? '車輛右轉彎' :
+                  '車輛倒車中';
+  } else {
       document.body.className = '';
       active = '';
-      btns.forEach(b=>b.classList.remove('active'));
+      btns.forEach(b => b.classList.remove('active'));
       statusBar.textContent = '　';
-    }else{
-      active = mode;
-      document.body.className = `${mode}-active`;
-      btns.forEach(b=>b.classList.toggle('active', b===btn));
-      statusBar.textContent = 
-        mode==='left' ? '車輛左轉彎' :
-        mode==='right'? '車輛右轉彎' :
-        '車輛倒車中';
-    }
-  });
-});
+  }
+}
 
-function checkGPIOStatus(){
+/* 檢查 GPIO */
+function checkGPIOStatus() {
   fetch('/gpio_status')
       .then(response => response.json())
       .then(data => {
@@ -48,34 +91,30 @@ function checkGPIOStatus(){
               modeFromGPIO = 'right';
           }
 
-          if (modeFromGPIO !== '') {
-              document.body.className = `${modeFromGPIO}-active`;
-              active = modeFromGPIO;
-              btns.forEach(b => b.classList.toggle('active', b.dataset.mode === modeFromGPIO));
-              statusBar.textContent =
-                  modeFromGPIO === 'left' ? '車輛左轉彎' :
-                  modeFromGPIO === 'right' ? '車輛右轉彎' :
-                  '車輛倒車中';
-          } else {
-              document.body.className = '';
-              active = '';
-              btns.forEach(b => b.classList.remove('active'));
-              statusBar.textContent = '　';
-          }
+          updateMode(modeFromGPIO);
       })
       .catch(error => {
           console.error('GPIO檢查失敗', error);
       });
 }
+
+/* 每 200ms 檢查一次 */
 setInterval(checkGPIOStatus, 200);
 
-document.addEventListener('DOMContentLoaded', function () {
-  const deviceInfoBtn = document.getElementById('deviceInfoBtn');
-  const deviceInfoModal = document.getElementById('deviceInfoModal');
-  const deviceInfoText = document.getElementById('deviceInfoText');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const resetDeviceBtn = document.getElementById('resetDeviceBtn');
+/* 手動按按鈕（模擬GPIO） */
+btns.forEach(btn => {
+  btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode;
+      if (active === mode) {
+          updateMode('');
+      } else {
+          updateMode(mode);
+      }
+  });
+});
 
+/* 裝置資訊Modal */
+document.addEventListener('DOMContentLoaded', function () {
   deviceInfoBtn.addEventListener('click', function () {
       fetch('/device_info')
           .then(response => response.json())
@@ -104,23 +143,20 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   resetDeviceBtn.addEventListener('click', function () {
-    if (confirm("確定要重設車輛資訊嗎？")) {
-        fetch('/reset_device_info', {
-            method: 'POST'
-        })
-        .then(response => response.text())  // 用 text讀，因為回的是HTML不是JSON
-        .then(html => {
-            document.open();
-            document.write(html);
-            document.close();
-        })
-        .catch(error => {
-            alert("重設失敗！");
-            console.error(error);
-        });
-    }
-  }); 
+      if (confirm("確定要重設車輛資訊嗎？")) {
+          fetch('/reset_device_info', {
+              method: 'POST'
+          })
+              .then(response => response.text())
+              .then(html => {
+                  document.open();
+                  document.write(html);
+                  document.close();
+              })
+              .catch(error => {
+                  alert("重設失敗！");
+                  console.error(error);
+              });
+      }
+  });
 });
-
-
-  
