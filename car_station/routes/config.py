@@ -1,2 +1,2 @@
 # routes/config.py
-SERVER_URL = "http://172.20.10.2:307"
+SERVER_URL = "http://192.168.0.103:307"

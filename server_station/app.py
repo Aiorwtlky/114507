@@ -6,6 +6,7 @@ from routes.qr import qr_bp
 from routes.bind import bind_bp
 from routes.reset import reset_bp
 
+
 app = Flask(__name__)
 CORS(app)
 
@@ -13,6 +14,7 @@ app.register_blueprint(device_bp)
 app.register_blueprint(qr_bp)
 app.register_blueprint(bind_bp)
 app.register_blueprint(reset_bp)
+
 
 @app.route('/')
 def index():
