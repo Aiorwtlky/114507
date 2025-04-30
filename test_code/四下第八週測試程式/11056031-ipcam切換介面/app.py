@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 # 鏡頭來源設定（替換為你實際的 IP CAM URL）
 IP_CAM_SOURCES = {
-    "left": "http://192.168.0.105:4747/video",
+    "left": "http://172.20.10.4:4747/video",
     "right": "http://192.168.1.102:8080/video",
     "rear": "http://192.168.1.103:8080/video"
 }
