@@ -4,11 +4,15 @@ import camera_config as cfg
 import numpy as np
 import time
 import sqlite3
+import requests  # 加在最上面
 from routes.config import SERVER_URL
 from routes.install import install_bp
 from routes.device import device_bp
 from routes.reset import reset_bp
 from routes.gpio import gpio_bp
+import logging
+
+logging.basicConfig(filename='flask.log', level=logging.INFO)
 
 
 app = Flask(__name__)
@@ -57,15 +61,60 @@ def gen(camera_id):
 def index():
     conn = sqlite3.connect('device.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT car_plate, car_brand, vehicle_type, driver_position FROM devices WHERE device_serial = ?', ('mdgcs001',))
+    cursor.execute('''
+        SELECT car_brand, car_plate, vehicle_type, driver_position
+        FROM devices WHERE device_serial = ?
+    ''', ('mdgcs001',))
     device = cursor.fetchone()
     conn.close()
 
-    # 如果車輛資料還沒填，就跳去安裝設定頁
-    if device is None or None in device or '' in device:
+    print('📦 裝置欄位：', device)
+
+    qr_base64 = None
+    if device and all(field not in (None, '') for field in device):
+        # ✅ 裝置資料齊全，取得 Server 的上班 QR Code
+        try:
+            res = requests.get("http://192.168.0.100:307/generate_qr/work")
+            if res.status_code == 200:
+                qr_base64 = res.json().get('qr_base64')
+            else:
+                print("⚠️ 從 Server 取得 QR 失敗")
+        except Exception as e:
+            print(f"❌ 無法連線 Server：{e}")
+
+        logging.info('✅ 完整資料，跳 index.html')
+        return render_template('index.html', qr_base64=qr_base64)
+
+    elif device and any(field not in (None, '') for field in device):
+        # ✅ 部分資料，跳轉安裝成功頁（只顯示一次）
+        if not os.path.exists('shown_success.flag'):
+            with open('shown_success.flag', 'w') as f:
+                f.write('shown')
+            logging.info('🟡 第一次安裝完成，跳 install_success.html')
+            return render_template('install_success.html')
+        else:
+            return render_template('index.html', qr_base64=None)
+
+    else:
+        logging.info('❌ 沒資料，跳 install 設定頁')
         return redirect(url_for('install.install'))
 
-    return render_template('index.html')
+
+
+@app.route('/work_state')
+def work_state():
+    try:
+        res = requests.get("http://192.168.0.100:307/generate_qr/off")
+        qr_base64 = None
+        if res.status_code == 200:
+            qr_base64 = res.json().get('qr_base64')
+        else:
+            print("⚠️ 從 Server 取得 QR 失敗")
+    except Exception as e:
+        print(f"❌ 無法連線 Server：{e}")
+        qr_base64 = None
+
+    return render_template('work_state.html', qr_base64=qr_base64)
 
 @app.route('/video/<cam_id>')
 def video(cam_id):
@@ -74,5 +123,9 @@ def video(cam_id):
 
 if __name__ == '__main__':
     import sys
+    import threading
+    import webbrowser
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 730
+    threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
+    print(f"🚀 Flask 啟動中，port = {port}")
     app.run(host='0.0.0.0', port=port, threaded=True)

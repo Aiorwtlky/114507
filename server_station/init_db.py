@@ -13,6 +13,14 @@ def init_db():
     )
 
     with db.cursor() as cursor:
+        # 建立 drivers 資料表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS drivers (
+                driver_id INT AUTO_INCREMENT PRIMARY KEY,
+                driver_name VARCHAR(100) NOT NULL
+            )
+        ''')
+
         # 建立 devices 資料表（若尚未建立）
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS devices (
@@ -27,7 +35,9 @@ def init_db():
                 install_date DATETIME,
                 last_online DATETIME,
                 status VARCHAR(20),
-                bind_status TINYINT DEFAULT 0
+                bind_status TINYINT DEFAULT 0,
+                driver_id INT,
+                FOREIGN KEY (driver_id) REFERENCES drivers(driver_id)
             )
         ''')
 
@@ -42,13 +52,16 @@ def init_db():
             )
         ''')
 
-        # 建立 drivers 資料表
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS drivers (
-                driver_id INT AUTO_INCREMENT PRIMARY KEY,
-                driver_name VARCHAR(100) NOT NULL
-            )
-        ''')
+        # 建立 driver_tokens 資料表
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS driver_tokens (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            driver_id INT NOT NULL,
+            token VARCHAR(255) NOT NULL,
+            state CHAR(1) NOT NULL, -- 'W' or 'O'
+            create_date DATETIME NOT NULL
+        );
+        """)
 
         # 插入預設設備資料（若尚未存在）
         device_serial = "mdgcs001"
@@ -63,8 +76,8 @@ def init_db():
             cursor.execute('''
                 INSERT INTO devices (device_serial, manufacturer, manufacturer_address, software_version,
                                       car_brand, car_plate, vehicle_type, driver_position,
-                                      install_date, last_online, status, bind_status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                      install_date, last_online, status, bind_status, driver_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''', (
                 device_serial,
                 manufacturer,
@@ -77,7 +90,8 @@ def init_db():
                 install_date,
                 last_online,
                 status,
-                0
+                0,
+                None
             ))
             print(f"✅ 成功新增設備：{device_serial}")
         except pymysql.err.IntegrityError:
@@ -85,7 +99,7 @@ def init_db():
 
     db.commit()
     db.close()
-    print("✅ 資料表 devices、tokens 與 drivers 建立完成！")
+    print("✅ 資料表 drivers、devices、tokens 與 driver_tokens 建立完成！")
 
 if __name__ == '__main__':
     init_db()

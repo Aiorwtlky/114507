@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
-
   <!-- 左上角 查看本車資訊 按鈕 -->
   <div id="deviceInfoBtnContainer">
     <button id="deviceInfoBtn">查看本車資訊</button>
@@ -28,12 +27,15 @@
   <div id="clock"></div>
 
   <!-- 影像區 -->
+  <div id="chicken"><h1>我有大雞雞</h1></div>
+
+  <!-- 影像區 -->
   <div id="camDeck">
     <img id="cam-left"  class="cam" src="{{ url_for('video', cam_id='left')  }}" />
     <img id="cam-rear"  class="cam" src="{{ url_for('video', cam_id='rear')  }}" />
     <img id="cam-right" class="cam" src="{{ url_for('video', cam_id='right') }}" />
   </div>
-
+  
   <!-- 按鈕列 -->
   <div id="btnRow">
     <button data-mode="left"  class="ctrlBtn">左燈</button>
@@ -44,20 +46,15 @@
     <!-- 底部狀態欄 -->
   <div id="statusBar">　</div>
 
-  <!-- 顯示上班 QR Code -->
-  <div id="qrArea" style="text-align: center; margin: 10px 0;">
+  <!-- 下班 QR Code 區塊 -->
+  <div id="offQR" style="text-align:center; margin-top:20px;">
+    <h3>下班 QR Code</h3>
     {% if qr_base64 %}
-      <h2>上班 QR Code</h2>
-      <img src="data:image/png;base64,{{ qr_base64 }}" alt="上班 QR Code" />
+      <img src="data:image/png;base64,{{ qr_base64 }}" alt="Off Work QR Code" style="width:200px;">
     {% else %}
-      <p>⚠️ 無法載入上班 QR Code</p>
+      <p>⚠️ 無法載入下班 QR Code</p>
     {% endif %}
   </div>
-
-
-
-  
-
 
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
