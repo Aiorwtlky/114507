@@ -7,6 +7,7 @@ from db import db
 import datetime
 import random
 import hashlib
+from datetime import datetime, timedelta
 
 
 qr_driver_token_bp = Blueprint('qr_driver_token', __name__)
@@ -68,17 +69,17 @@ def generate_driver_qr_image(state='W', device_serial=None):
         print(f"❌ generate_driver_qr_image 錯誤：{e}")
         return None
 
-# ✅ 建立 QR 並設定 15 分鐘有效期
+
 def create_qr_and_save_token(driver_id, driver_name, state, device_serial):
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     rand_num = random.randint(1000, 9999)
     raw_string = f"{driver_id},{driver_name},{rand_num},{timestamp},{state}"
     hashed_token = hashlib.sha256(raw_string.encode()).hexdigest()
 
     try:
         cursor = db.cursor()
-        if state == 'W':  # 上班 token 有效期與 used 欄位
-            expire_time = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime('%Y-%m-%d %H:%M:%S')
+        if state == 'W':  
+            expire_time = (datetime.now() + timedelta(minutes=15)).strftime('%Y-%m-%d %H:%M:%S')
             sql = '''
                 INSERT INTO driver_tokens (driver_id, token, state, create_date, expire_time, used)
                 VALUES (%s, %s, %s, %s, %s, 0)
@@ -111,7 +112,8 @@ def create_qr_and_save_token(driver_id, driver_name, state, device_serial):
 
 
 
-# ✅ 綁定功能，驗證 QR Code 有效性
+
+
 @qr_driver_token_bp.route('/bind_driver/<token>', methods=['GET'], endpoint='bind_driver_token')
 def bind_driver(token):
     device_serial = request.args.get("device_serial")
@@ -120,12 +122,12 @@ def bind_driver(token):
 
     try:
         with db.cursor() as cursor:
-            # 查詢原始 QRCode 資料（used = 0 是未使用狀態）
+            # 查詢 token
             cursor.execute("""
                 SELECT * FROM driver_tokens
                 WHERE token = %s AND (
                     (state = 'W' AND used = 0 AND expire_time > NOW()) OR
-                    (state = 'O')  -- 下班無時間限制
+                    (state = 'O')
                 )
             """, (token,))
             token_data = cursor.fetchone()
@@ -133,34 +135,38 @@ def bind_driver(token):
             if not token_data:
                 return "❌ QR Code 無效或已過期", 400
 
-            # ✅ 產生一筆「新紀錄」：used = 1
+            bind_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            
             if token_data['state'] == 'W':
                 sql = '''
-                    INSERT INTO driver_tokens (driver_id, token, state, create_date, expire_time, used)
-                    VALUES (%s, %s, %s, %s, %s, 1)
+                    INSERT INTO driver_tokens (driver_id, token, state, create_date, expire_time, used, bind_time)
+                    VALUES (%s, %s, %s, %s, %s, 1, %s)
                 '''
                 cursor.execute(sql, (
                     token_data['driver_id'],
                     token_data['token'],
                     token_data['state'],
                     token_data['create_date'],
-                    token_data['expire_time']
+                    token_data['expire_time'],
+                    bind_time
                 ))
-            else:  # 下班
+            else:
                 sql = '''
-                    INSERT INTO driver_tokens (driver_id, token, state, create_date, used)
-                    VALUES (%s, %s, %s, %s, 1)
+                    INSERT INTO driver_tokens (driver_id, token, state, create_date, used, bind_time)
+                    VALUES (%s, %s, %s, %s, 1, %s)
                 '''
                 cursor.execute(sql, (
                     token_data['driver_id'],
                     token_data['token'],
                     token_data['state'],
-                    token_data['create_date']
+                    token_data['create_date'],
+                    bind_time
                 ))
 
             db.commit()
 
-            # 查詢設備 IP
+            # 查詢設備 IP 並通知
             cursor.execute("SELECT ip_address FROM devices WHERE device_serial = %s", (device_serial,))
             result = cursor.fetchone()
             if not result:
