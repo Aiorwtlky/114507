@@ -11,6 +11,8 @@ from routes.device import device_bp
 from routes.reset import reset_bp
 from routes.gpio import gpio_bp
 import logging
+from flask import jsonify
+import threading
 
 logging.basicConfig(filename='flask.log', level=logging.INFO)
 
@@ -74,7 +76,7 @@ def index():
     if device and all(field not in (None, '') for field in device):
         # ✅ 裝置資料齊全，取得 Server 的上班 QR Code
         try:
-            res = requests.get("http://192.168.0.100:307/generate_qr/work")
+            res = requests.get(f"http://192.168.0.102:307/generate_qr/work?device_serial=mdgcs001")
             if res.status_code == 200:
                 qr_base64 = res.json().get('qr_base64')
             else:
@@ -98,13 +100,23 @@ def index():
     else:
         logging.info('❌ 沒資料，跳 install 設定頁')
         return redirect(url_for('install.install'))
+    
 
 
+
+is_bound = False  # 全域變數控制是否跳轉
+
+@app.route('/notify_driver_bound', methods=['POST'])
+def notify_driver_bound():
+    global is_bound
+    is_bound = True
+    print("✅ Server 通知成功：已掃描 QR")
+    return jsonify({"status": "ok"}), 200
 
 @app.route('/work_state')
 def work_state():
     try:
-        res = requests.get("http://192.168.0.100:307/generate_qr/off")
+        res = requests.get(f"http://192.168.0.102:307/generate_qr/off?device_serial=mdgcs001")
         qr_base64 = None
         if res.status_code == 200:
             qr_base64 = res.json().get('qr_base64')
@@ -115,6 +127,28 @@ def work_state():
         qr_base64 = None
 
     return render_template('work_state.html', qr_base64=qr_base64)
+
+@app.route('/check_bound')
+def check_bound():
+    return jsonify({"is_bound": is_bound})
+
+@app.route('/work_state_qr')
+def work_state_qr():
+    global is_bound
+    is_bound = False  # ✅ 已跳轉，重設狀態
+
+    try:
+        res = requests.get(f"http://192.168.0.102:307/generate_qr/off?device_serial=mdgcs001")
+        if res.status_code == 200:
+            qr_base64 = res.json().get('qr_base64')
+        else:
+            qr_base64 = None
+    except:
+        qr_base64 = None
+
+    return render_template('work_state.html', qr_base64=qr_base64)
+
+
 
 @app.route('/video/<cam_id>')
 def video(cam_id):

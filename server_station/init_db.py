@@ -32,12 +32,13 @@ def init_db():
                 car_plate VARCHAR(50),
                 vehicle_type VARCHAR(50),
                 driver_position VARCHAR(10),
+                ip_address VARCHAR(100),
                 install_date DATETIME,
                 last_online DATETIME,
                 status VARCHAR(20),
                 bind_status TINYINT DEFAULT 0,
                 driver_id INT,
-                FOREIGN KEY (driver_id) REFERENCES drivers(driver_id)
+                FOREIGN KEY (driver_id) REFERENCES drivers(driver_id),
             )
         ''')
 
@@ -53,15 +54,17 @@ def init_db():
         ''')
 
         # 建立 driver_tokens 資料表
-        cursor.execute("""
+        cursor.execute('''
         CREATE TABLE IF NOT EXISTS driver_tokens (
             id INT AUTO_INCREMENT PRIMARY KEY,
             driver_id INT NOT NULL,
             token VARCHAR(255) NOT NULL,
-            state CHAR(1) NOT NULL, -- 'W' or 'O'
-            create_date DATETIME NOT NULL
-        );
-        """)
+            state CHAR(1) NOT NULL,
+            used INT(64) NOT NULL DEFAULT 1,
+            create_date DATETIME NOT NULL,
+            device_serial VARCHAR(50) NOT NULL
+        ) 
+        ''')
 
         # 插入預設設備資料（若尚未存在）
         device_serial = "mdgcs001"

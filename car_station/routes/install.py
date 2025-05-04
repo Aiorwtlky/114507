@@ -5,7 +5,7 @@ import requests
 install_bp = Blueprint('install', __name__)
 
 DEVICE_SERIAL = "mdgcs001"  # 車機序號
-SERVER_URL = "http://192.168.0.100:307"  # Server端位置
+SERVER_URL = "http://192.168.0.102:307"  # Server端位置
 
 @install_bp.route('/install', methods=['GET'])
 def install():

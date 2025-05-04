@@ -23,7 +23,7 @@ app.register_blueprint(qr_driver_token_bp)  # 註冊駕駛 QR blueprint
 def index():
     qr_base64 = None
     try:
-        res = requests.get("http://127.0.0.1:307/generate_qr/work")
+        res = requests.get("http://192.168.0.102:307/generate_qr/work")
         if res.status_code == 200:
             qr_base64 = res.json().get('qr_base64')
     except Exception as e:
@@ -34,7 +34,7 @@ def index():
 def work_state():
     qr_base64 = None
     try:
-        res = requests.get("http://127.0.0.1:307/generate_qr/off")
+        res = requests.get("http://192.168.0.102:307/generate_qr/off")
         if res.status_code == 200:
             qr_base64 = res.json().get('qr_base64')
     except Exception as e:
@@ -44,6 +44,6 @@ def work_state():
 
 if __name__ == '__main__':
     port = 307
-    threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
+    threading.Timer(1.0, lambda: webbrowser.open(f"http://192.168.0.102:{port}")).start()
     print(f"\U0001F680 Flask 啟動中，port = {port}")
     app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)

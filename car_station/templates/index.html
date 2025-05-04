@@ -55,7 +55,17 @@
   </div>
 
 
-
+  <script>
+    setInterval(() => {
+      fetch("/check_bound")
+        .then(res => res.json())
+        .then(data => {
+          if (data.is_bound) {
+            window.location.href = "/work_state_qr";
+          }
+        });
+    }, 3000);
+  </script>
   
 
 
