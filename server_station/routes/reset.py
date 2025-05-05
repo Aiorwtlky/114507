@@ -28,7 +28,7 @@ def generate_reset_token():
         db.commit()
 
         # 產生 QR code
-        reset_url = f"http://172.20.10.2:307/reset_bind/{token}"
+        reset_url = f"http://192.168.0.102:307/reset_bind/{token}"
         qr = qrcode.QRCode(
             version=1,
             box_size=10,

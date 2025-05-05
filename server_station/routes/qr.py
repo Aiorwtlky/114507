@@ -50,7 +50,7 @@ def register_device():
             box_size=10,
             border=2
         )
-        bind_url = f"http://172.20.10.2:307/bind/{token}"
+        bind_url = f"http://192.168.0.102:307/bind/{token}"
         qr.add_data(bind_url)
 
         qr.make(fit=True)

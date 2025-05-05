@@ -1,0 +1,14 @@
+{# templates/add_driver_form.html #}
+{% extends 'layout.html' %}
+{% block content %}
+<h2>新增駕駛資料</h2>
+<div class="form-container">
+    <form action="/add_driver" method="POST">
+        <label>駕駛編號：</label>
+        <input type="number" name="driver_id" required><br>
+        <label>駕駛姓名：</label>
+        <input type="text" name="driver_name" required><br>
+        <button type="submit">新增駕駛</button>
+    </form>
+</div>
+{% endblock %}

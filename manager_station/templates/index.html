@@ -1,0 +1,10 @@
+{# templates/index.html #}
+{% extends 'layout.html' %}
+{% block content %}
+<h2>主選單</h2>
+<form action="/manage_driver" method="GET">
+    <button type="submit">管理駕駛</button>
+</form>
+{% endblock %}
+
+
