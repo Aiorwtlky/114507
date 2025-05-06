@@ -4,7 +4,7 @@ import base64
 from io import BytesIO
 from db import db
 from utils.token_manager import generate_token
-from routes.config import DEVICE_URL
+from routes.config import SERVER_URL  # ✅ 改用伺服器網址
 
 qr_bp = Blueprint('qr', __name__)
 
@@ -51,7 +51,7 @@ def register_device():
             box_size=10,
             border=2
         )
-        bind_url = f"{DEVICE_URL}/bind/{token}"
+        bind_url = f"{SERVER_URL}/bind/{token}"
         qr.add_data(bind_url)
 
         qr.make(fit=True)

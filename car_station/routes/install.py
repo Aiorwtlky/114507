@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify
 import sqlite3
 import requests
+from routes.config import SERVER_URL, DB_PATH  # ✅ 引入 Server URL 與正確的 DB 路徑
 
 install_bp = Blueprint('install', __name__)
 
 DEVICE_SERIAL = "mdgcs001"  # 車機序號
-from routes.config import SERVER_URL  # Server端位置
 
 @install_bp.route('/install', methods=['GET'])
 def install():
@@ -23,7 +23,7 @@ def install():
         if sync_res.status_code == 200:
             sync_data = sync_res.json()
             if sync_data.get("status") == "bound":
-                # 寫入 SQLite
+                # 寫入 SQLite（呼叫本地 route 儲存資料）
                 requests.post("http://127.0.0.1:730/save_device_info", json={
                     "car_brand": sync_data.get("car_brand"),
                     "car_plate": sync_data.get("car_plate"),
@@ -37,7 +37,7 @@ def install():
         print(f"連線錯誤：{e}")
         return "⚠️ 無法連線伺服器", 500
 
-    
+
 @install_bp.route('/save_device_info', methods=['POST'])
 def save_device_info():
     data = request.get_json()
@@ -47,25 +47,29 @@ def save_device_info():
     vehicle_type = data.get('vehicle_type')
     driver_position = data.get('driver_position')
 
-    conn = sqlite3.connect('device.db')
-    cursor = conn.cursor()
+    try:
+        conn = sqlite3.connect(DB_PATH)  # ✅ 使用正確的資料庫路徑
+        cursor = conn.cursor()
 
-    cursor.execute('''
-        UPDATE devices
-        SET car_brand = ?, car_plate = ?, vehicle_type = ?, driver_position = ?, status = 'online'
-        WHERE device_serial = ?
-    ''', (
-        car_brand,
-        car_plate,
-        vehicle_type,
-        driver_position,
-        "mdgcs001"
-    ))
+        cursor.execute('''
+            UPDATE devices
+            SET car_brand = ?, car_plate = ?, vehicle_type = ?, driver_position = ?, status = 'online'
+            WHERE device_serial = ?
+        ''', (
+            car_brand,
+            car_plate,
+            vehicle_type,
+            driver_position,
+            DEVICE_SERIAL
+        ))
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
 
-    return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 @install_bp.route('/install_success')
 def install_success():
