@@ -8,6 +8,7 @@ from routes.qr_driver import qr_driver_token_bp  # 新增這行
 import threading
 import webbrowser
 import requests
+from routes.config import DEVICE_URL
 
 app = Flask(__name__)
 CORS(app)
@@ -23,7 +24,7 @@ app.register_blueprint(qr_driver_token_bp)  # 註冊駕駛 QR blueprint
 def index():
     qr_base64 = None
     try:
-        res = requests.get("http://192.168.0.102:307/generate_qr/work")
+        res = requests.get(f"{DEVICE_URL}/generate_qr/work?device_serial=mdgcs001")
         if res.status_code == 200:
             qr_base64 = res.json().get('qr_base64')
     except Exception as e:
@@ -34,7 +35,7 @@ def index():
 def work_state():
     qr_base64 = None
     try:
-        res = requests.get("http://192.168.0.102:307/generate_qr/off")
+        res = requests.get(f"{DEVICE_URL}/generate_qr/off?device_serial=mdgcs001")
         if res.status_code == 200:
             qr_base64 = res.json().get('qr_base64')
     except Exception as e:
@@ -42,8 +43,9 @@ def work_state():
     return render_template('work_state.html', qr_base64=qr_base64)
 
 
+
 if __name__ == '__main__':
     port = 307
-    threading.Timer(1.0, lambda: webbrowser.open(f"http://192.168.0.102:{port}")).start()
+    threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
     print(f"\U0001F680 Flask 啟動中，port = {port}")
     app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)

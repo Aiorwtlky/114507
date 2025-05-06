@@ -5,6 +5,7 @@ from io import BytesIO
 from db import db
 from utils.token_manager import generate_token, verify_token
 import time
+from routes.config import DEVICE_URL
 
 reset_bp = Blueprint('reset', __name__)
 
@@ -28,7 +29,7 @@ def generate_reset_token():
         db.commit()
 
         # 產生 QR code
-        reset_url = f"http://192.168.0.102:307/reset_bind/{token}"
+        reset_url = f"{DEVICE_URL}/reset_bind/{token}"
         qr = qrcode.QRCode(
             version=1,
             box_size=10,

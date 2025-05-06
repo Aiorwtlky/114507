@@ -5,7 +5,8 @@ import requests
 reset_bp = Blueprint('reset', __name__)
 
 DEVICE_SERIAL = "mdgcs001"
-SERVER_URL = "http://192.168.0.102:307" # Server端位置
+from routes.config import SERVER_URL # Server端位置
+
 @reset_bp.route('/reset_device_info', methods=['POST'])
 def reset_device_info():
     # 本地清除SQLite資料

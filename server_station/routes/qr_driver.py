@@ -8,7 +8,7 @@ import datetime
 import random
 import hashlib
 from datetime import datetime, timedelta
-
+from routes.config import DEVICE_URL,SERVER_URL
 
 qr_driver_token_bp = Blueprint('qr_driver_token', __name__)
 
@@ -16,7 +16,7 @@ qr_driver_token_bp = Blueprint('qr_driver_token', __name__)
 @qr_driver_token_bp.route('/generate_qr/work', methods=['GET'])
 def generate_qr_work():
     from flask import request
-
+    print("🎯 收到 generate_qr/work 請求！")
     device_serial = request.args.get('device_serial')  # 從 URL 拿 device_serial
     if not device_serial:
         return jsonify({"error": "缺少 device_serial 參數"}), 400
@@ -97,7 +97,7 @@ def create_qr_and_save_token(driver_id, driver_name, state, device_serial):
         print(f"❌ 寫入 token 時發生錯誤：{e}")
         return None, None
 
-    bind_url = f"http://192.168.0.102:307/bind_driver/{hashed_token}?device_serial={device_serial}"
+    bind_url = f"{SERVER_URL}/bind_driver/{hashed_token}?device_serial={device_serial}"
 
     qr = qrcode.QRCode(box_size=10, border=4)
     qr.add_data(bind_url)
@@ -172,14 +172,15 @@ def bind_driver(token):
             if not result:
                 return "❌ 找不到設備 IP", 404
             device_ip = result['ip_address']
+            print(f"📡 通知設備端 IP：{device_ip}")
 
         import requests
-        res = requests.post(f"http://{device_ip}:730/notify_driver_bound")
+        res = requests.post(f"http://{device_ip}:730/notify_driver_bound", timeout=3)
         if res.status_code != 200:
             print("⚠️ 設備端通知失敗")
 
         return "✅ 綁定成功！駕駛已打卡", 200
-
+    
     except Exception as e:
         return f"❌ 錯誤：{str(e)}", 500
 

@@ -4,6 +4,7 @@ import base64
 from io import BytesIO
 from db import db
 from utils.token_manager import generate_token
+from routes.config import DEVICE_URL
 
 qr_bp = Blueprint('qr', __name__)
 
@@ -50,7 +51,7 @@ def register_device():
             box_size=10,
             border=2
         )
-        bind_url = f"http://192.168.0.102:307/bind/{token}"
+        bind_url = f"{DEVICE_URL}/bind/{token}"
         qr.add_data(bind_url)
 
         qr.make(fit=True)

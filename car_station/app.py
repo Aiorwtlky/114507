@@ -13,6 +13,8 @@ from routes.gpio import gpio_bp
 import logging
 from flask import jsonify
 import threading
+import os  # ✅ 請補上這一行
+from routes.config import SERVER_URL,DEVICE_URL
 
 logging.basicConfig(filename='flask.log', level=logging.INFO)
 
@@ -25,6 +27,8 @@ app.register_blueprint(install_bp)
 app.register_blueprint(device_bp)
 app.register_blueprint(reset_bp)
 app.register_blueprint(gpio_bp)
+
+print(f"🚀 本裝置序號為 mdgcs001，提供服務於 {DEVICE_URL}")
 
 def open_stream(url):
     cap = cv2.VideoCapture(url)
@@ -76,11 +80,11 @@ def index():
     if device and all(field not in (None, '') for field in device):
         # ✅ 裝置資料齊全，取得 Server 的上班 QR Code
         try:
-            res = requests.get(f"http://192.168.0.102:307/generate_qr/work?device_serial=mdgcs001")
+            res = requests.get(f"{SERVER_URL}/generate_qr/work?device_serial=mdgcs001")
             if res.status_code == 200:
                 qr_base64 = res.json().get('qr_base64')
             else:
-                print("⚠️ 從 Server 取得 QR 失敗")
+                print(f"⚠️ 從 Server 取得 QR 失敗：{res.status_code} {res.text}")
         except Exception as e:
             print(f"❌ 無法連線 Server：{e}")
 
@@ -116,7 +120,7 @@ def notify_driver_bound():
 @app.route('/work_state')
 def work_state():
     try:
-        res = requests.get(f"http://192.168.0.102:307/generate_qr/off?device_serial=mdgcs001")
+        res = requests.get(f"{SERVER_URL}/generate_qr/off?device_serial=mdgcs001")
         qr_base64 = None
         if res.status_code == 200:
             qr_base64 = res.json().get('qr_base64')
@@ -138,7 +142,7 @@ def work_state_qr():
     is_bound = False  # ✅ 已跳轉，重設狀態
 
     try:
-        res = requests.get(f"http://192.168.0.102:307/generate_qr/off?device_serial=mdgcs001")
+        res = requests.get(f"{SERVER_URL}/generate_qr/off?device_serial=mdgcs001")
         if res.status_code == 200:
             qr_base64 = res.json().get('qr_base64')
         else:
