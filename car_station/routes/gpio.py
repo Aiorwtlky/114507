@@ -1,49 +1,44 @@
 # routes/gpio.py
 
 from flask import Blueprint, jsonify
-
-try:
-    import RPi.GPIO as GPIO
-    GPIO_AVAILABLE = True
-except ImportError:
-    GPIO_AVAILABLE = False
+import serial
 
 gpio_bp = Blueprint('gpio', __name__)
 
-# 腳位定義
-LEFT_GPIO = 17
-RIGHT_GPIO = 27
-REAR_GPIO = 22
+# USB 序列埠設定（依實際情況修改）
+PICO_PORT = '/dev/ttyACM0'  # Linux/Raspberry Pi 預設，Windows 通常是 'COM3'
+BAUD_RATE = 115200
+TIMEOUT = 1  # 1秒超時避免卡死
 
-# 初始化GPIO
-if GPIO_AVAILABLE:
+def read_gpio_from_pico():
     try:
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(LEFT_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(RIGHT_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(REAR_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        with serial.Serial(PICO_PORT, BAUD_RATE, timeout=TIMEOUT) as ser:
+            ser.write(b'STATUS\n')  # 傳送請求
+            response = ser.readline().decode().strip()  # 讀取回應
+            values = response.split(',')
+
+            if len(values) == 3:
+                return {
+                    "left": int(values[0]),
+                    "right": int(values[1]),
+                    "rear": int(values[2])
+                }
+
+            return {
+                "left": 0,
+                "right": 0,
+                "rear": 0,
+                "message": f"⚠️ 格式錯誤：{response}"
+            }
+
     except Exception as e:
-        print(f"⚠️ GPIO 初始化失敗：{e}")
-else:
-    print("⚠️ 本機未偵測到 GPIO，跳過GPIO初始化")
-
-@gpio_bp.route('/gpio_status', methods=['GET'])
-def gpio_status():
-    if GPIO_AVAILABLE:
-        left = not GPIO.input(LEFT_GPIO)
-        right = not GPIO.input(RIGHT_GPIO)
-        rear = not GPIO.input(REAR_GPIO)
-
-        return jsonify({
-            "left": left,
-            "right": right,
-            "rear": rear
-        })
-    else:
-        # 本機開發環境回傳假的資料
-        return jsonify({
+        return {
             "left": 0,
             "right": 0,
             "rear": 0,
-            "message": "⚠️ 本機無GPIO，回傳預設假數值"
-        })
+            "message": f"⚠️ 無法與 Pico 通訊：{e}"
+        }
+
+@gpio_bp.route('/gpio_status', methods=['GET'])
+def gpio_status():
+    return jsonify(read_gpio_from_pico())
