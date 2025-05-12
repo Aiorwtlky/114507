@@ -3,15 +3,17 @@ import numpy as np
 from ultralytics import YOLO
 from event_manager import save_event
 import time
+import subprocess
 
 # 初始化模型與攝影機
 model = YOLO("models/yolov8n.pt")
 cap = cv2.VideoCapture(0)
 
-already_triggered = False
 device_serial = "RPi-0001"
+cooldown_time = 20  # 單位秒
+last_trigger_time = 0
 roi_config = {
-    "right_cam": [(100, 100), (300, 100), (300, 300), (100, 300)]  # ROI 多邊形座標
+    "right_cam": [(100, 100), (300, 100), (300, 300), (100, 300)]
 }
 
 def is_inside_roi(center, roi_polygon):
@@ -41,8 +43,9 @@ while True:
             if label == "person":
                 roi_polygon = roi_config["right_cam"]
                 if is_inside_roi((cx, cy), roi_polygon):
-                    if not already_triggered:
-                        print("🎯 偵測到進入 ROI")
+                    current_time = time.time()
+                    if current_time - last_trigger_time > cooldown_time:
+                        print("🎯 偵測到進入 ROI，開始儲存事件")
                         save_event(
                             image=frame,
                             record_duration=15,
@@ -50,9 +53,11 @@ while True:
                             location="right_cam",
                             device_serial=device_serial
                         )
-                        already_triggered = True
-                else:
-                    already_triggered = False
+                        last_trigger_time = current_time
+
+    # 畫出 ROI 區域
+    roi_polygon = roi_config["right_cam"]
+    cv2.polylines(frame, [np.array(roi_polygon, dtype=np.int32)], isClosed=True, color=(255, 255, 0), thickness=2)
 
     cv2.imshow("WebCam", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):

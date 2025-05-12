@@ -1,73 +1,47 @@
-<!-- templates/detail.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Event Detail</title>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+  <meta charset="UTF-8">
+  <title>事件詳情</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background-color: #f9f9f9;
+      background: #f9f9fc;
     }
-    .meta-table td {
-      padding: 6px 12px;
+    .card {
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 40px;
     }
-    .video-container {
+    .btn-back {
       margin-top: 20px;
-      text-align: center;
-    }
-    .video-container video {
-      max-width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
   </style>
 </head>
 <body>
-  <div class="container py-5">
-    <h3 class="mb-4 text-center">📋 事件詳情</h3>
+  <div class="container">
+    <h2 class="my-4 text-center">📌 事件詳細資料</h2>
+    <div class="card p-4">
+      <h5>📸 截圖</h5>
+      <img src="{{ url_for('serve_event_file', folder=folder, filename='alert.jpg') }}" class="img-fluid rounded mb-4" alt="Alert Image">
 
-    <table class="table table-bordered meta-table">
-      <tbody>
-        <tr>
-          <td><strong>時間</strong></td>
-          <td>{{ event.timestamp }}</td>
-        </tr>
-        <tr>
-          <td><strong>物件類型</strong></td>
-          <td>{{ event.object_type }}</td>
-        </tr>
-        <tr>
-          <td><strong>來源鏡頭</strong></td>
-          <td>{{ event.location }}</td>
-        </tr>
-        <tr>
-          <td><strong>事件類別</strong></td>
-          <td>{{ event.event_type }}</td>
-        </tr>
-        <tr>
-          <td><strong>設備編號</strong></td>
-          <td>{{ event.device_serial }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    {% if event.video_path %}
-    <div class="video-container">
-      <h5>🎥 事件影片</h5>
-      <video controls>
-        <source src="{{ url_for('serve_event_file', folder=event.folder, filename='clip.mp4') }}" type="video/mp4" />
-        Your browser does not support the video tag.
+      <h5>🎬 事件影片</h5>
+      <video class="w-100 mb-4" controls>
+        <source src="{{ url_for('serve_event_file', folder=folder, filename='clip.mp4') }}" type="video/mp4">
+        無法播放影片
       </video>
-    </div>
-    {% endif %}
 
-    <div class="mt-4 text-center">
-      <a href="{{ url_for('index') }}" class="btn btn-secondary">返回列表</a>
+      <h5>📄 事件資料</h5>
+      <ul class="list-group">
+        <li class="list-group-item"><strong>時間：</strong> {{ event.timestamp }}</li>
+        <li class="list-group-item"><strong>對象：</strong> {{ event.object_type }}</li>
+        <li class="list-group-item"><strong>鏡頭位置：</strong> {{ event.location }}</li>
+        <li class="list-group-item"><strong>設備編號：</strong> {{ event.device_serial }}</li>
+        <li class="list-group-item"><strong>事件類型：</strong> {{ event.event_type }}</li>
+      </ul>
     </div>
+
+    <a href="/record" class="btn btn-secondary btn-back">← 返回事件列表</a>
   </div>
 </body>
 </html>
