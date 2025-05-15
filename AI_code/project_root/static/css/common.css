@@ -1,0 +1,101 @@
+/* ===== 通用字體與排版 ===== */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* ===== 頁面結構容器，讓 footer 不會遮住內容 ===== */
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+/* ===== Header 樣式 ===== */
+header {
+    background-color: #3f51b5;
+    color: white;
+    padding: 20px 10px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+nav {
+    margin-top: 10px;
+}
+
+nav a {
+    color: #fff;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Footer 樣式（不固定，隨內容自然排列） ===== */
+footer {
+    background-color: #3f51b5;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+/* ===== 通用按鈕卡片樣式 ===== */
+.button-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.btn-card {
+    background-color: #607d8b;
+    color: white;
+    padding: 40px 60px;
+    border-radius: 20px;
+    font-size: 1.5em;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-card:hover {
+    background-color: #455a64;
+    transform: translateY(-5px);
+}
+
+/* ===== 響應式設計（手機畫面） ===== */
+@media (max-width: 768px) {
+    .btn-card {
+        width: 80%;
+        text-align: center;
+        padding: 20px 30px;
+    }
+
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    nav a {
+        display: inline-block;
+        margin: 5px;
+    }
+}
