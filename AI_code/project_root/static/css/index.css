@@ -1,0 +1,23 @@
+.button-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.btn-card {
+    background-color: #607d8b;
+    color: white;
+    padding: 40px 60px;
+    border-radius: 20px;
+    font-size: 1.5em;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-card:hover {
+    background-color: #455a64;
+    transform: translateY(-5px);
+}

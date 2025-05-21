@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Car Station</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <!-- 左上角 查看本車資訊 按鈕 -->
+  <div id="deviceInfoBtnContainer">
+    <button id="deviceInfoBtn">查看本車資訊</button>
+  </div>
+
+  <!-- Modal 彈出視窗 -->
+  <div id="deviceInfoModal" style="display: none;">
+      <div class="modal-content">
+          <h2>本車資訊</h2>
+          <div id="deviceInfoText"></div>
+          <div class="modal-buttons">
+              <button id="closeModalBtn">關閉</button>
+              <button id="resetDeviceBtn">重設資訊</button>
+          </div>
+      </div>
+  </div>
+  
+  <!-- 右上角時間 -->
+  <div id="clock"></div>
+
+  <!-- 影像區 -->
+  <div id="camDeck">
+    <img id="cam-left"  class="cam" src="{{ url_for('video', cam_id='left')  }}" />
+    <img id="cam-rear"  class="cam" src="{{ url_for('video', cam_id='rear')  }}" />
+    <img id="cam-right" class="cam" src="{{ url_for('video', cam_id='right') }}" />
+  </div>
+
+  <!-- 按鈕列 -->
+  <div id="btnRow">
+    <button data-mode="left"  class="ctrlBtn">左燈</button>
+    <button data-mode="right" class="ctrlBtn">右燈</button>
+    <button data-mode="rear"  class="ctrlBtn">倒車</button>
+  </div>
+
+  <!-- 底部狀態欄 -->
+  <div id="statusBar">　</div>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

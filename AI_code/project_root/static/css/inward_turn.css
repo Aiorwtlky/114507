@@ -1,0 +1,14 @@
+/* inward_turn.css - 右轉內輪差辨識頁面樣式 */
+
+h2 {
+    text-align: center;
+    margin-top: 30px;
+}
+
+img {
+    display: block;
+    margin: 20px auto;
+    max-width: 90%;
+    border: 4px solid #3f51b5;
+    border-radius: 10px;
+}

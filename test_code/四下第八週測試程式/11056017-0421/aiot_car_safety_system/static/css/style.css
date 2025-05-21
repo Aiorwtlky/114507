@@ -1,0 +1,33 @@
+/* 奶茶風主題色 */
+body {
+    background-color: #fdf6ec;
+    font-family: "Segoe UI", sans-serif;
+    color: #4a3f35;
+  }
+  
+  h1 {
+    color: #8c6d5d;
+  }
+  
+  #statusBox {
+    transition: all 0.3s ease;
+  }
+  
+  /* 安全樣式 */
+  .bg-success-subtle {
+    background-color: #e6f2e6 !important;
+    color: #3e664d;
+  }
+  
+  /* 危險樣式 */
+  .bg-danger-subtle {
+    background-color: #fce4e4 !important;
+    color: #b22222;
+  }
+  
+  /* 無法連線樣式 */
+  .bg-secondary-subtle {
+    background-color: #eee !important;
+    color: #666;
+  }
+  

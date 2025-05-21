@@ -1,0 +1,18 @@
+{
+  "device_serial": "RPi-0001",
+  "vehicle_plate": "ABC-1234",
+  "cameras": {
+    "left_cam": {
+      "position": "left_mirror",
+      "resolution": "640x480"
+    },
+    "right_cam": {
+      "position": "right_mirror",
+      "resolution": "640x480"
+    },
+    "rear_cam": {
+      "position": "rear_center",
+      "resolution": "640x480"
+    }
+  }
+}

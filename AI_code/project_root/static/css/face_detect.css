@@ -1,0 +1,14 @@
+/* face_detect.css - 臉部偵測頁面樣式 */
+
+h2 {
+    text-align: center;
+    margin-top: 30px;
+}
+
+img {
+    display: block;
+    margin: 20px auto;
+    max-width: 90%;
+    border: 4px solid #009688;
+    border-radius: 10px;
+}

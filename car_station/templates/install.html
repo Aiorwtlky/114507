@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>設備安裝設定</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/install.css') }}">
+    <script src="{{ url_for('static', filename='js/install.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>設備安裝設定</h1>
+
+        <div id="qrArea" style="text-align: center; margin-top: 20px;">
+            {% if qr_base64 %}
+                <img id="qrImage" src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" style="margin-bottom: 20px;">
+            {% else %}
+                <p>⚠️ 無法取得 QR Code，請重新嘗試。</p>
+            {% endif %}
+        </div>
+
+        <div id="countdownArea" style="text-align: center; margin-top: 10px;">
+            <p>剩餘時間：<span id="countdown">900</span> 秒</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="refreshBtn" class="submit-btn">重新產生QR Code</button>
+        </div>
+    </div>
+</body>
+</html>
