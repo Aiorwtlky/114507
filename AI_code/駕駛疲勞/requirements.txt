@@ -1,8 +1,7 @@
-streamlit 
-streamlit-webrtc 
-streamlit-nested-layout 
-av 
-numpy 
-opencv-python 
-soundfile 
-scipy
+Flask==2.2.5
+opencv-python==4.7.0.72
+numpy==1.24.3
+mediapipe==0.10.0
+...
+
+
