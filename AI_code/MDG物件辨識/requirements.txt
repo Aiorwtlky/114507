@@ -1,0 +1,7 @@
+ultralytics
+opencv-python
+flask
+numpy
+requests
+tqdm
+pygame

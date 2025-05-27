@@ -1,0 +1,63 @@
+### .gitignore
+Python
+pycache/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+env/
+venv/
+ENV/
+.venv/
+.ipynb_checkpoints/
+
+Byte-compiled / optimized / DLL files
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+develop-eggs/
+.eggs/
+*.manifest
+*.spec
+
+Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+VSCode
+.vscode/
+
+MacOS
+.DS_Store
+
+Logs
+logs/
+*.log
+
+Local files
+*.sqlite3
+*.db
+
+Video and image files for testing (optional)
+*.mp4
+*.avi
+*.jpg
+*.jpeg
+*.png

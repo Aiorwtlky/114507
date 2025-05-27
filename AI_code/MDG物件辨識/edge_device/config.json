@@ -1,0 +1,13 @@
+{
+  "axle_length_m": 3.5,
+  "turn_angle_deg": 30,
+  "pixels_per_meter": 50,
+  "camera_index": 0,
+  "record_seconds": 10,
+  "alert_classes": ["person", "bicycle", "motorcycle"],
+  "event_image_dir": "./events/images/",
+  "event_video_dir": "./events/videos/",
+  "video_fps": 20,
+  "video_codec": "mp4v",
+  "roi_center_offset_y": 50
+}
