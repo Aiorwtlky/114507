@@ -1,0 +1,8 @@
+streamlit 
+streamlit-webrtc 
+streamlit-nested-layout 
+av 
+numpy 
+opencv-python 
+soundfile 
+scipy

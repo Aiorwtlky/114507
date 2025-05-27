@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>疲勞駕駛偵測系統</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background-color: #f3f3f3;
+      text-align: center;
+      margin: 0;
+    }
+    .header {
+      background-color: #005BAC;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+    }
+    .content {
+      padding: 20px;
+    }
+    .video-container {
+      display: inline-block;
+      border: 4px solid #005BAC;
+      border-radius: 10px;
+    }
+    .form-block {
+      margin-top: 25px;
+      padding: 10px;
+      background-color: #ffffff;
+      display: inline-block;
+      border-radius: 8px;
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    select, button {
+      padding: 8px;
+      font-size: 16px;
+      margin: 5px;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #005BAC;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #003E80;
+    }
+    #unlockArea {
+      margin-top: 25px;
+      padding: 15px;
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      display: inline-block;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">疲勞駕駛偵測系統</div>
+
+  <div class="content">
+    <div class="video-container">
+      <img src="{{ url_for('video_feed') }}" width="640" height="480" alt="Camera Feed">
+    </div>
+
+    <div class="form-block">
+      <form method="get" action="/">
+        <p><strong>目前設定：</strong></p>
+
+        <label for="ear_thresh">眼睛閉合閾值：</label>
+        <select name="ear_thresh" id="ear_thresh">
+          <option value="0.15" {% if ear_thresh == 0.15 %}selected{% endif %}>0.15</option>
+          <option value="0.18" {% if ear_thresh == 0.18 %}selected{% endif %}>0.18</option>
+          <option value="0.20" {% if ear_thresh == 0.20 %}selected{% endif %}>0.20</option>
+        </select>
+
+        <br><br>
+
+        <label for="wait_time">警示等待秒數：</label>
+        <select name="wait_time" id="wait_time">
+          <option value="1.0" {% if wait_time == 1.0 %}selected{% endif %}>1 秒</option>
+          <option value="2.0" {% if wait_time == 2.0 %}selected{% endif %}>2 秒</option>
+          <option value="3.0" {% if wait_time == 3.0 %}selected{% endif %}>3 秒</option>
+        </select>
+
+        <br><br>
+        <button type="submit">更新設定</button>
+      </form>
+    </div>
+
+    <!-- 🔓 手動解鎖音效播放 -->
+    <div id="unlockArea">
+      <p>🔔 為了播放警示音效，請先點一下按鈕授權：</p>
+      <button onclick="unlockAudio()">🔓 點我解鎖音效</button>
+    </div>
+  </div>
+
+  <!-- 警示音效播放元件 -->
+  <audio id="alarmAudio" src="{{ url_for('static', filename='wake_up.wav') }}" preload="auto" loop></audio>
+
+  <script>
+    let isPlaying = false;
+    let audioUnlocked = false;
+
+    function unlockAudio() {
+      const audio = document.getElementById("alarmAudio");
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+        audioUnlocked = true;
+        document.getElementById("unlockArea").style.display = "none";
+        console.log("✅ 音效解鎖成功");
+      }).catch(err => {
+        console.warn("❌ 解鎖失敗：", err);
+      });
+    }
+
+    function pollAlarmStatus() {
+      fetch("/alarm_status")
+        .then(response => response.json())
+        .then(data => {
+          const audio = document.getElementById("alarmAudio");
+
+          if (data.play_alarm && audioUnlocked && !isPlaying) {
+            audio.play().then(() => {
+              isPlaying = true;
+              console.log("🔊 播放中");
+            }).catch(err => {
+              console.warn("❌ 播放失敗：", err);
+            });
+
+          } else if (!data.play_alarm && isPlaying) {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            console.log("🛑 停止播放");
+          }
+        })
+        .catch(err => console.error("輪詢錯誤：", err));
+    }
+
+    setInterval(pollAlarmStatus, 1000);
+  </script>
+</body>
+</html>
