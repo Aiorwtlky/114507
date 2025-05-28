@@ -1,5 +1,3 @@
-# 系統常數與設定
-
 # 事件警示等級
 ALERT_LEVEL_LOW = 1
 ALERT_LEVEL_MEDIUM = 2

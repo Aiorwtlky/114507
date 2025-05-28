@@ -1,7 +1,9 @@
 import os
 import cv2
 import time
-from shared.utils import ensure_dir_exists
+from shared import utils
+from shared.utils import ensure_dir_exists,  get_current_timestamp
+
 
 class EventManager:
     def __init__(self, image_dir='./events/images/', video_dir='./events/videos/', record_seconds=10):

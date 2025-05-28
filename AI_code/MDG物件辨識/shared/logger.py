@@ -1,5 +1,9 @@
 import logging
 import os
+from shared import utils
+
+# 或者如果只需要匯入特定函式：
+from shared.utils import get_current_timestamp
 
 def setup_logger(log_file='mdg.log'):
     """建立日誌紀錄器，輸出同時到檔案與標準輸出"""
