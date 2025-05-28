@@ -1,13 +1,72 @@
 {
-  "axle_length_m": 3.5,
-  "turn_angle_deg": 30,
-  "pixels_per_meter": 50,
-  "camera_index": 0,
-  "record_seconds": 10,
-  "alert_classes": ["person", "bicycle", "motorcycle"],
-  "event_image_dir": "./events/images/",
-  "event_video_dir": "./events/videos/",
-  "video_fps": 20,
-  "video_codec": "mp4v",
-  "roi_center_offset_y": 50
+    "vehicle": {
+        "axle_length": 6.5,
+        "vehicle_length": 12.0,
+        "vehicle_width": 2.5,
+        "turn_angle_deg": 25,
+        "vehicle_type": "large_truck",
+        "description": "大型車輛參數設定"
+    },
+    "camera": {
+        "camera_id": 1,
+        "frame_width": 1280,
+        "frame_height": 720,
+        "pixels_per_meter": 60,
+        "mount_position": "side_mirror",
+        "view_angle": "side_view",
+        "description": "側面後照鏡攝影機設定"
+    },
+    "roi": {
+        "rear_axle_x": 200,
+        "rear_axle_y": 400,
+        "turning_direction": "right",
+        "roi_offset_x": 0,
+        "roi_offset_y": 0,
+        "description": "ROI區域定位設定"
+    },
+    "detection": {
+        "confidence_threshold": 0.5,
+        "target_classes": [
+            "person", 
+            "bicycle", 
+            "motorcycle", 
+            "car",
+            "bus",
+            "truck"
+        ],
+        "ignore_classes": [
+            "traffic light",
+            "stop sign"
+        ],
+        "description": "物件偵測設定"
+    },
+    "alert": {
+        "danger_zone_color": [0, 0, 255],
+        "safe_zone_color": [0, 255, 0],
+        "warning_zone_color": [0, 255, 255],
+        "alert_sound_enabled": true,
+        "recording_duration_seconds": 10,
+        "description": "警示與錄影設定"
+    },
+    "calibration": {
+        "auto_calibration": false,
+        "manual_calibration_points": [
+            {"real_world_m": 1.0, "pixel_distance": 60},
+            {"real_world_m": 2.0, "pixel_distance": 120},
+            {"real_world_m": 5.0, "pixel_distance": 300}
+        ],
+        "calibration_reference_objects": [
+            "road_marking",
+            "lane_width"
+        ],
+        "description": "攝影機校正設定"
+    },
+    "system": {
+        "debug_mode": true,
+        "show_fps": true,
+        "show_vehicle_outline": true,
+        "show_detection_info": true,
+        "log_level": "INFO",
+        "description": "系統偵錯設定"
+    }
 }

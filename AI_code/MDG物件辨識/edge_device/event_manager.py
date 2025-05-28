@@ -4,7 +4,6 @@ import time
 from shared import utils
 from shared.utils import ensure_dir_exists,  get_current_timestamp
 
-
 class EventManager:
     def __init__(self, image_dir='./events/images/', video_dir='./events/videos/', record_seconds=10):
         self.image_dir = image_dir
