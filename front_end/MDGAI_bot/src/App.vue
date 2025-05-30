@@ -1,7 +1,13 @@
 <template>
-  <div style="color:white; font-size: 24px">✅ 成功載入 App.vue！</div>
+  <ChatBotApp />
 </template>
 
 <script>
-export default {}
+import ChatBotApp from './components/ChatBotApp.vue'
+
+export default {
+  components: {
+    ChatBotApp
+  }
+}
 </script>

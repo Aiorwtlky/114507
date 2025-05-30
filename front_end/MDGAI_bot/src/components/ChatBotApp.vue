@@ -1,39 +1,17 @@
 <template>
   <div class="chat-container">
-    <header>
-      <h1>內輪差智慧客服</h1>
-    </header>
-
+    <header><h1>MDG智慧客服系統</h1></header>
     <div class="chat-window" ref="chatWindow">
-      <div
-        v-for="(msg, index) in messages"
-        :key="index"
-        :class="['message', msg.sender]"
-      >
+      <div v-for="(msg, index) in messages" :key="index" :class="['message', msg.sender]">
         <img v-if="msg.type === 'image'" :src="msg.content" class="message-image" />
-        <span v-else>{{ msg.content }}</span>
+        <div class="message-bubble" v-else>{{ msg.content }}</div>
       </div>
     </div>
-
     <div class="input-area">
-      <label for="upload-image" id="upload-image-label">
-        📎
-        <input
-          type="file"
-          id="upload-image"
-          @change="handleImageUpload"
-          accept=".jpg,.jpeg,.png"
-          hidden
-        />
+      <label for="upload-image" id="upload-image-label">📎
+        <input type="file" id="upload-image" @change="handleImageUpload" accept=".jpg,.jpeg,.png" hidden />
       </label>
-
-      <input
-        type="text"
-        v-model="message"
-        @keypress.enter="sendMessage"
-        placeholder="輸入訊息..."
-        id="message-input"
-      />
+      <input type="text" v-model="message" @keypress.enter="sendMessage" placeholder="輸入訊息..." id="message-input" />
       <button @click="sendMessage" id="send-button">⬆</button>
     </div>
   </div>
@@ -47,12 +25,28 @@ export default {
       messages: [],
     };
   },
+  mounted() {
+    // 預設歡迎訊息
+    this.appendMessage('您好，我是 MDG 智慧客服。\n我們的專題是以 AI 模型與多鏡頭系統偵測大型車輛內輪差危險情境，歡迎提問！', 'bot');
+  },
   methods: {
     sendMessage() {
       const text = this.message.trim();
       if (!text) return;
       this.appendMessage(text, 'user');
-      this.appendMessage('已收到訊息！', 'bot');
+
+      let reply = '請問您需要什麼幫助？';
+      const lower = text.toLowerCase();
+
+      if (lower.includes('內輪差')) {
+        reply = '「內輪差」是指大型車轉彎時，後輪走的路徑會比前輪更內側，容易產生視野死角。';
+      } else if (lower.includes('系統') && lower.includes('判斷')) {
+        reply = '本系統透過 YOLO AI 模型與多鏡頭偵測，辨識行人、車輛是否進入危險區域。';
+      } else if (lower.includes('鏡頭') && (lower.includes('裝') || lower.includes('安裝'))) {
+        reply = '建議於車輛左右後方與盲點處共安裝多顆鏡頭，以完整覆蓋內輪差區域。';
+      }
+
+      this.appendMessage(reply, 'bot');
       this.message = '';
     },
     appendMessage(content, sender, type = 'text') {
@@ -84,91 +78,75 @@ export default {
 </script>
 
 <style scoped>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #333;
-  color: #fff;
-  margin: 0;
-  padding: 0;
-}
-
 .chat-container {
   max-width: 600px;
-  min-width: 300px;
   height: 90vh;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background-color: #444;
-  border-radius: 10px;
+  background-color: #1e1e1e;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: white;
+  box-shadow: 0 0 20px rgba(255, 165, 0, 0.3);
+  font-family: 'Segoe UI', sans-serif;
 }
-
 header {
-  background-color: #555;
-  padding: 10px;
+  background-color: #2b2b2b;
+  padding: 12px;
   text-align: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #ff9933;
 }
-
-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #DDB76B;
-}
-
 .chat-window {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
-  background-color: #222;
+  padding: 15px;
+  background-color: #121212;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  scrollbar-color: #DDB76B #333;
-  scrollbar-width: thin;
+  gap: 12px;
 }
-
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
 .message.user {
-  background-color: #DDB76B;
-  padding: 8px 12px;
-  border-radius: 8px;
-  max-width: 80%;
   align-self: flex-end;
-  color: #333;
 }
-
 .message.bot {
-  background-color: #555;
-  padding: 8px 12px;
-  border-radius: 8px;
-  max-width: 80%;
   align-self: flex-start;
-  color: white;
 }
-
+.message-bubble {
+  background-color: #333;
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.message.user .message-bubble {
+  background-color: #ff9933;
+  color: #111;
+}
 .message-image {
   max-width: 100%;
   max-height: 200px;
-  object-fit: contain;
-  border-radius: 8px;
-  border: 2px solid #DDB76B;
-  display: block;
-  margin: 5px auto;
+  border-radius: 10px;
+  border: 2px solid #ff9933;
+  margin-top: 5px;
 }
-
 .input-area {
   display: flex;
-  align-items: center;
   gap: 10px;
   padding: 10px;
-  background-color: #444;
-  border-top: 2px solid #333;
+  background-color: #2b2b2b;
+  border-top: 1px solid #444;
 }
-
 #upload-image-label {
-  background-color: #555;
-  color: #fff;
+  background-color: #444;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -176,43 +154,24 @@ header h1 {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s, box-shadow 0.3s;
+  color: white;
+  font-size: 1.2rem;
 }
-
-#upload-image-label:hover {
-  background-color: #C49E5A;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
 #send-button {
   background: none;
   border: none;
-  color: #DDB76B;
-  font-size: 2rem;
+  color: #ff9933;
+  font-size: 1.6rem;
   cursor: pointer;
-  padding: 0;
-  margin-top: -4px;
 }
-
-#send-button:hover {
-  color: #C49E5A;
-}
-
 #message-input {
   flex: 1;
   padding: 10px 15px;
-  border: none;
   border-radius: 20px;
+  border: none;
   font-size: 1rem;
   outline: none;
-  color: #333;
   background-color: #fff;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-#message-input::placeholder {
-  color: #999;
-  font-style: italic;
+  color: #000;
 }
 </style>
