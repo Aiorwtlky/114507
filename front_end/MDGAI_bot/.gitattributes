@@ -1,0 +1,6 @@
+# 統一所有文字檔為 Unix 格式（LF）
+*.html text eol=lf
+*.css  text eol=lf
+*.js   text eol=lf
+*.py   text eol=lf
+*.md   text eol=lf
