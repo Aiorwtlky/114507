@@ -1,0 +1,187 @@
+/* 通用樣式 */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #333; /* 深灰背景 */
+    color: #fff; /* 白色文字 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* 聊天機器人容器 */
+.chat-container {
+    width: 100%;
+    max-width: 600px; /* 最大寬度 */
+    min-width: 300px; /* 最小寬度 */
+    height: 90vh; /* 高度占視窗的 90% */
+    margin: 0 auto; /* 置中 */
+    display: flex;
+    flex-direction: column;
+    background-color: #444; /* 中灰背景 */
+    border-radius: 10px; /* 圓角 */
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加陰影效果 */
+}
+
+/* 標題樣式 */
+header {
+    background-color: #555; /* 深灰色背景 */
+    padding: 10px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #DDB76B; /* 主色文字 */
+}
+
+/* 對話框樣式 */
+.chat-window {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #222; /* 深色背景 */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 使用者訊息樣式 */
+.message.user {
+    background-color: #DDB76B; /* 主色 */
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    align-self: flex-end;
+    color: #333; /* 深灰文字 */
+}
+
+/* 機器人訊息樣式 */
+.message.bot {
+    background-color: #555; /* 次要灰色 */
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    align-self: flex-start;
+    color: white; /* 白色文字 */
+}
+
+/* 圖片訊息樣式 */
+.message-image {
+    max-width: 100%; /* 圖片寬度不能超過容器 */
+    max-height: 200px; /* 限制圖片最大高度 */
+    object-fit: contain; /* 保持圖片比例 */
+    border-radius: 8px; /* 圓角效果 */
+    border: 2px solid #DDB76B; /* 主色邊框 */
+    display: block;
+    margin: 5px auto; /* 居中對齊 */
+}
+
+.message.user img {
+    align-self: flex-end;
+}
+
+.message.bot img {
+    align-self: flex-start;
+}
+
+/* 輸入區樣式 */
+.input-area {
+    display: flex;
+    align-items: center; /* 垂直對齊 */
+    gap: 10px;
+    padding: 10px;
+    background-color: #444; /* 與標題相同的背景色 */
+    border-top: 2px solid #333; /* 與對話框分隔線 */
+}
+
+/* 附件按鈕樣式 */
+#upload-image-label {
+    background-color: #555; /* 次要灰色 */
+    color: #fff; /* 按鈕圖標白色 */
+    border-radius: 50%; /* 圓形按鈕 */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 按鈕陰影 */
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+#upload-image-label:hover {
+    background-color: #C49E5A; /* 懸停高亮色 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 隱藏實際的檔案輸入框 */
+#upload-image {
+    display: none;
+}
+
+/* 傳送按鈕樣式 */
+#send-button {
+    background: none; /* 無背景 */
+    border: none; /* 移除邊框 */
+    color: #DDB76B; /* 主色箭頭 */
+    font-size: 2rem; /* 大箭頭 */
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start; /* 向上對齊 */
+    justify-content: center;
+    padding: 0;
+    margin-top: -4px; /* 向上移動箭頭 */
+}
+
+#send-button:hover {
+    color: #C49E5A; /* 懸停高亮色 */
+}
+
+/* 圓角輸入框樣式 */
+#message-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 20px; /* 圓角輸入框 */
+    font-size: 1rem;
+    outline: none;
+    color: #333; /* 深灰文字 */
+    background-color: #fff; /* 白色背景 */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* 內部陰影 */
+}
+
+#message-input::placeholder {
+    color: #999; /* 占位符灰色 */
+    font-style: italic;
+}
+
+/* 滾動條樣式 */
+.chat-window::-webkit-scrollbar {
+    width: 10px; /* 滾動條的寬度 */
+}
+
+.chat-window::-webkit-scrollbar-track {
+    background: #333; /* 滾動條軌道的背景色 */
+    border-radius: 0; /* 軌道沒有圓角 */
+}
+
+.chat-window::-webkit-scrollbar-thumb {
+    background: #DDB76B; /* 主色 */
+    border-radius: 5px; /* 滾動條圓角 */
+}
+
+.chat-window::-webkit-scrollbar-thumb:hover {
+    background: #C49E5A; /* 懸停高亮色 */
+}
+
+/* Firefox 支持 */
+.chat-window {
+    scrollbar-color: #DDB76B #333; /* 滾動條顏色與背景 */
+    scrollbar-width: thin; /* 滾動條寬度為細 */
+}
