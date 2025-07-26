@@ -1,0 +1,2 @@
+平台端使用Flask＋Android Studio
+邊緣端使用Flask搭配FFMPEG進行影像串流
