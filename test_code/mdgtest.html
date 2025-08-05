@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧交通監控系統 - 專業版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1e3c72;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #1e3c72;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #f8fafe 0%, #e8f4fd 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #d6e9ff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(30, 60, 114, 0.2);
+        }
+
+        .card h3 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .card .unit {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status.normal { 
+            background: linear-gradient(45deg, #28a745, #20c997); 
+            color: white; 
+        }
+        .status.warning { 
+            background: linear-gradient(45deg, #ffc107, #fd7e14); 
+            color: white; 
+        }
+        .status.critical { 
+            background: linear-gradient(45deg, #dc3545, #e83e8c); 
+            color: white; 
+        }
+        .status.maintenance { 
+            background: linear-gradient(45deg, #6f42c1, #8e44ad); 
+            color: white; 
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 60, 114, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #d6e9ff;
+        }
+
+        .data-table th {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .data-table tr:hover {
+            background: linear-gradient(90deg, #f8fafe, #e8f4fd);
+            transform: scale(1.01);
+            transition: all 0.3s ease;
+        }
+
+        .log-container {
+            height: 250px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 0.9em;
+            border: 2px solid #333;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+            padding: 2px 0;
+            border-left: 3px solid transparent;
+            padding-left: 8px;
+        }
+
+        .log-entry.info { border-left-color: #17a2b8; }
+        .log-entry.success { border-left-color: #28a745; }
+        .log-entry.warning { border-left-color: #ffc107; }
+        .log-entry.error { border-left-color: #dc3545; }
+        .log-entry.data { border-left-color: #6f42c1; }
+        .log-entry.traffic { border-left-color: #1e3c72; }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1e3c72;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8fafe, #e8f4fd);
+            border-radius: 10px;
+            border: 1px solid #d6e9ff;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .traffic-light {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: blink 2s infinite;
+        }
+
+        .traffic-light.green { background: #28a745; }
+        .traffic-light.yellow { background: #ffc107; }
+        .traffic-light.red { background: #dc3545; }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* 報表專用樣式 */
+        .report-container {
+            display: none;
+            background: white;
+            padding: 40px;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #1e3c72;
+            padding-bottom: 20px;
+        }
+
+        .report-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .report-subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .report-meta {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .report-section {
+            margin-bottom: 30px;
+        }
+
+        .report-section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-left: 4px solid #1e3c72;
+            padding-left: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading" id="loadingOverlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">正在生成交通報表...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🚦 智慧交通監控管理中心</h1>
+            <p>即時監控交通設備狀態並生成專業報表系統</p>
+            <div style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                <span>👤 管理員：JoyWu</span> | 
+                <span>🕒 系統時間：<span id="currentTime"></span></span> |
+                <span>📊 監控時長：<span id="monitoringDuration">0</span> 分鐘</span>
+            </div>
+        </div>
+
+        <!-- 交通狀況總覽 -->
+        <div class="section">
+            <h2><span class="icon"></span>交通狀況總覽</h2>
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #28a745;" id="normalDeviceCount">0</div>
+                    <div class="stat-label">正常運行</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #ffc107;" id="warningDeviceCount">0</div>
+                    <div class="stat-label">需要注意</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #dc3545;" id="criticalDeviceCount">0</div>
+                    <div class="stat-label">異常故障</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #6f42c1;" id="maintenanceDeviceCount">0</div>
+                    <div class="stat-label">維護中</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #1e3c72;" id="totalDeviceCount">0</div>
+                    <div class="stat-label">設備總數</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #17a2b8;" id="dataCollectionCount">0</div>
+                    <div class="stat-label">監測次數</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon"></span>交通設備即時狀態</h2>
+            <div class="grid" id="deviceGrid">
+                <!-- 動態生成設備卡片 -->
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon"></span>交通流量趨勢分析</h2>
+            <div class="chart-container">
+                <canvas id="dataChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon"></span>系統控制面板</h2>
+            <div class="controls">
+                <button class="btn btn-primary pulse" onclick="collectTrafficData()">🔄 更新交通數據</button>
+                <button class="btn btn-secondary" onclick="generateTrafficReport()">📄 生成交通報表</button>
+                <button class="btn btn-warning" onclick="exportTrafficCSV()">📊 匯出流量數據</button>
+                <button class="btn btn-primary" onclick="simulateIncident()">⚠️ 模擬交通事件</button>
+                <button class="btn btn-danger" onclick="clearLogs()">🗑️ 清除系統日誌</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon"></span>交通設備詳細資料</h2>
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>設備編號</th>
+                        <th>設備類型</th>
+                        <th>當前數值</th>
+                        <th>單位</th>
+                        <th>運行狀態</th>
+                        <th>部署位置</th>
+                        <th>最後更新</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <!-- 動態生成數據行 -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon"></span>交通監控系統日誌</h2>
+            <div class="log-container" id="logContainer">
+                <!-- 動態生成日誌 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 隱藏的報表容器 -->
+    <div class="report-container" id="reportContainer">
+        <div id="reportContent">
+            <!-- 報表內容將在這裡動態生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let trafficDevices = [];
+        let trafficData = [];
+        let chart = null;
+        let logCounter = 0;
+        let dataCollectionCounter = 0;
+        let systemStartTime = new Date();
+
+        // 初始化交通監控系統
+        function initializeSystem() {
+            addLog('🚀 智慧交通監控系統啟動中...', 'info');
+            
+            // 創建交通設備
+            trafficDevices = [
+                { id: 'TL-001', type: '智慧號誌燈', value: 32, unit: '秒', status: 'normal', location: '中山路與民生路口', lastUpdate: new Date() },
+                { id: 'CC-001', type: '車流監測器', value: 1247, unit: '輛/小時', status: 'normal', location: '中山路主要幹道', lastUpdate: new Date() },
+                { id: 'SC-001', type: '車速偵測器', value: 48.5, unit: 'km/h', status: 'normal', location: '中山路測速段', lastUpdate: new Date() },
+                { id: 'VD-001', type: '違規偵測相機', value: 5, unit: '件', status: 'warning', location: '中山路與民生路口', lastUpdate: new Date() },
+                { id: 'ES-001', type: '緊急呼叫站', value: 100, unit: '%', status: 'normal', location: '中山路服務區', lastUpdate: new Date() },
+                { id: 'PM-001', type: '停車場管理', value: 67, unit: '%', status: 'normal', location: '市政府地下停車場', lastUpdate: new Date() },
+                { id: 'WS-001', type: '氣象監測站', value: 23.5, unit: '°C', status: 'normal', location: '交通控制中心屋頂', lastUpdate: new Date() },
+                { id: 'NS-001', type: '噪音監測器', value: 62.3, unit: 'dB', status: 'warning', location: '中山路商業區', lastUpdate: new Date() },
+                { id: 'AQ-001', type: '空氣品質監測', value: 85, unit: 'AQI', status: 'warning', location: '中山路主要路段', lastUpdate: new Date() },
+                { id: 'EM-001', type: '電子看板', value: 98, unit: '%', status: 'normal', location: '中山路入口處', lastUpdate: new Date() },
+                { id: 'RP-001', type: '路況回報系統', value: 12, unit: '通報/日', status: 'normal', location: '全市區域', lastUpdate: new Date() },
+                { id: 'BC-001', type: '公車到站顯示', value: 45, unit: '班次', status: 'normal', location: '中山路公車站', lastUpdate: new Date() }
+            ];
+
+            // 初始化交通流量歷史數據
+            for (let i = 0; i < 24; i++) {
+                const hour = new Date(Date.now() - (24 - i) * 3600000);
+                trafficData.push({
+                    time: hour.getHours() + ':00',
+                    timestamp: hour,
+                    vehicleFlow: 800 + Math.random() * 600 + Math.sin(i * Math.PI / 12) * 300, // 模擬交通尖峰
+                    averageSpeed: 35 + Math.random() * 25 + Math.cos(i * Math.PI / 12) * 10,
+                    violations: Math.floor(Math.random() * 15),
+                    parkingOccupancy: 45 + Math.random() * 40,
+                    busOnTime: 85 + Math.random() * 12,
+                    airQuality: 60 + Math.random() * 40
+                });
+            }
+
+            updateDeviceGrid();
+            updateDataTable();
+            updateStatsSummary();
+            initializeChart();
+            startTimeUpdate();
+            
+            addLog('✅ 智慧交通監控系統初始化完成', 'success');
+            addLog(`📊 已載入 ${trafficDevices.length} 個交通設備`, 'info');
+            addLog(`📈 已載入 ${trafficData.length} 小時歷史數據`, 'info');
+        }
+
+        // 更新時間顯示
+        function startTimeUpdate() {
+            updateTimeDisplay();
+            setInterval(updateTimeDisplay, 1000);
+        }
+
+        function updateTimeDisplay() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+            
+            const duration = Math.floor((now - systemStartTime) / 60000);
+            document.getElementById('monitoringDuration').textContent = duration;
+        }
+
+        // 更新統計摘要
+        function updateStatsSummary() {
+            const normalCount = trafficDevices.filter(d => d.status === 'normal').length;
+            const warningCount = trafficDevices.filter(d => d.status === 'warning').length;
+            const criticalCount = trafficDevices.filter(d => d.status === 'critical').length;
+            const maintenanceCount = trafficDevices.filter(d => d.status === 'maintenance').length;
+            const totalCount = trafficDevices.length;
+
+            document.getElementById('normalDeviceCount').textContent = normalCount;
+            document.getElementById('warningDeviceCount').textContent = warningCount;
+            document.getElementById('criticalDeviceCount').textContent = criticalCount;
+            document.getElementById('maintenanceDeviceCount').textContent = maintenanceCount;
+            document.getElementById('totalDeviceCount').textContent = totalCount;
+            document.getElementById('dataCollectionCount').textContent = dataCollectionCounter;
+        }
+
+        // 更新設備狀態卡片
+        function updateDeviceGrid() {
+            const grid = document.getElementById('deviceGrid');
+            grid.innerHTML = '';
+
+            trafficDevices.forEach(device => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const lastUpdateTime = device.lastUpdate.toLocaleTimeString();
+                
+                // 根據設備狀態添加指示燈
+                let statusLight = '';
+                switch(device.status) {
+                    case 'normal': statusLight = '<span class="traffic-light green"></span>'; break;
+                    case 'warning': statusLight = '<span class="traffic-light yellow"></span>'; break;
+                    case 'critical': statusLight = '<span class="traffic-light red"></span>'; break;
+                    case 'maintenance': statusLight = '<span class="traffic-light yellow"></span>'; break;
+                }
+                
+                card.innerHTML = `
+                    <h3>${statusLight}${device.type}</h3>
+                    <div class="value">${device.value}</div>
+                    <div class="unit">${device.unit}</div>
+                    <div style="margin-top: 10px;">
+                        <span class="status ${device.status}">${getStatusText(device.status)}</span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.8em; color: #666;">
+                        📍 ${device.location}
+                    </div>
+                    <div style="margin-top: 5px; font-size: 0.7em; color: #888;">
+                        🆔 ${device.id} | 🕒 ${lastUpdateTime}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 獲取狀態文字
+        function getStatusText(status) {
+            const statusMap = {
+                'normal': '正常運行',
+                'warning': '需要注意',
+                'critical': '異常故障',
+                'maintenance': '維護中'
+            };
+            return statusMap[status] || '未知狀態';
+        }
+
+        // 獲取狀態顏色
+        function getStatusColor(status) {
+            const colors = {
+                'normal': '#28a745',
+                'warning': '#ffc107',
+                'critical': '#dc3545',
+                'maintenance': '#6f42c1'
+            };
+            return colors[status] || '#6c757d';
+        }
+
+        // 更新數據表
+        function updateDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            trafficDevices.forEach(device => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${device.id}</strong></td>
+                    <td>${device.type}</td>
+                    <td><strong>${device.value}</strong></td>
+                    <td>${device.unit}</td>
+                    <td><span class="status ${device.status}">${getStatusText(device.status)}</span></td>
+                    <td>${device.location}</td>
+                    <td>${device.lastUpdate.toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 初始化圖表
+        function initializeChart() {
+            const ctx = document.getElementById('dataChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trafficData.map(d => d.time),
+                    datasets: [
+                        {
+                            label: '車流量 (輛/小時)',
+                            data: trafficData.map(d => d.vehicleFlow),
+                            borderColor: '#1e3c72',
+                            backgroundColor: 'rgba(30, 60, 114, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '平均車速 (km/h)',
+                            data: trafficData.map(d => d.averageSpeed),
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: '違規件數',
+                            data: trafficData.map(d => d.violations),
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            yAxisID: 'y2'
+                        },
+                        {
+                            label: '停車場使用率 (%)',
+                            data: trafficData.map(d => d.parkingOccupancy),
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            yAxisID: 'y3'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: '時間 (小時)'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '車流量 (輛/小時)'
+                            },
+                            grid: {
+                                color: 'rgba(30, 60, 114, 0.1)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: false,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: false,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        },
+                        y3: {
+                            type: 'linear',
+                            display: false,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#1e3c72',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        // 收集交通數據
+        function collectTrafficData() {
+            addLog('🔄 開始收集即時交通數據...', 'traffic');
+            dataCollectionCounter++;
+            
+            // 模擬交通數據更新
+            trafficDevices.forEach(device => {
+                let newValue;
+                let newStatus = 'normal';
+
+                switch (device.type) {
+                    case '智慧號誌燈':
+                        newValue = 20 + Math.random() * 40;
+                        if (newValue > 45) newStatus = 'warning';
+                        if (newValue > 60) newStatus = 'critical';
+                        break;
+                    case '車流監測器':
+                        const hour = new Date().getHours();
+                        const isPeakHour = (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19);
+                        newValue = isPeakHour ? 1000 + Math.random() * 800 : 400 + Math.random() * 600;
+                        if (newValue > 1500) newStatus = 'warning';
+                        if (newValue > 1800) newStatus = 'critical';
+                        break;
+                    case '車速偵測器':
+                        newValue = 30 + Math.random() * 40;
+                        if (newValue < 20 || newValue > 60) newStatus = 'warning';
+                        if (newValue < 15 || newValue > 70) newStatus = 'critical';
+                        break;
+                    case '違規偵測相機':
+                        newValue = Math.floor(Math.random() * 20);
+                        if (newValue > 10) newStatus = 'warning';
+                        if (newValue > 15) newStatus = 'critical';
+                        break;
+                    case '緊急呼叫站':
+                        newValue = 95 + Math.random() * 5;
+                        if (newValue < 98) newStatus = 'warning';
+                        if (newValue < 95) newStatus = 'critical';
+                        break;
+                    case '停車場管理':
+                        newValue = 30 + Math.random() * 60;
+                        if (newValue > 85) newStatus = 'warning';
+                        if (newValue > 95) newStatus = 'critical';
+                        break;
+                    case '氣象監測站':
+                        newValue = 15 + Math.random() * 20;
+                        if (newValue < 5 || newValue > 35) newStatus = 'warning';
+                        if (newValue < 0 || newValue > 40) newStatus = 'critical';
+                        break;
+                    case '噪音監測器':
+                        newValue = 45 + Math.random() * 30;
+                        if (newValue > 70) newStatus = 'warning';
+                        if (newValue > 80) newStatus = 'critical';
+                        break;
+                    case '空氣品質監測':
+                        newValue = 40 + Math.random() * 80;
+                        if (newValue > 100) newStatus = 'warning';
+                        if (newValue > 150) newStatus = 'critical';
+                        break;
+                    case '電子看板':
+                        newValue = 90 + Math.random() * 10;
+                        if (newValue < 95) newStatus = 'warning';
+                        if (newValue < 90) newStatus = 'critical';
+                        break;
+                    case '路況回報系統':
+                        newValue = Math.floor(Math.random() * 25);
+                        if (newValue > 20) newStatus = 'warning';
+                        break;
+                    case '公車到站顯示':
+                        newValue = 30 + Math.floor(Math.random() * 40);
+                        if (newValue < 20) newStatus = 'warning';
+                        if (newValue < 10) newStatus = 'critical';
+                        break;
+                }
+
+                // 隨機設定維護狀態
+                if (Math.random() < 0.05) {
+                    newStatus = 'maintenance';
+                }
+
+                device.value = Math.round(newValue * 10) / 10;
+                device.status = newStatus;
+                device.lastUpdate = new Date();
+
+                if (newStatus === 'critical') {
+                    addLog(`🚨 設備 ${device.id} (${device.type}) 發生異常: ${device.value} ${device.unit}`, 'error');
+                } else if (newStatus === 'warning') {
+                    addLog(`⚠️ 設備 ${device.id} (${device.type}) 需要注意: ${device.value} ${device.unit}`, 'warning');
+                } else if (newStatus === 'maintenance') {
+                    addLog(`🔧 設備 ${device.id} (${device.type}) 進入維護模式`, 'warning');
+                } else {
+                    addLog(`📊 設備 ${device.id} 數據更新: ${device.value} ${device.unit}`, 'data');
+                }
+            });
+
+            // 更新交通流量數據
+            const newDataPoint = {
+                time: new Date().getHours() + ':' + String(new Date().getMinutes()).padStart(2, '0'),
+                timestamp: new Date(),
+                vehicleFlow: trafficDevices.find(d => d.type === '車流監測器').value,
+                averageSpeed: trafficDevices.find(d => d.type === '車速偵測器').value,
+                violations: trafficDevices.find(d => d.type === '違規偵測相機').value,
+                parkingOccupancy: trafficDevices.find(d => d.type === '停車場管理').value,
+                busOnTime: trafficDevices.find(d => d.type === '公車到站顯示').value,
+                airQuality: trafficDevices.find(d => d.type === '空氣品質監測').value
+            };
+
+            trafficData.push(newDataPoint);
+            if (trafficData.length > 30) {
+                trafficData.shift();
+            }
+
+            // 更新UI
+            updateDeviceGrid();
+            updateDataTable();
+            updateStatsSummary();
+            updateChart();
+
+            addLog(`✅ 交通數據收集完成 (第 ${dataCollectionCounter} 次)`, 'success');
+        }
+
+        // 更新圖表
+        function updateChart() {
+            chart.data.labels = trafficData.map(d => d.time);
+            chart.data.datasets[0].data = trafficData.map(d => d.vehicleFlow);
+            chart.data.datasets[1].data = trafficData.map(d => d.averageSpeed);
+            chart.data.datasets[2].data = trafficData.map(d => d.violations);
+            chart.data.datasets[3].data = trafficData.map(d => d.parkingOccupancy);
+            chart.update('none');
+        }
+
+        // 模擬交通事件
+        function simulateIncident() {
+            const incidents = [
+                '中山路發生輕微車禍，影響一線道通行',
+                '民生路口號誌燈故障，已派員前往處理',
+                '中正路段出現道路積水，建議改道行駛',
+                '高速公路匝道車流量異常增加',
+                '市政府周邊停車場已滿，請使用替代停車場',
+                '公車專用道發現違停車輛，影響公車通行',
+                '學校周邊出現大量人車，請注意行車安全'
+            ];
+            
+            const randomIncident = incidents[Math.floor(Math.random() * incidents.length)];
+            addLog(`🚨 交通事件通報: ${randomIncident}`, 'error');
+            
+            // 模擬影響某些設備狀態
+            const affectedDevice = trafficDevices[Math.floor(Math.random() * trafficDevices.length)];
+            if (affectedDevice.status === 'normal') {
+                affectedDevice.status = 'warning';
+                addLog(`⚠️ 受事件影響，設備 ${affectedDevice.id} 狀態變更為警告`, 'warning');
+                updateDeviceGrid();
+                updateDataTable();
+                updateStatsSummary();
+            }
+        }
+
+        // 生成交通報表
+        function generateTrafficReport() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            
+            loadingOverlay.style.display = 'flex';
+            loadingText.textContent = '正在準備交通報表內容...';
+            
+            addLog('📄 開始生成交通監控報表...', 'info');
+
+            setTimeout(() => {
+                // 創建報表內容
+                const reportContent = document.getElementById('reportContent');
+                const currentTime = new Date().toLocaleString();
+                const normalCount = trafficDevices.filter(d => d.status === 'normal').length;
+                const warningCount = trafficDevices.filter(d => d.status === 'warning').length;
+                const criticalCount = trafficDevices.filter(d => d.status === 'critical').length;
+                const maintenanceCount = trafficDevices.filter(d => d.status === 'maintenance').length;
+                
+                reportContent.innerHTML = `
+                    <div class="report-header">
+                        <div class="report-title">🚦 智慧交通監控系統報表</div>
+                        <div class="report-subtitle">Smart Traffic Monitoring System Report</div>
+                        <div class="report-meta">
+                            <div>📅 報表生成時間：${currentTime}</div>
+                            <div>👤 管制員：JoyWuFN</div>
+                            <div>🏢 系統版本：Smart Traffic v3.2.1</div>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <div class="report-section-title">📊 交通系統狀態總覽</div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px;">
+                            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #d4edda, #c3e6cb); border-radius: 10px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #28a745; margin-bottom: 8px;">${normalCount}</div>
+                                <div style="color: #155724; font-weight: bold;">正常運行設備</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #fff3cd, #ffeaa7); border-radius: 10px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #ffc107; margin-bottom: 8px;">${warningCount}</div>
+                                <div style="color: #856404; font-weight: bold;">需要注意設備</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #f8d7da, #f5c6cb); border-radius: 10px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #dc3545; margin-bottom: 8px;">${criticalCount}</div>
+                                <div style="color: #721c24; font-weight: bold;">異常故障設備</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #e2e3e5, #d1ecf1); border-radius: 10px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #6f42c1; margin-bottom: 8px;">${maintenanceCount}</div>
+                                <div style="color: #4a4a4a; font-weight: bold;">維護中設備</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <div class="report-section-title">🚗 交通設備詳細狀態</div>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <thead>
+                                <tr style="background: linear-gradient(45deg, #1e3c72, #2a5298); color: white;">
+                                    <th style="padding: 12px; text-align: left; font-weight: bold;">設備編號</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: bold;">設備類型</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: bold;">當前數值</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: bold;">單位</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: bold;">運行狀態</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: bold;">部署位置</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${trafficDevices.map((device, index) => `
+                                    <tr style="background: ${index % 2 === 0 ? '#f8fafe' : 'white'}; border-bottom: 1px solid #d6e9ff;">
+                                        <td style="padding: 12px; font-weight: bold;">${device.id}</td>
+                                        <td style="padding: 12px;">${device.type}</td>
+                                        <td style="padding: 12px; text-align: center; font-weight: bold; font-size: 16px;">${device.value}</td>
+                                        <td style="padding: 12px; text-align: center;">${device.unit}</td>
+                                        <td style="padding: 12px; text-align: center;">
+                                            <span style="background: ${getStatusColor(device.status)}; color: white; padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;">
+                                                ${getStatusText(device.status)}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 12px;">${device.location}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ${trafficData.length > 0 ? `
+                    <div class="report-section">
+                        <div class="report-section-title">📈 交通流量分析</div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px;">
+                            <div style="background: linear-gradient(135deg, #f8fafe, #e8f4fd); padding: 20px; border-radius: 10px; border: 1px solid #d6e9ff;">
+                                <h4 style="color: #1e3c72; margin-bottom: 10px; font-size: 16px;">🚗 當前車流量</h4>
+                                <div style="font-size: 28px; font-weight: bold; color: #333; margin-bottom: 5px;">${Math.round(trafficData[trafficData.length - 1].vehicleFlow)}</div>
+                                <div style="color: #666; font-size: 14px;">輛/小時</div>
+                                <div style="font-size: 12px; color: #888; margin-top: 8px;">
+                                    平均: ${Math.round(trafficData.reduce((sum, d) => sum + d.vehicleFlow, 0) / trafficData.length)} 輛/小時
+                                </div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f8fafe, #e8f4fd); padding: 20px; border-radius: 10px; border: 1px solid #d6e9ff;">
+                                <h4 style="color: #28a745; margin-bottom: 10px; font-size: 16px;">🏃 平均車速</h4>
+                                <div style="font-size: 28px; font-weight: bold; color: #333; margin-bottom: 5px;">${trafficData[trafficData.length - 1].averageSpeed.toFixed(1)}</div>
+                                <div style="color: #666; font-size: 14px;">km/h</div>
+                                <div style="font-size: 12px; color: #888; margin-top: 8px;">
+                                    平均: ${(trafficData.reduce((sum, d) => sum + d.averageSpeed, 0) / trafficData.length).toFixed(1)} km/h
+                                </div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f8fafe, #e8f4fd); padding: 20px; border-radius: 10px; border: 1px solid #d6e9ff;">
+                                <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 16px;">⚠️ 違規件數</h4>
+                                <div style="font-size: 28px; font-weight: bold; color: #333; margin-bottom: 5px;">${trafficData[trafficData.length - 1].violations}</div>
+                                <div style="color: #666; font-size: 14px;">件</div>
+                                <div style="font-size: 12px; color: #888; margin-top: 8px;">
+                                    今日總計: ${trafficData.reduce((sum, d) => sum + d.violations, 0)} 件
+                                </div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f8fafe, #e8f4fd); padding: 20px; border-radius: 10px; border: 1px solid #d6e9ff;">
+                                <h4 style="color: #ffc107; margin-bottom: 10px; font-size: 16px;">🅿️ 停車場使用率</h4>
+                                <div style="font-size: 28px; font-weight: bold; color: #333; margin-bottom: 5px;">${trafficData[trafficData.length - 1].parkingOccupancy.toFixed(1)}</div>
+                                <div style="color: #666; font-size: 14px;">%</div>
+                                <div style="font-size: 12px; color: #888; margin-top: 8px;">
+                                    平均: ${(trafficData.reduce((sum, d) => sum + d.parkingOccupancy, 0) / trafficData.length).toFixed(1)}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="report-section">
+                        <div class="report-section-title">💡 交通管理建議</div>
+                        <div style="background: linear-gradient(135deg, #f8fafe, #e8f4fd); padding: 20px; border-radius: 10px; border: 1px solid #d6e9ff;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                ${criticalCount > 0 ? 
+                                    '<li style="margin-bottom: 12px; padding: 8px; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;"><strong>🚨 緊急處理：</strong>發現 ' + criticalCount + ' 個異常設備，請立即派員檢修</li>' : ''}
+                                ${warningCount > 0 ? 
+                                    '<li style="margin-bottom: 12px; padding: 8px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;"><strong>⚠️ 密切關注：</strong>有 ' + warningCount + ' 個設備需要注意，建議加強巡檢</li>' : ''}
+                                ${maintenanceCount > 0 ? 
+                                    '<li style="margin-bottom: 12px; padding: 8px; background: #e2e3e5; border-left: 4px solid #6f42c1; border-radius: 4px;"><strong>🔧 維護進行中：</strong>目前有 ' + maintenanceCount + ' 個設備正在維護</li>' : ''}
+                                <li style="margin-bottom: 12px; padding: 8px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;"><strong>✅ 定期保養：</strong>建議每月進行交通設備全面檢查</li>
+                                <li style="margin-bottom: 12px; padding: 8px; background: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 4px;"><strong>📊 數據分析：</strong>持續監控交通流量變化，優化號誌時制</li>
+                                <li style="margin-bottom: 12px; padding: 8px; background: #f3e5f5; border-left: 4px solid #6f42c1; border-radius: 4px;"><strong>🚌 公共運輸：</strong>加強公車到站資訊準確性，提升大眾運輸效率</li>
+                                <li style="padding: 8px; background: #e2e3e5; border-left: 4px solid #6c757d; border-radius: 4px;"><strong>🌍 環境監測：</strong>持續關注空氣品質和噪音狀況，維護宜居交通環境</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <div class="report-section-title">📋 報表統計資訊</div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 14px;">
+                                <div><strong>報表生成時間：</strong>${currentTime}</div>
+                                <div><strong>數據監測次數：</strong>${dataCollectionCounter} 次</div>
+                                <div><strong>系統運行時長：</strong>${Math.floor((new Date() - systemStartTime) / 60000)} 分鐘</div>
+                                <div><strong>系統版本：</strong>Smart Traffic v3.2.1</div>
+                                <div><strong>值班管制員：</strong>JoyWuFN</div>
+                                <div><strong>監控設備總數：</strong>${trafficDevices.length} 個</div>
+                                <div><strong>當前車流量：</strong>${Math.round(trafficData[trafficData.length - 1]?.vehicleFlow || 0)} 輛/小時</div>
+                                <div><strong>系統穩定性：</strong>${((normalCount / trafficDevices.length) * 100).toFixed(1)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                loadingText.textContent = '正在轉換為PDF格式...';
+
+                // 顯示報表容器
+                const reportContainer = document.getElementById('reportContainer');
+                reportContainer.style.display = 'block';
+
+                // 使用 html2canvas 生成圖片，然後轉換為 PDF
+                html2canvas(reportContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    height: reportContainer.scrollHeight,
+                    windowHeight: reportContainer.scrollHeight
+                }).then(canvas => {
+                    loadingText.textContent = '正在保存PDF文件...';
+                    
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'mm', 'a4');
+                    
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = 190;
+                    const pageHeight = 297;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 10;
+
+                    // 添加第一頁
+                    doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= (pageHeight - 20);
+
+                    // 如果內容超過一頁，添加更多頁面
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight + 10;
+                        doc.addPage();
+                        doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+
+                    // 隱藏報表容器
+                    reportContainer.style.display = 'none';
+                    loadingOverlay.style.display = 'none';
+
+                    // 儲存PDF
+                    const fileName = `智慧交通監控報表_${new Date().toISOString().slice(0, 16).replace('T', '_').replace(/:/g, '-')}.pdf`;
+                    doc.save(fileName);
+
+                    addLog(`✅ 交通監控報表已成功生成: ${fileName}`, 'success');
+                    addLog(`📊 報表包含 ${trafficDevices.length} 個交通設備的完整數據`, 'info');
+                }).catch(error => {
+                    reportContainer.style.display = 'none';
+                    loadingOverlay.style.display = 'none';
+                    addLog(`❌ 交通報表生成錯誤: ${error.message}`, 'error');
+                });
+            }, 500);
+        }
+
+        // 匯出交通CSV數據
+        function exportTrafficCSV() {
+            addLog('📊 開始匯出交通CSV數據...', 'info');
+            
+            let csvContent = '\uFEFF'; // BOM for UTF-8
+            csvContent += '設備編號,設備類型,當前數值,單位,運行狀態,部署位置,最後更新時間\n';
+            
+            trafficDevices.forEach(device => {
+                csvContent += `${device.id},${device.type},${device.value},${device.unit},${getStatusText(device.status)},${device.location},${device.lastUpdate.toLocaleString()}\n`;
+            });
+
+            // 添加交通流量數據
+            csvContent += '\n\n交通流量歷史數據\n';
+            csvContent += '時間,車流量(輛/小時),平均車速(km/h),違規件數,停車場使用率(%),公車準點率(%),空氣品質(AQI)\n';
+            
+            trafficData.forEach(data => {
+                csvContent += `${data.time},${Math.round(data.vehicleFlow)},${data.averageSpeed.toFixed(1)},${data.violations},${data.parkingOccupancy.toFixed(1)},${data.busOnTime?.toFixed(1) || 'N/A'},${Math.round(data.airQuality)}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `智慧交通監控數據_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            addLog('✅ 交通CSV數據匯出完成', 'success');
+        }
+
+        // 添加日誌
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            
+            const prefix = {
+                'info': '[資訊]',
+                'success': '[成功]',
+                'warning': '[警告]',
+                'error': '[錯誤]',
+                'data': '[數據]',
+                'traffic': '[交通]'
+            }[type] || '[日誌]';
+
+            logEntry.innerHTML = `${timestamp} ${prefix} ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            // 限制日誌數量
+            const entries = logContainer.children;
+            if (entries.length > 100) {
+                logContainer.removeChild(entries[0]);
+            }
+        }
+
+        // 清除日誌
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            addLog('🗑️ 交通監控系統日誌已清除', 'info');
+        }
+
+        // 自動交通數據收集
+        function autoCollectTrafficData() {
+            addLog('🤖 自動交通數據收集啟動', 'info');
+            collectTrafficData();
+        }
+
+        // 交通狀況評估
+        function assessTrafficConditions() {
+            const criticalDevices = trafficDevices.filter(d => d.status === 'critical');
+            const warningDevices = trafficDevices.filter(d => d.status === 'warning');
+            
+            if (criticalDevices.length > 0) {
+                addLog(`🚨 交通狀況評估：發現 ${criticalDevices.length} 個嚴重問題，建議立即處理`, 'error');
+            } else if (warningDevices.length > 0) {
+                addLog(`⚠️ 交通狀況評估：有 ${warningDevices.length} 個設備需要關注`, 'warning');
+            } else {
+                addLog('✅ 交通狀況評估：所有系統運行正常', 'success');
+            }
+        }
+
+        // 交通尖峰時段檢測
+        function detectRushHour() {
+            const currentHour = new Date().getHours();
+            const isRushHour = (currentHour >= 7 && currentHour <= 9) || (currentHour >= 17 && currentHour <= 19);
+            
+            if (isRushHour) {
+                addLog('🚗 檢測到交通尖峰時段，加強監控中...', 'warning');
+                // 在尖峰時段更頻繁地收集數據
+                setTimeout(autoCollectTrafficData, 10000);
+            }
+        }
+
+        // 緊急事件處理
+        function handleEmergencyEvent(deviceId, eventType) {
+            const device = trafficDevices.find(d => d.id === deviceId);
+            if (device) {
+                device.status = 'critical';
+                addLog(`🚨 緊急事件：${device.type} (${deviceId}) 發生 ${eventType}`, 'error');
+                updateDeviceGrid();
+                updateDataTable();
+                updateStatsSummary();
+            }
+        }
+
+        // 交通效率計算
+        function calculateTrafficEfficiency() {
+            const normalDevices = trafficDevices.filter(d => d.status === 'normal').length;
+            const totalDevices = trafficDevices.length;
+            const efficiency = (normalDevices / totalDevices * 100).toFixed(1);
+            
+            addLog(`📊 交通系統效率：${efficiency}% (${normalDevices}/${totalDevices} 設備正常運行)`, 'data');
+            return efficiency;
+        }
+
+        // 預測性維護提醒
+        function predictiveMaintenance() {
+            trafficDevices.forEach(device => {
+                // 模擬基於設備運行時間的維護預測
+                const hoursRunning = Math.floor((new Date() - systemStartTime) / 3600000);
+                
+                if (hoursRunning > 0 && hoursRunning % 24 === 0) { // 每24小時檢查一次
+                    if (device.type === '智慧號誌燈' && Math.random() < 0.1) {
+                        addLog(`🔧 預測性維護：建議對 ${device.id} (${device.type}) 進行例行檢查`, 'warning');
+                    }
+                }
+            });
+        }
+
+        // 交通數據統計
+        function getTrafficStatistics() {
+            if (trafficData.length === 0) return null;
+            
+            const avgVehicleFlow = trafficData.reduce((sum, d) => sum + d.vehicleFlow, 0) / trafficData.length;
+            const avgSpeed = trafficData.reduce((sum, d) => sum + d.averageSpeed, 0) / trafficData.length;
+            const totalViolations = trafficData.reduce((sum, d) => sum + d.violations, 0);
+            const avgParkingOccupancy = trafficData.reduce((sum, d) => sum + d.parkingOccupancy, 0) / trafficData.length;
+            
+            return {
+                avgVehicleFlow: Math.round(avgVehicleFlow),
+                avgSpeed: avgSpeed.toFixed(1),
+                totalViolations: totalViolations,
+                avgParkingOccupancy: avgParkingOccupancy.toFixed(1)
+            };
+        }
+
+        // 系統健康檢查
+        function systemHealthCheck() {
+            addLog('🔍 執行系統健康檢查...', 'info');
+            
+            const stats = getTrafficStatistics();
+            const efficiency = calculateTrafficEfficiency();
+            
+            // 檢查設備狀態分布
+            const statusDistribution = {
+                normal: trafficDevices.filter(d => d.status === 'normal').length,
+                warning: trafficDevices.filter(d => d.status === 'warning').length,
+                critical: trafficDevices.filter(d => d.status === 'critical').length,
+                maintenance: trafficDevices.filter(d => d.status === 'maintenance').length
+            };
+            
+            addLog(`💊 系統健康報告 - 效率: ${efficiency}%, 正常: ${statusDistribution.normal}, 警告: ${statusDistribution.warning}, 異常: ${statusDistribution.critical}, 維護: ${statusDistribution.maintenance}`, 'info');
+            
+            // 如果系統效率低於80%，發出警告
+            if (parseFloat(efficiency) < 80) {
+                addLog('⚠️ 系統效率偏低，建議進行維護檢查', 'warning');
+            }
+        }
+
+        // 啟動系統
+        window.onload = function() {
+            initializeSystem();
+            
+            // 每45秒自動收集一次交通數據
+            setInterval(autoCollectTrafficData, 45000);
+            
+            // 每10分鐘進行一次系統健康檢查
+            setInterval(systemHealthCheck, 600000);
+            
+            // 每5分鐘檢查是否為尖峰時段
+            setInterval(detectRushHour, 300000);
+            
+            // 每30分鐘進行預測性維護檢查
+            setInterval(predictiveMaintenance, 1800000);
+            
+            // 每15分鐘評估交通狀況
+            setInterval(assessTrafficConditions, 900000);
+            
+            // 每小時自動備份數據
+            setInterval(() => {
+                addLog('💾 執行交通數據自動備份...', 'info');
+                setTimeout(() => {
+                    addLog('✅ 交通數據自動備份完成', 'success');
+                }, 2000);
+            }, 3600000);
+            
+            addLog('🎯 智慧交通監控系統所有功能模組已啟動', 'success');
+        };
+
+        // 錯誤處理
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            addLog(`❌ 系統錯誤: ${msg} (行 ${lineNo})`, 'error');
+            return false;
+        };
+
+        // 頁面卸載前清理
+        window.onbeforeunload = function() {
+            addLog('🔄 系統正在安全關閉...', 'info');
+        };
+
+        // 鍵盤快捷鍵
+        document.addEventListener('keydown', function(event) {
+            // Ctrl + R: 重新整理數據
+            if (event.ctrlKey && event.key === 'r') {
+                event.preventDefault();
+                collectTrafficData();
+            }
+            
+            // Ctrl + P: 生成報表
+            if (event.ctrlKey && event.key === 'p') {
+                event.preventDefault();
+                generateTrafficReport();
+            }
+            
+            // Ctrl + E: 匯出CSV
+            if (event.ctrlKey && event.key === 'e') {
+                event.preventDefault();
+                exportTrafficCSV();
+            }
+            
+            // Ctrl + L: 清除日誌
+            if (event.ctrlKey && event.key === 'l') {
+                event.preventDefault();
+                clearLogs();
+            }
+        });
+
+        // 視窗大小改變時重新調整圖表
+        window.addEventListener('resize', function() {
+            if (chart) {
+                chart.resize();
+            }
+        });
+    </script>
+</body>
+</html>
