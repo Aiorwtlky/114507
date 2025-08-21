@@ -1,67 +1,67 @@
-{% extends "base.html" %}
-{% block title %}管理者聊天室 · My Driving God{% endblock %}
+{% extends 'base.html' %}
+{% block title %}
+  管理者聊天室 · My Driving God
+{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin_chat.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin_chat.css') }}" />
 {% endblock %}
 
 {% block content %}
-<header class="app-header">
-  <div class="header-inner">
-    <!-- 左邊：使用者清單 -->
-    <div class="header-left">
-      <button id="toggleList" class="btn">使用者清單</button>
-    </div>
+  <header class="app-header">
+    <div class="header-inner">
+      <!-- 左邊：使用者清單 -->
+      <div class="header-left">
+        <button id="toggleList" class="btn">使用者清單</button>
+      </div>
 
-    <!-- 中間：ADMIN 置中 -->
-    <div class="header-center">
-      <span id="roleBadge" class="custom-btn primary-btn">ADMIN</span>
-    </div>
+      <!-- 中間：ADMIN 置中 -->
+      <div class="header-center">
+        <span id="roleBadge" class="custom-btn primary-btn">ADMIN</span>
+      </div>
 
-    <!-- 右邊：留空或放其他功能 -->
-    <div class="header-right"></div>
+      <!-- 右邊：留空或放其他功能 -->
+      <div class="header-right"></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左側使用者清單 -->
+    <aside class="people-panel" id="peoplePanel">
+      <div class="people-header">
+        <div class="search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="search" placeholder="搜尋使用者" />
+        </div>
+      </div>
+      <div class="people" id="people"></div>
+    </aside>
+
+    <!-- 右側聊天面板 -->
+    <section class="chat-panel" id="chatPanel">
+      <div class="chat-header">
+        <div class="avatar" id="chatAvatar">A</div>
+        <div>
+          <div class="chat-title" id="chatTitle">（尚未選擇對話）</div>
+          <div class="chat-sub" id="chatSub">請在左側選擇一位使用者開始聊天</div>
+        </div>
+      </div>
+      <div class="chat-body" id="chatBody">
+        <div class="msgs" id="msgs"></div>
+      </div>
+      <div class="composer">
+        <textarea id="composer" placeholder="輸入訊息…"></textarea>
+
+        <button id="sendBtn" class="btn" title="傳送"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </section>
+  </main>
+
+  <div class="back-button-area">
+    <a href="/dashboard" class="custom-btn primary-btn">返回前頁</a>
   </div>
-</header>
-
-
-<main class="layout">
-  <!-- 左側使用者清單 -->
-  <aside class="people-panel" id="peoplePanel">
-    <div class="people-header">
-      <div class="search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input id="search" placeholder="搜尋使用者" />
-      </div>
-    </div>
-    <div class="people" id="people"></div>
-  </aside>
-
-  <!-- 右側聊天面板 -->
-  <section class="chat-panel" id="chatPanel">
-    <div class="chat-header">
-      <div class="avatar" id="chatAvatar">A</div>
-      <div>
-        <div class="chat-title" id="chatTitle">（尚未選擇對話）</div>
-        <div class="chat-sub" id="chatSub">請在左側選擇一位使用者開始聊天</div>
-      </div>
-    </div>
-    <div class="chat-body" id="chatBody">
-      <div class="msgs" id="msgs"></div>
-    </div>
-    <div class="composer">
-      <textarea id="composer" placeholder="輸入訊息…"></textarea>
-      <div class="actions">
-        <button id="sendBtn" class="btn">傳送</button>
-      </div>
-    </div>
-  </section>
-</main>
-
-<div class="back-button-area">
-  <a href="/dashboard" class="custom-btn primary-btn">返回前頁</a>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/pages/admin_chat.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/admin_chat.js') }}"></script>
 {% endblock %}

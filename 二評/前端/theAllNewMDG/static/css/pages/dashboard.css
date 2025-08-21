@@ -656,3 +656,64 @@
 .stat-value-text{
     margin-top: 4px;
 }
+
+/* -- 浮動聊天機器人按鈕 (業界升級版) -- */
+
+/* 1. 定義一個會呼吸、發光的動畫效果 */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.floating-chatbot-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+
+  /* 2. 按鈕外觀升級 */
+  width: 60px;
+  height: 60px;
+  /* 將單色背景改成漂亮的漸層色 */
+  background-image: linear-gradient(45deg, #007bff 0%, #44c2fd 100%);
+  border: none; /* 移除可能的邊框 */
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* 讓陰影更有層次感 */
+  
+  /* 讓 icon 在圓圈正中間 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* 圖示本身樣式 */
+  color: white;
+  font-size: 28px;
+  
+  /* 3. 套用上面定義好的呼吸動畫 */
+  animation: pulse 2s infinite;
+
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1); /* 使用更流暢的動畫曲線 */
+}
+
+/* 4. 升級滑鼠懸停 (hover) 和點擊 (active) 效果 */
+.floating-chatbot-btn:hover {
+  /* 讓按鈕向上浮起來一點，更有互動感 */
+  transform: translateY(-5px); 
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+  /* 滑鼠移上去時，暫停呼吸動畫，避免閃爍 */
+  animation-play-state: paused;
+}
+
+.floating-chatbot-btn:active {
+  /* 點下去的時候稍微縮小，模擬按壓效果 */
+  transform: scale(0.95);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}

@@ -17,9 +17,14 @@ body {
 
 body {
     margin: 0;
-    background: var(--bg);
     color: var(--text);
     font-family: Inter, "Noto Sans TC", sans-serif;
+
+    /* -- 升級背景 -- */
+    background-color: #0d121c; /* 設定一個更深的基礎色 */
+    /* 加上一個從中心發散的巨大、模糊的放射狀漸層，營造視覺焦點 */
+    background-image: radial-gradient(circle at center, rgba(48, 70, 115, 0.25) 0%, rgba(11, 15, 20, 0) 60%);
+    height: 100vh; /* 確保背景能填滿整個視窗高度 */
 }
 
 .app-header {
@@ -176,15 +181,24 @@ body {
     background: rgba(255, 255, 255, .03);
 }
 
+
+/* 選中時的樣式 */
 .person.active {
-    background: rgba(124, 92, 255, .14);
-    width: auto;
-    /* 不要改寬度 */
-    background: rgba(124, 92, 255, .14);
-    width: auto !important;
-    margin: 0 !important;
-    padding: 12px 14px;
-    /* 保持與未選取一致 */
+    background-color: rgba(92, 116, 255, 0.15);
+    /* 加一個左邊的藍色邊框來強化提示 */
+    box-shadow: inset 3px 0 0 0 var(--brand-2); 
+}
+
+/* 使用者狀態（例如：線上）的圓點 */
+.person .status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #2ecc71; /* 線上狀態的綠色 */
+    border-radius: 50%;
+    position: absolute; /* 定位在頭像右下角 */
+    right: 12px;
+    bottom: 12px;
+    border: 2px solid var(--panel-2);
 }
 
 .avatar {
@@ -272,23 +286,49 @@ body {
 }
 
 .composer {
-    padding: 12px;
+    padding: 16px; /* 加大內距 */
     border-top: 1px solid rgba(255, 255, 255, .06);
     display: flex;
     gap: 10px;
-    align-items: center;
-    background: rgba(10, 14, 20, .65);
+    align-items: flex-end; /* 對齊底部 */
+    background: var(--panel-2); /* 讓它跟左邊面板顏色一致 */
+    border-radius: 0 0 var(--radius) var(--radius); /* 底部加上圓角 */
 }
 
 .composer textarea {
     flex: 1;
     resize: none;
-    background: #0a0f17;
+    background: var(--bg); /* 改成跟 body 背景同色，更有層次感 */
     color: var(--text);
-    border: 1px solid rgba(255, 255, 255, .08);
-    border-radius: 14px;
-    padding: 12px;
-    height: 46px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 12px;
+    padding: 14px;
+    height: auto; /* 讓高度可以自適應 */
+    min-height: 24px; /* 最小高度 */
+    max-height: 120px; /* 最大高度，避免無限增長 */
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* 傳送按鈕改成圓形圖示按鈕 */
+#sendBtn {
+    flex-shrink: 0; /* 防止按鈕被擠壓變形 */
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#sendBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(123, 92, 255, .35);
 }
 
 .btn {

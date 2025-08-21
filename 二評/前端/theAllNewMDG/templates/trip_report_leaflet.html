@@ -49,23 +49,167 @@
     transform: scale(1.05);
 }
 
+/* -- 報告頁版面重構 -- */
+.report-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start; /* 頂部對齊 */
+}
 
+.details-panel {
+  flex: 0 0 360px; /* 側邊欄固定寬度 360px */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-container {
+  flex: 1; /* 地圖容器佔滿剩下所有空間 */
+  min-width: 0; /* flex 佈局必備 */
+  border-radius: 18px;
+  overflow: hidden; /* 確保地圖圓角生效 */
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+#map {
+  width: 100%;
+  height: 75vh; /* 可以讓地圖更高一點 */
+}
+
+/* -- 側邊欄卡片樣式 -- */
+.details-card {
+  background: rgba(30, 35, 45, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.card-title {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  padding-bottom: 12px;
+}
+
+/* 行程總覽列表 */
+.summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.summary-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  color: rgba(255,255,255,0.7);
+}
+.summary-list li strong {
+  font-weight: 600;
+  color: #fff;
+}
+.summary-list li .score-highlight {
+  color: #4facfe; /* 分數用亮色強調 */
+}
+
+/* 事件時間軸 */
+.event-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(0,0,0,0.2);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.event-item:hover {
+  background-color: rgba(92, 116, 255, 0.15);
+}
+.event-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.event-desc {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: #fff;
+}
+.event-time {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+/* 不同事件的圖示顏色 */
+.event-item.fatigue .event-icon { background-color: #f39c12; color: #fff; }
+.event-item.speeding .event-icon { background-color: #e74c3c; color: #fff; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="report-wrap">
-  <h2 style="margin:10px 4px 12px">行程路徑（Leaflet + OSM）</h2>
-  <div class="map-card">
-    <div id="map"></div>
-    <div class="meta">
-      <span class="badge">Trip ID：{{ trip.id }}</span>
-      <span class="badge">起：{{ trip.start_time }}</span>
-      <span class="badge">迄：{{ trip.end_time }}</span>
-      <span class="badge" id="distanceBadge">距離計算中…</span>
+  <h2>行程路徑分析</h2>
+
+  <div class="report-layout">
+
+    <aside class="details-panel">
       
-    </div>
-  <div style="text-align: center">
+      <div class="details-card">
+        <h3 class="card-title">行程總覽</h3>
+        <ul class="summary-list">
+          <li><span>Trip ID</span><strong>{{ trip.id }}</strong></li>
+          <li><span>開始時間</span><strong>{{ trip.start_time }}</strong></li>
+          <li><span>結束時間</span><strong>{{ trip.end_time }}</strong></li>
+          <li><span>總里程</span><strong id="distanceDisplay">計算中...</strong></li>
+          <li><span>安全分數</span><strong class="score-highlight">92 分</strong></li>
+        </ul>
+      </div>
+
+      <div class="details-card">
+        <h3 class="card-title">事件時間軸</h3>
+        <ul class="event-timeline">
+          <li class="event-item fatigue">
+            <div class="event-icon"><i class="fa-solid fa-bed"></i></div>
+            <div class="event-details">
+              <p class="event-desc">疲勞駕駛</p>
+              <p class="event-time">09:45 - 偵測到連續閉眼 3 秒</p>
+            </div>
+          </li>
+          <li class="event-item speeding">
+            <div class="event-icon"><i class="fa-solid fa-gauge-high"></i></div>
+            <div class="event-details">
+              <p class="event-desc">超速駕駛</p>
+              <p class="event-time">10:12 - 忠孝東路 (65km/h)</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </aside>
+
+    <main class="map-container">
+      <div id="map"></div>
+    </main>
+
+  </div>
   <a href="/dashboard" class="custom-btn primary-btn">返回儀表板</a>
 </div>
 {% endblock %}
@@ -93,7 +237,7 @@ const tile = L.tileLayer(DARK_TILE, { maxZoom: 20, attribution: DARK_ATTR }).add
 // 底圖亮度/對比再加一些
 tile.once('load', () => {
   const el = tile.getContainer();
-  if (el) el.style.filter = 'brightness(1.28) contrast(1.15)'; // ← 調高
+  if (el) el.style.filter = 'brightness(3.28) contrast(1.15)'; // ← 調高
 });
 
 // 路徑的 glow 更明顯
@@ -138,5 +282,64 @@ map.fitBounds(route.getBounds(), { padding: [60, 60] });
   }
   document.getElementById('distanceBadge').textContent =
     `總里程：約 ${polylineDistanceKm(latlngs).toFixed(2)} km`;
+
+    // ... 您原本的 map, tile, route 等程式碼 ...
+
+// 假設您從後端傳來了事件資料
+const EVENTS = [
+    { type: 'fatigue', lat: 25.034, lng: 121.56, time: '09:45', desc: '偵測到連續閉眼 3 秒' },
+    { type: 'speeding', lat: 25.041, lng: 121.565, time: '10:12', desc: '忠孝東路 (65km/h)' }
+    // ...更多事件
+];
+
+// 找到時間軸的 ul 元素
+const timeline = document.querySelector('.event-timeline');
+// 清空靜態的範例
+timeline.innerHTML = '';
+
+// 根據事件類型設定圖示和顏色
+const eventStyles = {
+    fatigue: { icon: 'fa-bed', color: '#f39c12' },
+    speeding: { icon: 'fa-gauge-high', color: '#e74c3c' }
+};
+
+// 遍歷所有事件，建立標記和列表項
+EVENTS.forEach(event => {
+    const style = eventStyles[event.type] || { icon: 'fa-question', color: 'grey' };
+    
+    // 1. 在地圖上新增標記
+    const marker = L.marker([event.lat, event.lng], {
+        icon: L.divIcon({
+            html: `<i class="fa-solid ${style.icon}" style="color:${style.color}; font-size: 20px;"></i>`,
+            className: 'custom-event-marker',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        })
+    }).addTo(map);
+    marker.bindTooltip(`${event.time} - ${event.desc}`);
+    
+    // 2. 在側邊欄新增列表項
+    const li = document.createElement('li');
+    li.className = `event-item ${event.type}`;
+    li.innerHTML = `
+        <div class="event-icon"><i class="fa-solid ${style.icon}"></i></div>
+        <div class="event-details">
+            <p class="event-desc">${event.desc}</p>
+            <p class="event-time">${event.time}</p>
+        </div>
+    `;
+    
+    // 3. 增加互動：點擊列表項，地圖會跳到對應標記
+    li.addEventListener('click', () => {
+        map.flyTo([event.lat, event.lng], 16); // 飛到指定地點，縮放等級 16
+        marker.openTooltip();
+    });
+
+    timeline.appendChild(li);
+});
+
+// 最後把里程數也更新到新的位置
+document.getElementById('distanceDisplay').textContent =
+   `約 ${polylineDistanceKm(latlngs).toFixed(2)} km`;
 </script>
 {% endblock %}
