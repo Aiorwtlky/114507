@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block html_class %}scroll-snap{% endblock %}
+{% block title %}首頁 · My Driving God{% endblock %}
+{% block content %}
+
+
+<!-- ===== Hero ===== -->
+<section class="hero" id="hero">
+  <div class="hero-inner">
+    <h1 class="mega-title">智慧駕駛<br><span class="gradient-text">新紀元</span></h1>
+    <p class="subtitle">立即註冊或登入，體驗科技守護安全</p>
+
+    <div class="cta-group">
+      <a href="{{ url_for('register') }}" class="btn primary">立即註冊</a>
+      <a href="{{ url_for('login') }}"   class="btn ghost">登入</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Features ===== -->
+<section class="features" id="features">
+  <article class="card teal">
+      <i class="fa-solid fa-file-lines"></i>
+      <h3>AI建議</h3>
+      <p>分析您的駕駛歷程，提供具體改善建議。</p>
+  </article>
+
+  <article class="card pink">
+    <i class="fa-solid fa-bed"></i>
+    <h3>疲勞預警</h3>
+    <p>臉部特徵追蹤，精準偵測瞌睡。</p>
+  </article>
+
+  <article class="card amber">
+    <i class="fa-solid fa-shield-halved"></i>
+    <h3>事件雲回放</h3>
+    <p>5G 雲端紀錄，調閱零死角。</p>
+  </article>
+
+  <article class="card lime">
+    <i class="fa-solid fa-cloud-arrow-down"></i>
+    <h3>事故影片下載</h3>
+    <p>雲端保存碰撞瞬間，一鍵下載還原真相。</p>
+  </article>
+
+  <article class="card blue">
+    <i class="fa-solid fa-road"></i>
+    <h3>車道偏移</h3>
+    <p>道路標線偵測，主動修正。</p>
+  </article>
+
+  <article class="card red">
+    <i class="fa-solid fa-comments"></i>
+    <h3>智慧客服</h3>
+    <p>您的專屬智能顧問，提供即時專業問答。</p>
+  </article>
+</section>
+
+{% endblock %}

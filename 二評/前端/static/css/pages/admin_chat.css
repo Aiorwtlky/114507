@@ -1,0 +1,333 @@
+:root {
+    --bg: #0b0f14;
+    --panel: #111722;
+    --panel-2: #0f1420;
+    --text: #e9eef7;
+    --sub: #8ea0b6;
+    --brand-1: #5cc2ff;
+    --brand-2: #7b5cff;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    --radius: 18px;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, "Noto Sans TC", sans-serif;
+}
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(10, 14, 20, .55);
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    backdrop-filter: blur(8px);
+}
+
+.header-inner {
+    max-width: 1280px;
+    margin: auto;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    /* 左 中 右 */
+    align-items: center;
+}
+
+.header-left {
+    justify-self: start;
+}
+
+.header-center {
+    justify-self: center;
+    margin-left: -125px;
+}
+
+.header-right {
+    justify-self: end;
+}
+
+.brand {
+    font-weight: 800;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand i {
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.header-actions {
+    margin-left: 0 !important;
+    /* 取消推到右邊 */
+    margin-right: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    /* 內部置中 */
+}
+
+
+.role-badge {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(92, 194, 255, .18);
+    border: 1px solid rgba(255, 255, 255, .08);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.layout {
+    max-width: 1280px;
+    margin: 18px auto;
+    padding: 0 18px;
+    display: flex; /* 改成 flex 更好控制 */
+    gap: 18px;
+    align-items: stretch;
+    min-width: 0; /* 防止 flex 子元素撐爆 */
+}
+
+.layout>* {
+    min-width: 0;
+}
+
+
+.chat-panel,
+.people-panel {
+    border-radius: var(--radius);
+    min-height: 72vh;
+    box-shadow: var(--shadow);
+}
+
+.chat-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: var(--panel);
+    border: 1px solid rgba(255, 255, 255, .06);
+    display: flex;
+    flex-direction: column;
+}
+
+.people-panel {
+    flex: 0 0 320px;
+    max-width: 320px;
+    background: var(--panel-2);
+    border: 1px solid rgba(255, 255, 255, .06);
+    display: flex;
+    flex-direction: column;
+}
+
+.people-header {
+    padding: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.search {
+    flex: 1;
+    position: relative;
+}
+
+.search input {
+    width: 100%;
+    background: #0a0f17;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 12px;
+    padding: 10px 12px 10px 36px;
+    color: var(--text);
+}
+
+.search i {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    color: var(--sub);
+}
+
+.people {
+    overflow: auto;
+}
+
+.person {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px dashed rgba(255, 255, 255, .05);
+}
+
+.person:hover {
+    background: rgba(255, 255, 255, .03);
+}
+
+.person.active {
+    background: rgba(124, 92, 255, .14);
+    width: auto;
+    /* 不要改寬度 */
+    background: rgba(124, 92, 255, .14);
+    width: auto !important;
+    margin: 0 !important;
+    padding: 12px 14px;
+    /* 保持與未選取一致 */
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.meta .name {
+    font-weight: 700;
+}
+
+.meta .sub {
+    color: var(--sub);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+}
+
+.chat-title {
+    font-weight: 800;
+}
+
+.chat-sub {
+    color: var(--sub);
+    font-size: 12px;
+}
+
+.chat-body {
+    flex: 1;
+    overflow: auto;
+}
+
+.msgs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px;
+}
+
+.msg {
+    max-width: 68%;
+    padding: 12px 14px;
+    border-radius: 16px;
+    position: relative;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .25);
+}
+
+.msg.me {
+    margin-left: auto;
+    background: rgba(92, 194, 255, .18);
+    border: 1px solid rgba(123, 92, 255, .35);
+}
+
+.msg.you {
+    background: #0f1623;
+    border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.time {
+    display: block;
+    margin-top: 6px;
+    color: var(--sub);
+    font-size: 11px;
+}
+
+.composer {
+    padding: 12px;
+    border-top: 1px solid rgba(255, 255, 255, .06);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(10, 14, 20, .65);
+}
+
+.composer textarea {
+    flex: 1;
+    resize: none;
+    background: #0a0f17;
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 14px;
+    padding: 12px;
+    height: 46px;
+}
+
+.btn {
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    /* 減少上下左右的內距 */
+    border-radius: 8px;
+    /* 半徑小一點，看起來更緊湊 */
+    font-weight: 500;
+    font-size: 20px;
+    /* 字體縮小 */
+    cursor: pointer;
+}
+
+
+@media (max-width: 960px) {
+    .layout {
+        position: relative;
+    }
+    .people-panel {
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        transform: translateX(-110%);
+        transition: transform .28s ease;
+        z-index: 30;
+        width: 80%; /* 小螢幕時寬度 */
+        max-width: 300px;
+    }
+    .layout.show-list .people-panel {
+        transform: translateX(0);
+    }
+}
+
+.back-button-area {
+    text-align: center;
+    /* 水平置中 */
+    margin: 20px 0;
+    /* 上下間距 */
+    font-size: 30px;
+}

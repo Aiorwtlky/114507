@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}AI 行車建議 · My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/coaching.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="coach-wrap">
+  <h2 class="coach-title">AI 行車建議（最近行程）</h2>
+
+  <div class="coach-grid">
+    <!-- 左：總結 -->
+    <section class="coach-card">
+      <h3 class="coach-h3">總結</h3>
+      <p class="coach-muted">
+        平均分數：<b>{{ summary.avg_score }}</b>；需要注意的天數：<b>{{ summary.bad_count }}</b>
+      </p>
+      <p class="coach-p">常見問題 Top 3：</p>
+      <ul class="coach-ul">
+        {% for t in summary.top_issues %}
+          <li>{{ t }}</li>
+        {% endfor %}
+      </ul>
+      <hr class="coach-divider" />
+      <h4 class="coach-h4">建議</h4>
+      <ul class="coach-ul">
+        {% for tip in summary.tips %}
+          <li>{{ tip }}</li>
+        {% endfor %}
+      </ul>
+      <div class="coach-actions">
+        <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
+      </div>
+    </section>
+
+    <!-- 右：逐日列表 -->
+    <section class="coach-card">
+      <div class="coach-toolbar seg-toggle" role="tablist" aria-label="篩選">
+  <button id="tab-all"  class="seg-option is-active" role="tab" aria-selected="true"  type="button">全部</button>
+  <button id="tab-attn" class="seg-option"            role="tab" aria-selected="false" type="button">只看需要注意</button>
+</div>
+
+
+      <div id="tripList">
+        {% for t in trips %}
+        <div class="coach-trip" data-attn="{{ '1' if t.needs_attention else '0' }}">
+          <div class="coach-trip-left">
+            <div class="coach-badge">{{ t.date }}</div>
+            {% if t.needs_attention %}<span class="coach-tag coach-attn">需要注意</span>{% endif %}
+            <div class="coach-tags">
+              {% for v in t.violations %}
+                <span class="coach-tag">
+                  {{ v.time }} ·
+                  {% if v.type == 'turn_signal' %}未打方向燈{% elif v.type=='drowsy' %}疲勞{% elif v.type=='phone' %}手機分心{% elif v.type=='speed' %}超速{% else %}{{ v.type }}{% endif %}
+                  (-{{ v.pts }}) · {{ v.loc }}
+                </span>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="coach-score {{ 'bad' if t.needs_attention else 'good' }}">{{ t.score }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/coaching.js') }}" defer></script>
+{% endblock %}

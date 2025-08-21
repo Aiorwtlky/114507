@@ -1,0 +1,658 @@
+/* General Dashboard Layout */
+.dashboard-grid-container {
+    display: grid;
+    gap: 24px; /* Slightly more space between cards */
+    padding: 25px; /* More padding around the entire grid */
+    max-width: 1280px; /* Slightly wider max width */
+    margin: 30px auto; /* Center the dashboard with increased vertical margin */
+}
+
+/* Base Card Styling */
+.dashboard-card {
+    background-color: #ffffff;
+    border-radius: 16px; /* Slightly more rounded corners */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Stronger, softer shadow */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effect */
+    font-family: 'Noto Sans TC', sans-serif, Arial; /* Added a default font-family here for consistency if not set in base.css */
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px); /* Lift card on hover */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+}
+
+/* Card Header Styles */
+.card-header-section {
+    display: flex;
+    align-items: center;
+    padding: 18px 25px; /* Increased padding */
+    border-bottom: 1px solid #e0e0e0; /* Lighter border */
+    background-color: #f8f8f8; /* Unified light gray background for all card headers */
+}
+
+.header-icon-wrapper {
+    margin-right: 12px;
+    font-size: 26px; /* Slightly larger icon size */
+    color: #007bff; /* Primary brand color for icons */
+}
+
+.header-title-text {
+    font-size: 1.35rem; /* Slightly larger title */
+    font-weight: 700; /* Bolder */
+    color: #2c3e50; /* Darker, more prominent title color */
+    margin: 0;
+    flex-grow: 1;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+/* Card Body Styles */
+.card-body-content {
+    padding: 25px; /* Increased padding */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+/* Card Action Area (for buttons at the bottom) */
+.card-action-area {
+    margin-top: auto;
+    padding-top: 20px; /* Increased padding */
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+/* Horizontal Divider for Sections */
+.card-divider {
+    border: 0;
+    height: 1px;
+    background-color: #ddd; /* Slightly darker divider */
+    margin: 25px 0; /* Increased margin */
+}
+
+/* --- Specific Card Styles --- */
+
+/* Driver Card */
+.driver-info-card .driver-details-content {
+    align-items: center;
+    text-align: center;
+}
+
+.driver-profile-photo {
+    width: 110px; /* Slightly larger photo */
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 4px solid #007bff; /* Thicker border */
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); /* Blue shadow */
+}
+
+.driver-name-text {
+    font-size: 1.6rem;
+    font-weight: 800; /* Even bolder */
+    color: #212529; /* Deep black for name */
+    margin-bottom: 8px;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+.driver-role-text {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 25px;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+.driver-stats-section .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 0.95rem;
+    font-family: inherit; /* Ensure consistent font with values */
+    border-bottom: 1px dashed #e9ecef; /* Lighter dashed border */
+}
+
+.driver-stats-section .stat-item span:first-child {
+    font-weight: 500; /* Make label slightly bold */
+    color: #212529; /* Explicitly set to black for titles */
+    font-family: inherit; /* Inherit font from parent */
+}
+
+.driver-stats-section .stat-item:last-child {
+    border-bottom: none;
+}
+
+.driver-stats-section .stat-value-text {
+    font-weight: 700;
+    color: #212529; /* Darker value, now matching title black */
+    font-family: inherit; /* Inherit font from parent */
+}
+
+/* Last Trip Card */
+.last-trip-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.trip-date-time {
+    font-size: 1.05rem;
+    color: #6c757d; /* Slightly muted date/time */
+    margin-bottom: 12px;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+.trip-route-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px; /* Increased gap */
+    font-size: 1.15rem; /* Slightly larger */
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 18px;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+.route-location {
+    color: #007bff;
+    padding: 3px 8px; /* Add some padding */
+    background-color: #e6f2ff; /* Light blue background for locations */
+    border-radius: 6px;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+.trip-route-info .icon-arrow {
+    font-size: 0.9em;
+    color: #999;
+}
+
+.trip-summary-metrics .metric-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 1rem;
+    color: #555; /* Base color for the item, but we'll override the label */
+    border-bottom: 1px dashed #e9ecef;
+    font-family: inherit; /* Inherit font from parent */
+}
+
+.trip-summary-metrics .metric-item:last-child {
+    border-bottom: none;
+}
+
+/* NEW ADDITION: Ensure the first span (label) has the correct color and font */
+.trip-summary-metrics .metric-item span:first-child {
+    font-weight: 500; /* Make label slightly bold */
+    color: #212529; /* Deep black color, matching stat-value-text */
+    font-family: inherit; /* Inherit font family for consistency */
+}
+
+.trip-summary-metrics .metric-value {
+    font-weight: 700;
+    color: #1a1a1a; /* Ensure the value is also deep black */
+    font-family: inherit; /* Inherit font from parent */
+}
+
+
+/* Safety Score Card - REVISED */
+.safety-score-card .score-display-area {
+    background-color: #ffffff; /* Pure white background */
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+    font-family: inherit;
+}
+
+.safety-score-main-display { /* Unique class name */
+    padding: 10px 0;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: inherit;
+}
+
+.highlight-score {
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: #28a745;
+    text-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
+    animation: pulseScore 1.8s infinite alternate ease-in-out;
+    font-family: inherit;
+}
+
+@keyframes pulseScore {
+    from { transform: scale(1); opacity: 1; text-shadow: 0 0 10px rgba(40, 167, 69, 0.3); }
+    to { transform: scale(1.08); opacity: 0.95; text-shadow: 0 0 20px rgba(40, 167, 69, 0.6); }
+}
+
+.safety-score-context-text { /* Unique class name */
+    font-size: 1.15rem;
+    color: #444;
+    margin-top: 8px;
+    font-weight: 500;
+    font-family: inherit;
+}
+
+.safety-score-comparison-text { /* Unique class name */
+    font-size: 0.95rem;
+    color: #666;
+    margin-top: 5px;
+    font-family: inherit;
+}
+
+.safety-score-arrow.up { /* Unique class name */
+    color: #28a745;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+.safety-score-arrow.down { /* Unique class name */
+    color: #dc3545;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+.safety-score-percentage-change { /* Unique class name */
+    font-weight: 700;
+    color: #28a745;
+    font-family: inherit;
+}
+
+.safety-violation-reporting-section h3 { /* Unique class name */
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 18px;
+    font-weight: 600;
+    font-family: inherit;
+}
+
+.score-list-items { /* New list class */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+}
+
+.score-violation-entry {
+    display: flex; /* Keeps icon and text together on the left, points on the right */
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px dashed #e9ecef;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    font-family: inherit;
+    color: #212529; /* Set the main text color for the entry */
+}
+
+.score-violation-entry:last-child {
+    border-bottom: none;
+}
+
+/* New style for the description span that holds icon and text */
+.score-violation-entry .violation-description {
+    display: flex; /* Use flex to align icon and text neatly */
+    align-items: center; /* Vertically center icon with text */
+    color: #212529; /* Ensure text color matches stat-value-text black */
+    flex-grow: 1; /* Allow it to take up available space */
+}
+
+.score-violation-entry .violation-description .icon-warning {
+    color: #212529; /* Explicitly set to black, no !important needed with this structure */
+    margin-right: 10px;
+    font-size: 1.1em;
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.score-deduction-points { /* Unique class name */
+    color: #dc3545; /* Red for deductions */
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-left: 10px;
+    flex-shrink: 0;
+    font-family: inherit;
+}
+
+.score-list-items li:nth-child(n+4) { /* Hide items beyond 3 initially */
+    display: none;
+}
+
+.score-violation-more-toggle { /* Unique class name */
+    text-align: center;
+    margin-top: 18px;
+}
+
+
+/* My Groups Card */
+.group-list-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+}
+
+.group-list-items li {
+    padding: 12px 0;
+    border-bottom: 1px dashed #e9ecef;
+    font-size: 1rem;
+    color: #444;
+    font-family: inherit;
+}
+
+.group-list-items li:last-child {
+    border-bottom: none;
+}
+
+.group-list-items li:nth-child(n+5) {
+    display: none;
+}
+
+.group-more-toggle {
+    text-align: center;
+    margin-top: 18px;
+}
+
+/* AI Suggestions Card */
+.ai-advice-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-recommendation-text {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 25px;
+    flex-grow: 1;
+    font-family: inherit;
+}
+
+/* Past Reports Card */
+.report-listing-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.report-list-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    font-family: inherit;
+}
+
+.report-list-items li {
+    padding: 12px 0;
+    border-bottom: 1px dashed #e9ecef;
+    font-size: 1rem;
+    color: #444;
+    font-family: inherit;
+}
+
+.report-list-items li:last-child {
+    border-bottom: none;
+}
+
+.report-list-items li:nth-child(n+4) {
+    display: none;
+}
+
+.report-more-toggle {
+    text-align: center;
+    margin-top: 18px;
+}
+
+
+/* --- Custom Button Styles --- */
+.custom-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.05rem;
+    font-weight: 600;
+    transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.custom-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.3);
+}
+
+/* Primary Button */
+.custom-btn.primary-btn {
+    background-color: #007bff;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+.custom-btn.primary-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+}
+
+/* Secondary Button */
+.custom-btn.secondary-btn {
+    background-color: #6c757d;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(108, 117, 125, 0.2);
+}
+
+.custom-btn.secondary-btn:hover {
+    background-color: #545b62;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Tertiary Small Button (for "Create" button) */
+.custom-btn.tertiary-small-btn {
+    background-color: #f0f2f5;
+    color: #555;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.custom-btn.tertiary-small-btn:hover {
+    background-color: #e0e2e6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+.custom-btn.tertiary-small-btn .icon-add {
+    font-size: 1.2em;
+    margin-right: 5px;
+    color: #007bff;
+}
+
+
+/* Ghost Link Button (for "View More" toggles) */
+.custom-btn.ghost-link-btn {
+    background: none;
+    color: #007bff;
+    padding: 8px 15px;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.custom-btn.ghost-link-btn:hover {
+    color: #0056b3;
+    background-color: #e6f2ff;
+    text-decoration: none;
+    border-color: #b3d9ff;
+}
+
+/* Link Only Button (for "View All Groups") */
+.custom-btn.link-only-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    padding: 0;
+    text-decoration: underline;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.custom-btn.link-only-btn:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+
+/* Full Width Button */
+.custom-btn.full-width-btn {
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* --- Responsive Grid Layout --- */
+
+/* Default: 3 columns (3x2 like appearance on wider screens) */
+@media (min-width: 992px) {
+    .dashboard-grid-container {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-areas:
+            "driver trip score"
+            "group ai report";
+    }
+
+    .driver-info-card { grid-area: driver; }
+    .last-trip-card { grid-area: trip; }
+    .safety-score-card { grid-area: score; }
+    .my-groups-card { grid-area: group; }
+    .ai-suggestions-card { grid-area: ai; }
+    .past-reports-card { grid-area: report; }
+}
+
+/* Tablet (2x3 layout) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .dashboard-grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas:
+            "driver trip"
+            "score group"
+            "ai report";
+    }
+
+    .driver-info-card { grid-area: driver; }
+    .last-trip-card { grid-area: trip; }
+    .safety-score-card { grid-area: score; }
+    .my-groups-card { grid-area: group; }
+    .ai-suggestions-card { grid-area: ai; }
+    .past-reports-card { grid-area: report; }
+}
+
+/* Mobile (1x6 layout) */
+@media (max-width: 767px) {
+    .dashboard-grid-container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "driver"
+            "trip"
+            "score"
+            "group"
+            "ai"
+            "report";
+    }
+
+    .driver-info-card { grid-area: driver; }
+    .last-trip-card { grid-area: trip; }
+    .safety-score-card { grid-area: score; }
+    .my-groups-card { grid-area: group; }
+    .ai-suggestions-card { grid-area: ai; }
+    .past-reports-card { grid-area: report; }
+}
+
+/* Basic Icon Styles (place these in your global style.css or ensure they are loaded) */
+/* Assuming you are using a font icon library or custom SVGs */
+/* For demonstration, these are placeholders */
+.icon-driver::before { content: '👤'; }
+.icon-trip::before { content: '🛣️'; }
+.icon-score::before { content: '⭐'; }
+.icon-group::before { content: '👥'; }
+.icon-ai-suggest::before { content: '💡'; }
+.icon-report::before { content: '📄'; }
+.icon-arrow::before { content: '→'; }
+.icon-warning::before { content: '⚠️'; }
+.icon-add::before { content: '+'; }
+
+/* 外層用來致中整組按鈕 */
+.driver-communication-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.driver-communication-inner {
+  max-width: 500px; /* 控制最大寬度 */
+  width: 100%;
+}
+
+.driver-communication-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin-bottom: 50px;
+
+}
+
+.driver-communication-buttons .custom-btn {
+  flex: 1;
+  font-size: 1.1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  background-color: #444b5d;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 150px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.driver-communication-buttons .custom-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #b24dff, #2cd9ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.gradient-text, .icon{
+    font-size: 25px;
+}
+
+.stat-item span:first-child {
+  min-width: 80px;
+}
+
+.stat-value-text{
+    margin-top: 4px;
+}

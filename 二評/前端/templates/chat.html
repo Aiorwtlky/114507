@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}聊天室 · My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/chat.css') }}">
+<style>
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #111;
+    color: white;
+    padding: 0 5vw;
+  }
+  .timestamp {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.25rem;
+    text-align: right;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+  <div class="chat-header">
+    <div class="chat-title">花花</div>
+    <div class="chat-subtitle">2025.7.29 上午 10:24</div>
+  </div>
+  <div class="chat-body" id="chat-body">
+    <div class="message received">
+      <img class="avatar" src="https://via.placeholder.com/40" alt="avatar">
+      <div>
+        <div class="bubble">嘿，你今天有開車嗎？</div>
+        <div class="timestamp">10:24</div>
+      </div>
+    </div>
+    <div class="message sent">
+      <div>
+        <div class="bubble">有啊，剛結束 A13 那趟</div>
+        <div class="timestamp">10:25</div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-footer">
+    <input type="text" id="chat-input" placeholder="輸入訊息...">
+    <button id="send-button">傳送</button>
+  </div>
+  <div class="back-button-area">
+      <a href="/dashboard" class="custom-btn primary-btn">返回前頁</a>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const sendBtn = document.getElementById("send-button");
+  const input = document.getElementById("chat-input");
+  const chatBody = document.getElementById("chat-body");
+
+  function getCurrentTime() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  function createMessage(text, type = "sent") {
+    const msg = document.createElement("div");
+    msg.className = `message ${type}`;
+
+    const wrapper = document.createElement("div");
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+
+    const timestamp = document.createElement("div");
+    timestamp.className = "timestamp";
+    timestamp.textContent = getCurrentTime();
+
+    wrapper.appendChild(bubble);
+    wrapper.appendChild(timestamp);
+    msg.appendChild(wrapper);
+
+    if (type === "received") {
+      const avatar = document.createElement("img");
+      avatar.src = "https://via.placeholder.com/40";
+      avatar.className = "avatar";
+      msg.insertBefore(avatar, wrapper);
+    }
+
+    chatBody.appendChild(msg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function mockReply(userText) {
+    const replies = [
+      "真的假的XD",
+      "我剛剛也快睡著了...",
+      "司機辛苦了！",
+      "小心駕駛喔",
+      "你吃晚餐了嗎？"
+    ];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    setTimeout(() => createMessage(reply, "received"), 1000);
+  }
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    createMessage(text, "sent");
+    mockReply(text);
+    input.value = "";
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+</script>
+{% endblock %}

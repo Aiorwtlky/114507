@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}註冊 · 吾駕仙 My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/register.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="register-page">
+  <form class="register-form" method="post" action="{{ url_for('register') }}" enctype="multipart/form-data">
+    <div class="form-header">
+      <h2 class="mega-title gradient-text">建立駕駛帳號</h2>
+      <div class="photo-upload">
+        <label for="photo" class="upload-label">
+          <img id="photoPreview" src="{{ url_for('static', filename='img/user-placeholder.svg') }}" alt="預覽">
+          <span>上傳照片</span>
+        </label>
+        <input type="file" id="photo" name="photo" accept="image/*" hidden>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="name">姓名</label>
+        <input type="text" id="name" name="name" placeholder="請輸入真實姓名" required>
+      </div>
+      <div class="form-group">
+        <label for="username">使用者名稱</label>
+        <input type="text" id="username" name="username" placeholder="例如 driver123" required>
+      </div>
+      <div class="form-group">
+        <label for="email">電子郵件</label>
+        <input type="email" id="email" name="email" placeholder="example@email.com" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">聯絡電話</label>
+        <input type="tel" id="phone" name="phone" placeholder="09xxxxxxxx" required pattern="^09\d{8}$">
+      </div>
+      <div class="form-group">
+        <label for="license">駕照等級</label>
+        <select id="license" name="license" required>
+          <option value="">請選擇</option>
+          <option value="A">普通小型車</option>
+          <option value="B">大客車</option>
+          <option value="C">大貨車</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="experience">駕駛年資</label>
+        <input type="number" id="experience" name="experience" placeholder="以年為單位" required min="0">
+      </div>
+      <div class="form-group full">
+        <label for="password">設定密碼</label>
+        <input type="password" id="password" name="password" placeholder="至少 6 碼英數混合" required minlength="6">
+      </div>
+    </div>
+
+    <label>使用條款與隱私權政策</label>
+    <div class="scroll-box" id="termsBox">
+      <p>
+        吾駕仙 My Driving God 系統使用者條款暨隱私權聲明<br><br>
+        本系統將收集以下資料以提供您駕駛安全保障與服務：<br>
+        1. 使用者資訊（姓名、聯絡方式）<br>
+        2. 車輛與駕駛紀錄資料（如駕照等級、駕駛行為紀錄）<br>
+        3. 感測資料（影像、加速度、定位等）<br><br>
+        所有資料皆遵循個資法規定保存與加密處理，並僅用於安全分析與政策建議。<br>
+        若不同意，您可能無法註冊或使用本服務。請詳閱後滑至最下方以啟用勾選。
+      </p>
+    </div>
+
+    <label class="agree">
+      <input type="checkbox" id="agreeCheckbox" disabled>
+      我已閱讀並同意條款
+    </label>
+
+    <div class="form-footer">
+      <button class="btn" id="submitBtn" disabled>立即註冊</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/register.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.title }} · My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  .report-wrap{max-width:1280px;margin:16px auto;padding:0 18px;}
+  .map-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+            border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden;
+        position: relative;}
+  #map{width:100%; height:68vh;}
+  .meta{padding:12px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .badge{padding:6px 10px;border-radius:999px;background:rgba(92,194,255,.18);
+         border:1px solid rgba(255,255,255,.08); font-weight:600; font-size:12px}
+  .leaflet-container{background:#0b0f14;} /* 輕微融入你的深色底 */
+.custom-btn.primary-btn {
+  display: block; /* 改成 block */
+  margin: 40px auto 60px auto; /* 自動置中 */
+  font-size: 24px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+  width: fit-content; /* 寬度剛好包文字 */
+}
+
+
+
+/* Leaflet 縮放按鈕調整 */
+.leaflet-control-zoom {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.leaflet-control-zoom a {
+    background-color: rgba(30, 30, 30, 0.85) !important; /* 深灰底 */
+    color: #fff !important; /* 白色符號 */
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    width: 34px;
+    height: 34px;
+    line-height: 32px;
+    font-size: 18px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.leaflet-control-zoom a:hover {
+    background-color: rgba(92, 194, 255, 0.9) !important; /* 藍亮 hover */
+    transform: scale(1.05);
+}
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-wrap">
+  <h2 style="margin:10px 4px 12px">行程路徑（Leaflet + OSM）</h2>
+  <div class="map-card">
+    <div id="map"></div>
+    <div class="meta">
+      <span class="badge">Trip ID：{{ trip.id }}</span>
+      <span class="badge">起：{{ trip.start_time }}</span>
+      <span class="badge">迄：{{ trip.end_time }}</span>
+      <span class="badge" id="distanceBadge">距離計算中…</span>
+      
+    </div>
+  <div style="text-align: center">
+  <a href="/dashboard" class="custom-btn primary-btn">返回儀表板</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const PATH = {{ trip.path | tojson }};
+  // 深色底圖（CartoDB Dark Matter，免金鑰）
+  const DARK_TILE = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  const DARK_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+  const map = L.map('map', { zoomControl: true });
+
+  L.tileLayer(DARK_TILE, {
+    maxZoom: 20,
+    attribution: DARK_ATTR
+  }).addTo(map);
+
+  // 轉成 Leaflet LatLng 陣列
+  const latlngs = PATH.map(p => [p.lat, p.lng]);
+
+// 加底圖 & 等載入後再調亮度/對比
+const tile = L.tileLayer(DARK_TILE, { maxZoom: 20, attribution: DARK_ATTR }).addTo(map);
+// 底圖亮度/對比再加一些
+tile.once('load', () => {
+  const el = tile.getContainer();
+  if (el) el.style.filter = 'brightness(1.28) contrast(1.15)'; // ← 調高
+});
+
+// 路徑的 glow 更明顯
+L.polyline(latlngs, {
+  weight: 2.5,
+  opacity: 0.9,
+  color: '#ffffff',
+  dashArray: '6 8',
+}).addTo(map);
+
+const route = L.polyline(latlngs, { weight: 6, opacity: 1, color: '#8fe8ff' }).addTo(map); // 內層主線
+
+function halo(latlng, color){
+  return L.circle(latlng, { radius: 40, color, weight: 2, opacity: 0.15, fillOpacity: 0.08 });
+}
+halo(latlngs[0], '#7b5cff').addTo(map);
+halo(latlngs.at(-1), '#00d38d').addTo(map);
+
+
+// 起訖點（維持原本）
+const start = L.circleMarker(latlngs[0], { radius: 8, color: '#7b5cff', weight: 3, fillOpacity: 1 })
+  .addTo(map).bindTooltip('起點', {permanent:true, direction:'right'});
+const end = L.circleMarker(latlngs[latlngs.length-1], { radius: 8, color: '#00d38d', weight: 3, fillOpacity: 1 })
+  .addTo(map).bindTooltip('終點', {permanent:true, direction:'right'});
+
+// 以「細實心」那條計算縮放
+map.fitBounds(route.getBounds(), { padding: [60, 60] });
+
+
+  
+
+  // 粗略里程（哈弗辛）
+  function polylineDistanceKm(points){
+    const R = 6371; let total = 0;
+    for(let i=1;i <points.length;i++){
+      const [lat1,lng1] = points[i-1], [lat2,lng2] = points[i];
+      const dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+      total += 2*R*Math.asin(Math.sqrt(a));
+    }
+    return total;
+  }
+  document.getElementById('distanceBadge').textContent =
+    `總里程：約 ${polylineDistanceKm(latlngs).toFixed(2)} km`;
+</script>
+{% endblock %}

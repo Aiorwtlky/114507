@@ -1,0 +1,593 @@
+/* =========  變數  ========= */
+:root {
+  --header-h: 80px;
+  --bg-grad: radial-gradient(circle at 25% 25%, #03142A 0%, #000428 45%),
+    linear-gradient(120deg, #000428 10%, #002f7a 45%, #001B4E 100%);
+  --primary: #26F8FF;
+  --accent: #FF2D95;
+  --text: #fff;
+
+  --mega: clamp(4rem, 18vw, 18rem);
+  --lg: clamp(1.8rem, 4vw, 4rem);
+  --nav: clamp(1.4rem, 3vw, 3.2rem);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Oxanium", sans-serif;
+  color: var(--text)
+}
+
+body {
+  background: var(--bg-grad) fixed;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html.scroll-snap {
+  scroll-snap-type: y mandatory;
+}
+
+.hero,
+.features,
+footer {
+  scroll-snap-align: start;
+}
+
+
+/* 星空粒子 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(#fff 1px, transparent 1px);
+  background-size: 2px 2px;
+  opacity: .25;
+  animation: stars 60s linear infinite
+}
+
+@keyframes stars {
+  to {
+    background-position: -1000px 1000px
+  }
+}
+
+/* ---------- Header ---------- */
+#topbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(1px);
+  z-index: 999
+}
+
+.wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.2rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center
+}
+
+.brand {
+  /* font-size: var(--nav); */
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-shadow: 0 0 12px var(--primary);
+  font-size: 30px;
+  margin-left: 5%;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.4rem;
+  list-style: none;
+  margin-right: 5%;
+}
+
+.nav-links a {
+  font-size: var(--nav);
+  position: relative;
+  transition: .3s;
+  text-decoration: none;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 0;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: .3s
+}
+
+.nav-links a:hover {
+  color: var(--primary);
+  text-shadow: 0 0 8px var(--primary)
+}
+
+.nav-links a:hover::after {
+  width: 100%
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  min-height: 100vh;
+  padding-top: var(--header-h);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding-inline: 6vw;
+  scroll-snap-align: start
+}
+
+.mega-title {
+  font-size: var(--mega);
+  font-weight: 750;
+  line-height: 1.05
+}
+
+:root {
+  --primary: #00ffff;
+  --accent: #ff00ff;
+}
+
+.mega-title.gradient-text {
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shift 6s ease-in-out infinite;
+}
+
+@keyframes shift {
+  0% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shift 6s ease-in-out infinite
+}
+
+@keyframes shift {
+  50% {
+    background-position: 100% 0
+  }
+}
+
+.subtitle {
+  font-size: var(--lg);
+  margin-top: 1.4rem;
+  opacity: .9
+}
+
+/* ---------- CTA 按鈕 ---------- */
+.cta-group {
+  margin-top: 2.4rem;
+  display: flex;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  --grad: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  position: relative;
+  padding: 1rem 2.8rem;
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  font-weight: 500;
+  border-radius:30px;
+  border: none;
+  color: #fff;
+  background: var(--grad);
+  background-size: 200% auto;
+  text-decoration: none;
+  /* ← 加這行，按鈕字不再有底線 */
+  cursor: pointer;
+  transition: filter .3s;
+}
+
+#password{
+  margin-bottom: 40px;
+}
+
+.btn:hover {
+  filter: brightness(1.15)
+}
+
+/* 只亮度微升 */
+
+@media(max-width:540px) {
+  .cta-group {
+    flex-direction: column;
+    gap: 1rem
+  }
+}
+
+
+/* ---------- 向下箭頭 ---------- */
+.scroll-indicator {
+  position: fixed;
+  bottom: 3.5rem;
+  left: 50%;
+  top: 60vh; /* ← 這裡就是你要改的位置！ */
+  transform: translateX(-50%);
+  font-size: 3rem;
+  color: var(--primary);
+  animation: arrow 1.8s ease-in-out infinite;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity .35s;
+  z-index: 998
+
+}
+
+@keyframes arrow {
+
+  0%,
+  100% {
+    transform: translate(-50%, 0)
+  }
+
+  50% {
+    transform: translate(-50%, 10px)
+  }
+}
+
+/* ---------- Features ---------- */
+.features {
+  margin-top: 100px;
+  height: 100vh;
+  padding: 3rem 2.5vw;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 1rem;
+  place-content: center;
+  scroll-snap-align: start;
+  margin-bottom: 200px;
+}
+
+@media(max-width:991px) {
+  .features {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: .8rem;
+    padding-inline: 4vw
+  }
+}
+
+@media(max-width:599px) {
+  .features {
+    grid-template-columns: 1fr;
+    padding-inline: 6vw;
+    gap: .6rem
+  }
+}
+
+/* 卡片 */
+/* ---- Card（桌機預設）---- */
+.card {
+  width: 100%;
+  height: clamp(480px, 13vh, 600px);
+  /* 高度依視窗變化 */
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 22px;
+  padding: 1.6rem 1.2rem;
+  /* 內距跟著加大 */
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: .4s;
+  font-size: 2rem;
+  /* 基準字級，之後用 em 放大 */
+}
+
+
+
+/* 內文字級 & 漸層標題 */
+.card i {
+  font-size: 3.4em;
+  margin-bottom: .65em;
+  color: var(--glow);
+  filter: drop-shadow(0 0 6px var(--glow))
+}
+
+.card h3 {
+  font-size: 1.6em;
+  margin-bottom: .4em;
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  -webkit-background-clip: text;
+  color: transparent;
+  background-size: 200% auto;
+}
+
+.card p {
+  font-size: .9em;
+  opacity: .9
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, .45);
+  border-color: var(--glow)
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  background: linear-gradient(135deg, transparent 0%, var(--glow) 50%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0)content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: .55;
+  transition: .4s
+}
+
+.card:hover::before {
+  opacity: 1
+}
+
+/* 平板 (600–991px)：高度 & 字級稍縮 */
+@media(max-width:991px) {
+  .card {
+    height: clamp(360px, 25vh, 480px);
+    padding: 1.4rem 1.1rem;
+    font-size: .95rem
+  }
+
+  .card i {
+    font-size: 2.2rem
+  }
+
+  .card h3 {
+    font-size: 1.6rem
+  }
+
+  .card p {
+    font-size: .95rem
+  }
+}
+
+/* 手機 ≤599px：單欄、高度再縮，字級跟著縮 */
+@media(max-width:599px) {
+  .card {
+    height: clamp(120px, 28vh, 240px);
+    padding: 1.1rem .9rem;
+    font-size: .9rem
+  }
+
+  .card i {
+    font-size: 1.8rem
+  }
+
+  .card h3 {
+    font-size: 1.4rem
+  }
+
+  .card p {
+    font-size: .85rem
+  }
+}
+
+.card i {
+  font-size: 2.2em;
+  margin-bottom: .6em;
+  color: var(--glow);
+  filter: drop-shadow(0 0 5px var(--glow))
+}
+
+.card h3 {
+  font-size: 1.15em;
+  margin-bottom: .35em
+}
+
+.card p {
+  font-size: .85em;
+  opacity: .85
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, .45);
+  border-color: var(--glow)
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  background: linear-gradient(135deg, transparent 0%, var(--glow) 50%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0)content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: .55;
+  transition: .4s
+}
+
+.card:hover::before {
+  opacity: 1
+}
+
+.card.teal {
+  --glow: #26F8FF;
+}
+
+.card p {
+  min-height: 2.5em; /* 固定段落高度，根據字型大小調整 */
+  display: flex;
+  align-items: flex-start; /* 確保多行時仍靠上對齊 */
+  line-height: 1.4;
+}
+
+.card.pink {
+  --glow: #FF2D95
+}
+
+.card.amber {
+  --glow: #FFCA3A
+}
+
+.card.lime {
+  --glow: #8AC926
+}
+
+.card.blue {
+  --glow: #1982C4
+}
+
+.card.red {
+  --glow: #FF595E
+}
+
+/* ---------- Footer ---------- */
+footer {
+  background: rgba(0, 0, 0, .45);
+  backdrop-filter: blur(6px);
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 1rem;
+  scroll-snap-align: end
+}
+
+/* ---------- Layout fix：讓 footer 永遠貼底 ---------- */
+main {
+  flex: 1 0 auto;
+}
+
+/* ---------- 浮動背景圖 ---------- */
+#bg-icons {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  overflow: visible
+}
+
+.bg-icon {
+  position: absolute;
+  color: rgba(255, 255, 255, .18);
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, .35))
+}
+
+.nav-links a {
+  font-size: 30px;
+}
+
+.cta-group {
+  position: relative;
+  z-index: 100; /* 確保比下方卡片還高 */
+  margin-bottom: 200px;
+}
+
+.card h3 {
+  transition: transform 0.3s ease;
+}
+
+.card:hover h3 {
+  transform: scale(1.1);
+}
+
+.card i {
+  transition: transform 0.3s ease;
+}
+
+.card:hover i {
+  transform: scale(1.2);
+}
+
+.register-form {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); /* Safari 支援 */
+  border-radius: 16px;
+  border: 2px solid white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  position: relative; /* 👈 很重要 */
+  z-index: 10;         /* 👈 避免被背景圖蓋過 */
+}
+
+#license option {
+  background-color: #111; /* 深色選單背景 */
+  color: white;/* 文字白色 */
+}
+
+.dashboard-card {
+  border: 2px solid rgb(22, 21, 21) !important;
+
+  border-radius: 18px;
+  background: white; /* 或 rgba(255, 255, 255, 0.96) 更通透 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.custom-btn.primary-btn {
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shift 6s ease-in-out infinite;
+  background-color: #000;
+}
+@keyframes shift {
+  0% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+
+.custom-btn.primary-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 12px #00ffff88;
+}
+
+button.custom-btn.primary-btn {
+  background-color: #000 !important;
+}

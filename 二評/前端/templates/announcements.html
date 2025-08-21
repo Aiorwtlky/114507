@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}公告內容 · My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/announcements.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="announcements-wrapper">
+  <h2 class="announcement-heading">📢 公告內容</h2>
+
+  <div class="announcement-card">
+    <p class="announcement-date">2025/07/28</p>
+    <h3 class="announcement-title">系統維護通知</h3>
+    <p class="announcement-content">7/29 晚間將進行系統升級，屆時可能短暫無法使用...</p>
+  </div>
+
+  <div class="announcement-card">
+    <p class="announcement-date">2025/07/25</p>
+    <h3 class="announcement-title">新功能上線</h3>
+    <p class="announcement-content">群組功能正式推出，歡迎駕駛們使用！</p>
+  </div>
+
+  <div class="announcement-card">
+    <p class="announcement-date">2025/07/20</p>
+    <h3 class="announcement-title">放假公告</h3>
+    <p class="announcement-content">吾駕仙團隊將於月底放假兩日，如需客服請提前聯繫。</p>
+  </div>
+  <div class="back-button-area">
+      <a href="/dashboard" class="custom-btn primary-btn">返回前頁</a>
+    </div>
+</section>
+
+{% endblock %}

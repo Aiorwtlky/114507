@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}
+  所有行車報表 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/all_reports.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <section class="all-reports-section">
+    <h2 class="mega-title gradient-text">所有行車報表</h2>
+
+    <div class="reports-grid">
+      <!-- 每一筆報表 -->
+      <div class="report-card">
+        <p class="report-date">2025 年 7 月 20 日</p>
+        <p class="report-route">北大基隆集貨區 → 北大新莊總部</p>
+        <p class="report-score">
+          得分：<span class="score-number">87</span>
+        </p>
+      </div>
+
+      <div class="report-card">
+        <p class="report-date">2025 年 7 月 18 日</p>
+        <p class="report-route">北大八里集貨區 → 桃園機場</p>
+        <p class="report-score">
+          得分：<span class="score-number">95</span>
+        </p>
+      </div>
+
+      <div class="report-card">
+        <p class="report-date">2025 年 7 月 15 日</p>
+        <p class="report-route">臺北港 → 臺北第一果菜市場</p>
+        <p class="report-score">
+          得分：<span class="score-number">72</span>
+        </p>
+      </div>
+
+      <!-- 可持續新增更多報表卡片 -->
+    </div>
+    <div class="toggle-button-area">
+      <button class="all-reports-toggle">查看更多報表</button>
+    </div>
+    <div class="back-button-area">
+      <a href="/dashboard" class="custom-btn primary-btn">返回儀表板</a>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='js/all_reports.js') }}"></script>
+{% endblock %}

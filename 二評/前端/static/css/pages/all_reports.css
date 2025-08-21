@@ -1,0 +1,74 @@
+.all-reports-section {
+  padding: 3rem 5vw;
+}
+
+.mega-title {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.reports-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.report-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.report-date {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.report-route {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.report-score {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #76e1ff;
+}
+
+.score-number {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #00f0ff;
+}
+
+.back-button-area {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.all-reports-toggle {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background: var(--primary);
+  color: rgb(0, 0, 0);
+
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 5s ease;
+  margin-top: 2rem;
+}
+
+.all-reports-toggle:hover {
+  background: var(--accent);
+}
+
+.toggle-button-area {
+  text-align: center;
+}
