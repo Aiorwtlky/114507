@@ -1,3 +1,4 @@
+/* --- 基礎佈局 --- */
 .all-reports-section {
   padding: 3rem 5vw;
 }
@@ -12,8 +13,15 @@
   display: grid;
   gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
 }
 
+.back-button-area {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+/* --- 卡片基礎樣式 --- */
 .report-card {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 20px;
@@ -47,28 +55,154 @@
   color: #00f0ff;
 }
 
-.back-button-area {
-  margin-top: 3rem;
-  text-align: center;
+
+/* --- 按鈕美化 --- */
+.toggle-button-area {
+  text-align: center; /* 確保按鈕在容器中置中 */
 }
 
 .all-reports-toggle {
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
-  background: var(--primary);
-  color: rgb(0, 0, 0);
-
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  background-image: linear-gradient(45deg, #007bff 0%, #44c2fd 100%);
   border: none;
-  border-radius: 20px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 5s ease;
   margin-top: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+  transition: all 0.3s ease;
 }
 
 .all-reports-toggle:hover {
-  background: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.45);
 }
 
-.toggle-button-area {
-  text-align: center;
+.all-reports-toggle i {
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+
+/* --- 卡片展開/收合的動畫 --- */
+/* --- 卡片展開/收合的動畫 (Grid 佈局優化版) --- */
+
+/* 在 .report-card 預先定義好 transition */
+.report-card {
+  /* ... 您已有的樣式不用動 ... */
+  /* 關鍵：把 transition 寫在這裡 */
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* 這是 JS 要操作的「隱藏」樣式 */
+.report-card.is-hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  
+  /* 針對 Grid/Flex 佈局，用 max-height 比 height:0 更有效 */
+  max-height: 0;
+  
+  /* 移除所有會佔用空間的屬性 */
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0; /* 注意：grid 的 gap 仍然會存在 */
+  border-width: 0;
+  overflow: hidden;
+}
+
+/* 按鈕圖示的旋轉動畫 (這個維持不變) */
+.all-reports-toggle i {
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* --- 卡片 Hover 效果 --- */
+.report-card:hover {
+  /* 讓卡片向上移動 8px */
+  transform: translateY(-8px);
+  
+  /* 改變背景色，讓它更亮一點 */
+  background: rgba(255, 255, 255, 0.15);
+  
+  /* 讓邊框發出淡淡的青藍色光暈，呼應得分的顏色 */
+  border-color: rgba(0, 240, 255, 0.5);
+  
+  /* 可以加上更明顯的陰影，增加立體感 */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* --- 卡片展開的進階 Hover 效果 --- */
+
+/* 1. 調整 report-card 本身，讓高度變化更平順 */
+.report-card {
+  /* ... 您原有的樣式 ... */
+  /* 將 transition 屬性調整一下，讓高度變化更自然 */
+  /* 您也可以繼續用您原本的 cubic-bezier，效果會比較有彈性 */
+  transition: all 0.5s ease-out; 
+}
+
+/* 2. 美化新增的 report-details 區塊 */
+.report-details {
+  /* 預設狀態下，它是完全被隱藏的 */
+  overflow: hidden;
+  max-height: 0; /* 關鍵：高度為0，不佔用任何空間 */
+  opacity: 0;    /* 關鍵：完全透明 */
+  transform: translateY(15px); /* 讓它有一點點從下往上浮現的感覺 */
+  
+  /* 設定動畫效果，針對所有變化的屬性，在 0.5 秒內完成 */
+  transition: all 0.5s ease-in-out;
+}
+
+.report-details .divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 1rem 0;
+}
+
+.report-details .detail-item {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #f0f0f0;
+}
+
+.report-details .detail-item span {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7); /* 標題顏色淡一點 */
+}
+
+.report-details .detail-link {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00f0ff;
+  text-decoration: none;
+  transition: letter-spacing 0.3s ease;
+}
+
+.report-details .detail-link:hover {
+  letter-spacing: 0.5px; /* 連結 hover 時有點小互動 */
+  text-decoration: underline;
+}
+
+
+/* 3. 當滑鼠滑過整張卡片時，觸發變化 */
+.report-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+  
+  /* 新增：讓這張卡片浮到其他卡片之上 */
+  z-index: 10;
+}
+
+/* 關鍵中的關鍵：當滑鼠滑過 .report-card 時，
+   它內部的 .report-details 會變成下面的樣式 */
+.report-card:hover .report-details {
+  opacity: 1;                 /* 變為完全可見 */
+  max-height: 250px;          /* 給予一個足夠大的高度讓內容顯示 */
+  transform: translateY(0);   /* 回到原位 */
 }

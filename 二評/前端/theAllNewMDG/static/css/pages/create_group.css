@@ -1,0 +1,186 @@
+/* --- 基礎佈局 --- */
+.create-group-section {
+  max-width: 800px !important;
+  margin: 0 auto !important;
+  border: 2px solid red;
+  /* 加上紅色框線來確認有沒有選到 */
+}
+
+.mega-title {
+  font-size: 2.5rem;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+/* --- 主卡片 (玻璃擬態) --- */
+.create-group-card {
+  background: rgba(40, 42, 54, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.card-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+/* --- 搜尋列 --- */
+.search-bar-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.friend-search-input {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
+  /* 左邊留給圖示 */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.friend-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.friend-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  /* 使用您的主題亮色 */
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+/* --- 好友列表 --- */
+.friend-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 400px;
+  /* 設定最大高度 */
+  overflow-y: auto;
+  /* 超出高度就產生捲軸 */
+  padding-right: 10px;
+  /* 留空間給捲軸，避免內容太貼邊 */
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.friend-item:last-child {
+  border-bottom: none;
+}
+
+.profile-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.friend-name {
+  flex-grow: 1;
+  /* 佔滿中間所有剩餘空間 */
+  font-size: 1.1rem;
+  color: #f0f0f0;
+}
+
+/* --- 自訂 Checkbox 樣式 (模仿 LINE 的關鍵) --- */
+.checkbox-wrapper {
+  position: relative;
+}
+
+.custom-checkbox {
+  display: none;
+  /* 隱藏原始的 checkbox */
+}
+
+.custom-checkbox+label {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* 選中時的樣式 */
+.custom-checkbox:checked+label {
+  background-color: #00B900;
+  /* LINE 的綠色 */
+  border-color: #00B900;
+}
+
+/* 用偽元素 ::after 製作打勾圖示 */
+.custom-checkbox:checked+label::after {
+  content: '\f00c';
+  /* Font Awesome 的打勾圖示代碼 */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 16px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+/* --- 操作按鈕區 --- */
+/* --- 操作按鈕區 --- */
+.action-area {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-end; /* 按鈕靠右 */
+  gap: 1.5rem; /* <<<<<< 增加按鈕之間的間距 (從 1rem 變 1.5rem) */
+}
+
+/* 統一樣式 Primary Button */
+.custom-btn.primary-btn {
+  /* 基本設定 */
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem; /* <<<<<< 也可以微調字體大小 */
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+
+  /* 統一外觀 */
+  background-color: #f0f2f5;
+  color: #0c0c0c;
+  padding: 14px 32px; /* <<<<<< 增加上下左右的內距，讓按鈕變大 */
+  border-radius: 50px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.custom-btn.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  background-color: #ffffff;
+}

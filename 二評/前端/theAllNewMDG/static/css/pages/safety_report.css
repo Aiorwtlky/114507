@@ -1,0 +1,142 @@
+/* --- 基礎佈局 --- */
+.report-section {
+  padding: 3rem 5vw;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mega-title {
+  font-size: 2.5rem;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: #e0e0e0;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.back-button-area {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+/* --- 主要總覽卡片 --- */
+.summary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  
+  /* 儀表板風格的玻璃擬態 */
+  background: rgba(40, 42, 54, 0.5); /* 帶有顏色的深色背景 */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.summary-info .summary-date {
+  font-size: 1rem;
+  color: #a0a0a0;
+  margin-bottom: 0.5rem;
+}
+
+.summary-info .summary-route {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.summary-score {
+  text-align: right;
+}
+
+.summary-score .score-label {
+  font-size: 1.1rem;
+  color: #c0c0c0;
+}
+
+.summary-score .score-number {
+  font-size: 4rem;
+  font-weight: 800;
+  color: #00f0ff; /* 亮藍色主題色 */
+  line-height: 1.1;
+}
+
+
+/* --- 細項分析網格 --- */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-card {
+  /* 儀表板風格的玻璃擬態 */
+  background: rgba(40, 42, 54, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-title i {
+  color: #00f0ff;
+  font-size: 1.2rem;
+}
+
+.card-description {
+  font-size: 0.95rem;
+  color: #b0b0b0;
+  margin-bottom: 1.5rem;
+}
+
+/* --- 指標與細項樣式 --- */
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.metric-item:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  font-size: 1rem;
+  color: #d0d0d0;
+}
+
+.metric-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.metric-value.ok { color: #50fa7b; } /* 綠色 - 安全 */
+.metric-value.warning { color: #f1fa8c; } /* 黃色 - 警告 */
+.metric-value.danger { color: #ff5555; } /* 紅色 - 危險 */
+.metric-value .deduction {
+  font-size: 0.9rem;
+  font-weight: 400;
+  margin-left: 8px;
+  opacity: 0.8;
+}

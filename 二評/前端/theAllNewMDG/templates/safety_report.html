@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}
+  行程安全報告 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/safety_report.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <section class="report-section">
+    <h2 class="mega-title gradient-text">行程安全報告</h2>
+
+    <div class="summary-card">
+      <div class="summary-info">
+        <p class="summary-date">2025 年 7 月 23 日 09:30 - 15:45</p>
+        <p class="summary-route">北大八里集貨區 → 臺北港 → 信義遠百 A13 → 信義微風南山</p>
+      </div>
+      <div class="summary-score">
+        <p class="score-label">本次安全總分</p>
+        <p class="score-number">89</p>
+      </div>
+    </div>
+
+    <h3 class="section-title">安全駕駛細項分析</h3>
+    <div class="details-grid">
+      <div class="detail-card">
+        <h4 class="card-title"><i class="fa-solid fa-arrows-spin"></i> 駕駛穩定性</h4>
+        <p class="card-description">評估您在行駛過程中的平穩程度。</p>
+        <div class="metric-item">
+          <span class="metric-label">急加速次數</span>
+          <span class="metric-value danger">2 次 <span class="deduction">(-4分)</span></span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">急煞車次數</span>
+          <span class="metric-value danger">1 次 <span class="deduction">(-2分)</span></span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">急轉彎次數</span>
+          <span class="metric-value warning">1 次 <span class="deduction">(-1分)</span></span>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <h4 class="card-title"><i class="fa-solid fa-eye"></i> 駕駛專注度</h4>
+        <p class="card-description">偵測可能分心的駕駛行為。</p>
+        <div class="metric-item">
+          <span class="metric-label">行車中使用手機</span>
+          <span class="metric-value danger">1 次 <span class="deduction">(-4分)</span></span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">疲勞駕駛偵測 (4秒)</span>
+          <span class="metric-value warning">1 次 <span class="deduction">(-2分)</span></span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">未注視前方</span>
+          <span class="metric-value ok">0 次</span>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <h4 class="card-title"><i class="fa-solid fa-gauge-high"></i> 速度合規性</h4>
+        <p class="card-description">監測您遵守速限的狀況。</p>
+        <div class="metric-item">
+          <span class="metric-label">總超速時長</span>
+          <span class="metric-value ok">0 秒</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">最高時速</span>
+          <span class="metric-value ok">98 km/h</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">主要行駛路段</span>
+          <span class="metric-value">台64線快速道路</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="back-button-area">
+      <a href="/dashboard" class="custom-btn primary-btn">返回儀表板</a>
+    </div>
+
+  </section>
+{% endblock %}

@@ -1,5 +1,6 @@
 .announcements-wrapper {
-  padding: 2rem 6vw; /* 左右留白 */
+  padding: 2rem 6vw;
+  /* 左右留白 */
   max-width: 800px;
   margin: 0 auto;
 }
@@ -19,13 +20,15 @@
 }
 
 .announcement-card {
-  background: rgba(10, 14, 20, 0.78); /* 更深的底色 */
+  background: rgba(10, 14, 20, 0.78);
+  /* 更深的底色 */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 1.2rem 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(4px); /* 模糊底圖 */
+  backdrop-filter: blur(4px);
+  /* 模糊底圖 */
   color: var(--text-light);
   transition: transform 0.2s ease;
 }
@@ -38,7 +41,8 @@
   font-size: 0.85rem;
   color: var(--text-gray);
   margin-bottom: 0.4rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); /* 加陰影 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  /* 加陰影 */
 }
 
 .announcement-title {
@@ -50,14 +54,16 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: animatedGradient 6s linear infinite;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* 陰影讓漸層字更清楚 */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  /* 陰影讓漸層字更清楚 */
 }
 
 .announcement-content {
   font-size: 1rem;
   line-height: 1.5;
   color: var(--text-light);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); /* 提高可讀性 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  /* 提高可讀性 */
 }
 
 .announcement-heading {
@@ -80,12 +86,14 @@
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(90deg, #39ff88, #2fbb50, #a8ffea); /* 更亮的綠漸層 */
+  background: linear-gradient(90deg, #39ff88, #2fbb50, #a8ffea);
+  /* 更亮的綠漸層 */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: animatedGradient 6s linear infinite;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.65); /* 提升對比度 */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.65);
+  /* 提升對比度 */
 }
 
 
@@ -93,6 +101,7 @@
   0% {
     background-position: 0% 50%;
   }
+
   100% {
     background-position: 100% 50%;
   }
@@ -102,4 +111,21 @@
   margin-top: 3rem;
   text-align: center;
   font-size: 20px;
+}
+
+/* 模糊效果 */
+.announcements-wrapper:hover .announcement-card:hover {
+  transform: scale(1.08) !important;
+  /* 放大 */
+  filter: blur(0) brightness(1);
+  /* 取消模糊，恢復亮度 */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+  /* 加強陰影 */
+  z-index: 10;
+  /* 將 hover 的卡片疊在上方 */
+
+  /* 更細緻的動畫 (為了方便閱讀，我幫您換行了) */
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    filter 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
 }

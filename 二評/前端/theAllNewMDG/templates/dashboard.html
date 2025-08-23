@@ -9,8 +9,6 @@
 
 {% block content %}
   <section class="dashboard-grid-container">
-
-
     <div class="dashboard-card driver-info-card">
       <div class="card-header-section">
         <div class="header-icon-wrapper">
@@ -64,11 +62,7 @@
           </p>
         </div>
         <div class="card-action-area">
-          <button class="custom-btn primary-btn full-width-btn"
-        onclick="window.location.href='{{ url_for('trip_report') }}'">
-  查看本次行程報告
-</button>
-
+          <button class="custom-btn primary-btn full-width-btn" onclick="window.location.href='{{ url_for('trip_report') }}'">查看本次行程報告</button>
         </div>
       </div>
     </div>
@@ -106,7 +100,7 @@
             </li>
           </ul>
           <div class="score-violation-more-toggle" data-target="score-list-items">
-            <button class="custom-btn ghost-link-btn">查看更多</button>
+            <a href="{{ url_for('safety_report') }}" class="custom-btn primary-btn">查看更多</a>
           </div>
         </div>
       </div>
@@ -118,7 +112,7 @@
           <i class="icon-group"></i>
         </div>
         <h2 class="header-title-text">我的群組</h2>
-        <button class="custom-btn tertiary-small-btn" aria-label="建立新群組"><i class="icon-add"></i> 建立</button>
+        <button class="custom-btn tertiary-small-btn" aria-label="建立新群組" onclick="window.location.href='{{ url_for('create_group') }}'"><i class="icon-add"></i> 建立</button>
       </div>
       <div class="card-body-content">
         <ul class="group-list-items">
@@ -143,11 +137,8 @@
       <div class="card-body-content ai-advice-section">
         <p class="ai-recommendation-text">系統偵測到您在本次行程中，方向燈未提示與疲勞閉眼次數有顯著上升。 為確保您的行車安全，建議每 90 分鐘休息 10 分鐘，並可考慮啟用車道維持輔助系統。</p>
         <div class="card-action-area">
-  <button class="custom-btn primary-btn full-width-btn" onclick="window.location.href='/coaching'">
-    查看完整建議
-  </button>
-</div>
-
+          <button class="custom-btn primary-btn full-width-btn" onclick="window.location.href='/coaching'">查看完整建議</button>
+        </div>
       </div>
     </div>
 
@@ -164,28 +155,24 @@
           <li>7 月 18 日：北大八里集貨區 - 桃園機場 (95分)</li>
           <li>7 月 15 日：臺北港 - 臺北第一果菜市場 (72分)</li>
         </ul>
-        <div class="report-more-toggle" data-target="report-list-items">
-          <button class="custom-btn ghost-link-btn">查看更多</button>
-        </div>
+
         <div class="card-action-area">
           <button class="custom-btn primary-btn full-width-btn" onclick="window.location.href='/all_reports'">查看所有報表</button>
         </div>
       </div>
     </div>
   </section>
-  <a href="/admin_chat" class="floating-chatbot-btn" title="智慧客服">
-    <i class="fa-solid fa-comments"></i>
-  </a>
-      <div class="driver-communication-wrapper">
-      <div class="driver-communication-inner">
-        <div class="driver-communication-buttons">
-          <button class="custom-btn secondary-btn" onclick="window.location.href='/announcements'">
-            <i class="icon">📢</i>
-            <span class="gradient-text onclick="window.location.href='/announcements'" >查看公告</span>
-          </button>
-        </div>
+  <a href="/admin_chat" class="floating-chatbot-btn" title="智慧客服"><i class="fa-solid fa-comments"></i></a>
+  <div class="driver-communication-wrapper">
+    <div class="driver-communication-inner">
+      <div class="driver-communication-buttons">
+        <button class="custom-btn secondary-btn" onclick="window.location.href='/announcements'">
+          <i class="icon">📢</i>
+          <span class="gradient-text">查看公告</span>
+        </button>
       </div>
     </div>
+  </div>
 {% endblock %}
 
 {% block extra_js %}

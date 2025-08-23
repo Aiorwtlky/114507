@@ -49,6 +49,17 @@ def chat():
 def admin_chat():
     return render_template("admin_chat.html")
 
+@app.route('/create_group')
+def create_group():
+    # 這裡未來可以從資料庫載入好友列表
+    return render_template('create_group.html')
+
+@app.route('/safety_report')
+def safety_report():
+    # 在這裡您可以從資料庫傳入真實數據
+    # 目前我們先直接渲染靜態頁面
+    return render_template('safety_report.html')
+
 @app.errorhandler(404)
 def not_found(_):
     return redirect(url_for("home"))
