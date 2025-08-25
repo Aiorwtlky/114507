@@ -1,17 +1,19 @@
 package com.example.mdgapp.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import com.example.mdgapp.ui.component.GaugeScoreCard
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,21 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mdgapp.R
-import com.example.mdgapp.ui.theme.MyApplicationTheme
-import com.example.mdgapp.ui.component.InteractiveLineChart
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.rememberCoroutineScope
-import com.example.mdgapp.ui.component.TopMenuBar
-import androidx.compose.ui.graphics.Brush
-import kotlinx.coroutines.CoroutineScope
-import androidx.compose.foundation.BorderStroke
-// import com.example.mdgapp.ui.screen.UploadFileListScreen // <- 1. 移除這個 import
 import com.example.mdgapp.data.model.UploadedFile
+import com.example.mdgapp.ui.component.GaugeScoreCard
+import com.example.mdgapp.ui.component.InteractiveLineChart
+import com.example.mdgapp.ui.component.TopMenuBar
+import com.example.mdgapp.ui.theme.MyApplicationTheme
+import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +77,9 @@ fun MainContent(
     var selectedMenu by remember { mutableStateOf("首頁") }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Color.Black),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // 上方選單列
@@ -96,7 +91,6 @@ fun MainContent(
                 selectedMenu = it
                 when (it) {
                     "公告" -> navController?.navigate("announcementList")
-                    // 2. 將 "上傳" 改為 "下載"，並將路由改為 "downloadFileList"
                     "下載" -> navController?.navigate("downloadFileList")
                     else -> selectedMenu = it
                 }
@@ -131,7 +125,10 @@ fun MainContent(
                 }
 
                 InteractiveLineChart(
-                    modifier = Modifier.fillMaxWidth().height(200.dp).padding(vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(vertical = 8.dp),
                     selectedTab = selectedTab
                 )
             }
@@ -164,7 +161,11 @@ fun MainContent(
                 NavigationItem(R.drawable.ic_map, "行駛軌跡") {
                     navController?.navigate("routeTracking")
                 }
-                NavigationItem(R.drawable.ic_list, "報表")
+                // --- ✅ 修改開始 ---
+                NavigationItem(R.drawable.ic_list, "報表") {
+                    navController?.navigate("reportList")
+                }
+                // --- ✅ 修改結束 ---
                 NavigationItem(R.drawable.ic_qr, "打卡") {
                     navController?.navigate("qrScan")
                 }
@@ -178,15 +179,12 @@ fun MainContent(
 fun TabItem(title: String, selected: Boolean, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        // 核心修改：選中時背景為白，未選中為黑
         color = if (selected) Color.White else Color.Black,
-        // 加上邊框讓黑色按鈕在黑色背景上更明顯
         border = BorderStroke(1.dp, Color.Gray),
         modifier = Modifier.clickable { onClick() }
     ) {
         Text(
             text = title,
-            // 核心修改：選中時文字為黑，未選中為白
             color = if (selected) Color.Black else Color.White,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )
