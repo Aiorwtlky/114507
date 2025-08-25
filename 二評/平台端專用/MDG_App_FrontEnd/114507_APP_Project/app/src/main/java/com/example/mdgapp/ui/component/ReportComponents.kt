@@ -20,7 +20,17 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-// --- ✅ 新增：專為報表列表設計的卡片元件 ---
+// --- ✅ 新增：根據分數回傳對應顏色的輔助函式 ---
+@Composable
+private fun getScoreColor(score: Int): Color {
+    return when {
+        score >= 90 -> Color(0xFF87CEEB) // 淡藍色 (Sky Blue)
+        score >= 80 -> Color.Green
+        score >= 60 -> Color.Yellow
+        else -> Color.Red
+    }
+}
+
 @Composable
 fun ReportListItemCard(date: LocalDate, totalScore: Int, onClick: () -> Unit) {
     val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.TRADITIONAL_CHINESE)
@@ -38,7 +48,16 @@ fun ReportListItemCard(date: LocalDate, totalScore: Int, onClick: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(formattedDate, color = Color.White, fontSize = 18.sp)
-                Text("$dayOfWeek - 總分: $totalScore", color = Color.Gray, fontSize = 14.sp)
+                // --- ✅ 修改點：讓分數顯示對應顏色 ---
+                Row {
+                    Text("$dayOfWeek - 總分: ", color = Color.Gray, fontSize = 14.sp)
+                    Text(
+                        text = totalScore.toString(),
+                        color = getScoreColor(score = totalScore),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -49,7 +68,6 @@ fun ReportListItemCard(date: LocalDate, totalScore: Int, onClick: () -> Unit) {
     }
 }
 
-// 總分儀錶板
 @Composable
 fun ScoreHeader(score: Int, rating: String, feedback: String) {
     Card(
@@ -62,7 +80,12 @@ fun ScoreHeader(score: Int, rating: String, feedback: String) {
         ) {
             Text("本次駕駛總分", fontSize = 16.sp, color = Color.Gray)
             Text(score.toString(), fontSize = 64.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Text(rating, fontSize = 20.sp, color = if (rating == "優異") Color.Green else Color.Yellow)
+            // --- ✅ 修改點：讓評級文字顯示對應顏色 ---
+            Text(
+                text = rating,
+                fontSize = 20.sp,
+                color = getScoreColor(score = score)
+            )
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = Color.Gray)
             Spacer(modifier = Modifier.height(12.dp))
@@ -72,7 +95,8 @@ fun ScoreHeader(score: Int, rating: String, feedback: String) {
     }
 }
 
-// 分項指標卡
+// ... 以下其他元件保持不變 ...
+
 @Composable
 fun MetricsCard(metrics: PerformanceMetrics) {
     Card(
@@ -100,7 +124,6 @@ fun MetricItem(label: String, score: Int) {
     }
 }
 
-// 事件紀錄卡
 @Composable
 fun EventLogCard(events: List<DangerousEventItem>) {
     Card(
@@ -131,7 +154,6 @@ fun EventRow(event: DangerousEventItem) {
     }
 }
 
-// 行程資訊卡
 @Composable
 fun TripInfoCard(info: TripInfo) {
     // 實作行程資訊卡...

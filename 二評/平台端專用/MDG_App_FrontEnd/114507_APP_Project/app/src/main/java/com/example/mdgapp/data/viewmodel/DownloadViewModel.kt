@@ -18,11 +18,9 @@ import kotlin.random.Random
 
 class DownloadViewModel : ViewModel() {
 
-    // 持有所有日期的日誌列表
     private val _dailyLogs = MutableStateFlow<List<DailyVideoLog>>(emptyList())
     val dailyLogs: StateFlow<List<DailyVideoLog>> = _dailyLogs.asStateFlow()
 
-    // 只持有當前被選中日期的日誌
     private val _selectedDateLog = MutableStateFlow<DailyVideoLog?>(null)
     val selectedDateLog: StateFlow<DailyVideoLog?> = _selectedDateLog.asStateFlow()
 
@@ -30,25 +28,21 @@ class DownloadViewModel : ViewModel() {
         fetchVideoLogs()
     }
 
-    /**
-     * 當使用者從主列表點擊某個日期時，更新 _selectedDateLog 的狀態。
-     */
     fun selectDate(date: LocalDate) {
-        val logForDate = _dailyLogs.value.find { it.date == date }
-        _selectedDateLog.value = logForDate
+        _selectedDateLog.value = _dailyLogs.value.find { it.date == date }
     }
 
     private fun fetchVideoLogs() {
         viewModelScope.launch {
             val today = LocalDate.now()
-            val logs = (0..6).map { dayIndex ->
+            // --- ✅ 修改點：改為模擬 3 天的資料 ---
+            _dailyLogs.value = (0..2).map { dayIndex ->
                 val date = today.minusDays(dayIndex.toLong())
                 DailyVideoLog(
                     date = date,
-                    videos = generateMockVideoFilesForDate(date)
+                    videos = generateSegmentedVideoFilesForDate(date)
                 )
             }
-            _dailyLogs.value = logs
         }
     }
 
@@ -65,22 +59,22 @@ class DownloadViewModel : ViewModel() {
         downloadManager.enqueue(request)
     }
 
-    private fun generateMockVideoFilesForDate(date: LocalDate): List<VideoFile> {
-        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
-        return (1..Random.nextInt(5, 15)).map {
-            val randomHour = Random.nextInt(0, 24)
-            val randomMinute = Random.nextInt(0, 60)
-            val randomSecond = Random.nextInt(0, 60)
-            val timestamp = date.atTime(randomHour, randomMinute, randomSecond)
+    // --- ✅ 修改點：重寫模擬資料生成邏輯 ---
+    private fun generateSegmentedVideoFilesForDate(date: LocalDate): List<VideoFile> {
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HH'h'")
+        // 一天 24 小時，每 3 小時一段，共 8 個檔案
+        return (0..7).map { segmentIndex ->
+            val startHour = segmentIndex * 3
+            val timestamp = date.atTime(startHour, 0) // 時間設定為區段的開始時間
             val fileName = "VID_${timestamp.format(formatter)}.mp4"
 
             VideoFile(
-                id = "${date}_$it",
+                id = "${date}_$segmentIndex",
                 fileName = fileName,
-                downloadUrl = "https://example.com/videos/$fileName",
-                fileSize = Random.nextLong(50_000_000, 300_000_000),
+                downloadUrl = "https://example.com/videos/$fileName", // 假的下載連結
+                fileSize = Random.nextLong(800_000_000, 2_500_000_000), // 模擬 800MB - 2.5GB
                 timestamp = timestamp
             )
-        }.sortedBy { it.timestamp }
+        }
     }
 }

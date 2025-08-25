@@ -51,7 +51,6 @@ fun HomeScreen(navController: NavController? = null) {
                 HorizontalDivider()
                 DrawerItem("FAQ")
                 DrawerItem("關於我們")
-                DrawerItem("設定")
             }
         }
     ) {
@@ -169,7 +168,10 @@ fun MainContent(
                 NavigationItem(R.drawable.ic_qr, "打卡") {
                     navController?.navigate("qrScan")
                 }
-                NavigationItem(R.drawable.ic_person, "我的")
+                // 在 HomeScreen.kt 的 MainContent 中
+                NavigationItem(R.drawable.ic_person, "我的") {
+                    navController?.navigate("profile")
+                }
             }
         }
     }

@@ -65,6 +65,10 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
         // =========================================================
+        // 在 AppNavGraph.kt 中
+        composable("profile") {
+            ProfileScreen(navController = navController)
+        }
     }
 }
 

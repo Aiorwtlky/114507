@@ -1,5 +1,6 @@
 package com.example.mdgapp.ui.component
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -21,7 +22,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-// 新的、用於日期列表的卡片
+// 用於日期列表的卡片
 @Composable
 fun DateListItemCard(date: LocalDate, videoCount: Int, onClick: () -> Unit) {
     val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.TRADITIONAL_CHINESE)
@@ -50,6 +51,7 @@ fun DateListItemCard(date: LocalDate, videoCount: Int, onClick: () -> Unit) {
     }
 }
 
+// 時間區段標頭
 @Composable
 fun TimeSlotHeader(timeSlotIndex: Int) {
     val startTime = timeSlotIndex * 3
@@ -64,6 +66,7 @@ fun TimeSlotHeader(timeSlotIndex: Int) {
     )
 }
 
+// 單一影片檔案卡片
 @Composable
 fun VideoFileCard(videoFile: VideoFile) {
     val context = LocalContext.current
@@ -80,7 +83,11 @@ fun VideoFileCard(videoFile: VideoFile) {
             Text("$formattedTime - $fileSizeMB", color = Color.Gray, fontSize = 12.sp)
         }
         Button(
-            onClick = { viewModel.startDownload(context, videoFile) },
+            // --- ✅ 修改點：加入 Toast 提示框 ---
+            onClick = {
+                Toast.makeText(context, "開始下載 ${videoFile.fileName}", Toast.LENGTH_SHORT).show()
+                viewModel.startDownload(context, videoFile)
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray, contentColor = Color.White),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
         ) {

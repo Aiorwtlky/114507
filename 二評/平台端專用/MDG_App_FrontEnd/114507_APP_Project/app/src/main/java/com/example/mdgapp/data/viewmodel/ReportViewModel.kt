@@ -37,13 +37,22 @@ class ReportViewModel : ViewModel() {
         }
     }
 
-    // --- 模擬資料生成 ---
     private fun createMockReportForDate(date: LocalDate): DrivingReport {
-        val score = Random.nextInt(75, 99)
+        // 調整分數範圍以測試所有顏色
+        val score = Random.nextInt(55, 101)
+
+        // --- ✅ 修改點：根據分數決定評級文字 ---
+        val scoreRating = when {
+            score >= 90 -> "優秀"
+            score >= 80 -> "良好"
+            score >= 60 -> "警告"
+            else -> "危險"
+        }
+
         return DrivingReport(
             date = date,
             totalScore = score,
-            scoreRating = if (score > 90) "優異" else if (score > 80) "良好" else "待改進",
+            scoreRating = scoreRating, // 使用新的評級文字
             comparisonWithAverage = Random.nextInt(-5, 6),
             geminiFeedback = listOf(
                 "整體駕駛平穩，請繼續保持。",
