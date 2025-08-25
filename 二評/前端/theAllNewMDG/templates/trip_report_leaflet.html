@@ -79,7 +79,7 @@
 
 /* -- 側邊欄卡片樣式 -- */
 .details-card {
-  background: rgba(30, 35, 45, 0.5);
+  background: rgba(25, 28, 40, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 20px;
@@ -156,6 +156,29 @@
   margin: 0;
   font-size: 12px;
   color: rgba(255,255,255,0.6);
+}
+
+/* --- 卡片滑鼠追蹤聚光燈 Hover 特效 --- */
+
+/* 1. 為卡片加上必要的設定和預設背景 */
+.details-card {
+  /* ... 您已有的樣式不用動 ... */
+  position: relative; /* 為了讓聚光燈能正確定位 */
+  overflow: hidden; /* 隱藏超出的光暈 */
+  
+  /* 透過 CSS 變數和 radial-gradient 來繪製聚光燈 */
+  /* 預設聚光燈在一個看不見的位置 */
+  background-image: radial-gradient(
+    circle at var(--mouse-x) var(--mouse-y), 
+    rgba(0, 240, 255, 0.20) 0%,  /* 光暈顏色可以微調得更亮一點 */
+    rgba(123, 92, 255, 0) 28%   /* 擴散範圍調大一點 */
+  );
+  
+  transition: transform 0.3s ease;
+}
+
+.details-card:hover {
+    transform: scale(1.02); /* 滑鼠移上時稍微放大 */
 }
 
 /* 不同事件的圖示顏色 */
@@ -341,5 +364,29 @@ EVENTS.forEach(event => {
 // 最後把里程數也更新到新的位置
 document.getElementById('distanceDisplay').textContent =
    `約 ${polylineDistanceKm(latlngs).toFixed(2)} km`;
+
+   // ... 您原本計算里程、建立事件列表的 JS ...
+
+// 最後把里程數也更新到新的位置
+document.getElementById('distanceDisplay').textContent =
+   `約 ${polylineDistanceKm(latlngs).toFixed(2)} km`;
+
+
+/* ↓↓↓ 請把這段 JS 加在這裡 ↓↓↓ */
+const cards = document.querySelectorAll('.details-card');
+
+cards.forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    // 計算滑鼠在卡片內的相對位置 (x, y)
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // 更新 CSS 變數，讓聚光燈跟隨滑鼠
+    card.style.setProperty('--mouse-x', `${x}px`);
+    card.style.setProperty('--mouse-y', `${y}px`);
+  });
+});
+/* ↑↑↑ JS 到此結束 ↑↑↑ */
 </script>
 {% endblock %}

@@ -7,7 +7,7 @@
   --accent: #FF2D95;
   --text: #fff;
 
-  --mega: clamp(4rem, 18vw, 18rem);
+  --mega: clamp(4rem, 12vw, 12rem);
   --lg: clamp(1.8rem, 4vw, 4rem);
   --nav: clamp(1.4rem, 3vw, 3.2rem);
 }
@@ -166,9 +166,11 @@ body::before {
   0% {
     background-position: 0% center;
   }
+
   50% {
     background-position: 100% center;
   }
+
   100% {
     background-position: 0% center;
   }
@@ -203,30 +205,53 @@ body::before {
   justify-content: center;
 }
 
+/* --- 方案一：能量湧現 --- */
+/* --- 方案三：邊框呼吸 --- */
 .btn {
   --grad: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-  position: relative;
+  position: relative; /* 為了讓偽元素定位，這行是必須的 */
   padding: 1rem 2.8rem;
   font-size: clamp(1.45rem, 3vw, 2.3rem);
   font-weight: 500;
-  border-radius:30px;
+  border-radius: 30px;
   border: none;
   color: #fff;
   background: var(--grad);
   background-size: 200% auto;
   text-decoration: none;
-  /* ← 加這行，按鈕字不再有底線 */
   cursor: pointer;
   transition: filter .3s;
 }
 
-#password{
+.btn:hover {
+  filter: brightness(1.15);
+}
+
+/* 用來產生光暈的偽元素 */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: -2px; right: -2px; bottom: -2px; left: -2px;
+  z-index: -1;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: inherit; /* 跟隨按鈕的圓角 */
+  
+  /* 預設狀態：透明且模糊 */
+  opacity: 0;
+  filter: blur(10px);
+  
+  transition: opacity 0.3s ease;
+}
+
+/* 滑鼠移上時，讓光暈浮現 */
+.btn:hover::before {
+  opacity: 0.8;
+}
+
+#password {
   margin-bottom: 40px;
 }
 
-.btn:hover {
-  filter: brightness(1.15)
-}
 
 /* 只亮度微升 */
 
@@ -243,7 +268,8 @@ body::before {
   position: fixed;
   bottom: 3.5rem;
   left: 50%;
-  top: 60vh; /* ← 這裡就是你要改的位置！ */
+  top: 60vh;
+  /* ← 這裡就是你要改的位置！ */
   transform: translateX(-50%);
   font-size: 3rem;
   color: var(--primary);
@@ -252,7 +278,6 @@ body::before {
   opacity: 1;
   transition: opacity .35s;
   z-index: 998
-
 }
 
 @keyframes arrow {
@@ -298,15 +323,14 @@ body::before {
 
 /* 卡片 */
 /* ---- Card（桌機預設）---- */
+/* ---- Card (桌機預設) ---- */
 .card {
   width: 100%;
   height: clamp(480px, 13vh, 600px);
-  /* 高度依視窗變化 */
   background: rgba(255, 255, 255, .07);
   border: 1px solid rgba(255, 255, 255, .15);
   border-radius: 22px;
   padding: 1.6rem 1.2rem;
-  /* 內距跟著加大 */
   backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
@@ -314,38 +338,47 @@ body::before {
   justify-content: center;
   text-align: center;
   transition: .4s;
-  font-size: 2rem;
-  /* 基準字級，之後用 em 放大 */
+  font-size: 2rem; 
 }
-
-
 
 /* 內文字級 & 漸層標題 */
 .card i {
-  font-size: 3.4em;
+  font-size: 3.4em; /* 圖示大小不變，作為視覺主體 */
   margin-bottom: .65em;
   color: var(--glow);
-  filter: drop-shadow(0 0 6px var(--glow))
+  filter: drop-shadow(0 0 6px var(--glow));
+  transition: transform 0.3s ease;
 }
 
 .card h3 {
-  font-size: 1.6em;
+  font-size: 1.2em;   /* <<< 已縮小 */
   margin-bottom: .4em;
   background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
   -webkit-background-clip: text;
   color: transparent;
   background-size: 200% auto;
+  transition: transform 0.3s ease;
 }
 
 .card p {
-  font-size: .9em;
-  opacity: .9
+  font-size: 0.8em;   /* <<< 已縮小 */
+  line-height: 1.5;   /* 稍微增加行高，讓小字更好讀 */
+  opacity: .9;
+  min-height: 2.5em; 
+  display: flex;
+  align-items: flex-start;
 }
 
 .card:hover {
   transform: translateY(-10px);
   box-shadow: 0 14px 26px rgba(0, 0, 0, .45);
-  border-color: var(--glow)
+  border-color: var(--glow);
+}
+.card:hover i {
+  transform: scale(1.1);
+}
+.card:hover h3 {
+  transform: scale(1.05);
 }
 
 .card::before {
@@ -357,7 +390,6 @@ body::before {
   pointer-events: none;
   background: linear-gradient(135deg, transparent 0%, var(--glow) 50%, transparent 100%);
   -webkit-mask: linear-gradient(#000 0 0)content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: .55;
   transition: .4s
@@ -367,45 +399,45 @@ body::before {
   opacity: 1
 }
 
-/* 平板 (600–991px)：高度 & 字級稍縮 */
+/* 平板 (600–991px)：字級稍縮 */
 @media(max-width:991px) {
   .card {
     height: clamp(360px, 25vh, 480px);
     padding: 1.4rem 1.1rem;
-    font-size: .95rem
+    font-size: .95rem;
   }
 
   .card i {
-    font-size: 2.2rem
+    font-size: 2.2rem;
   }
 
   .card h3 {
-    font-size: 1.6rem
+    font-size: 1.25rem; /* <<< 已縮小 */
   }
 
   .card p {
-    font-size: .95rem
+    font-size: .85rem;  /* <<< 已縮小 */
   }
 }
 
-/* 手機 ≤599px：單欄、高度再縮，字級跟著縮 */
+/* 手機 ≤599px：字級跟著縮 */
 @media(max-width:599px) {
   .card {
     height: clamp(120px, 28vh, 240px);
     padding: 1.1rem .9rem;
-    font-size: .9rem
+    font-size: .9rem;
   }
 
   .card i {
-    font-size: 1.8rem
+    font-size: 1.8rem;
   }
 
   .card h3 {
-    font-size: 1.4rem
+    font-size: 1.2rem; /* <<< 已縮小 */
   }
 
   .card p {
-    font-size: .85rem
+    font-size: .8rem;   /* <<< 已縮小 */
   }
 }
 
@@ -455,9 +487,11 @@ body::before {
 }
 
 .card p {
-  min-height: 2.5em; /* 固定段落高度，根據字型大小調整 */
+  min-height: 2.5em;
+  /* 固定段落高度，根據字型大小調整 */
   display: flex;
-  align-items: flex-start; /* 確保多行時仍靠上對齊 */
+  align-items: flex-start;
+  /* 確保多行時仍靠上對齊 */
   line-height: 1.4;
 }
 
@@ -517,7 +551,8 @@ main {
 
 .cta-group {
   position: relative;
-  z-index: 100; /* 確保比下方卡片還高 */
+  z-index: 100;
+  /* 確保比下方卡片還高 */
   margin-bottom: 200px;
 }
 
@@ -540,24 +575,30 @@ main {
 .register-form {
   background: rgba(255, 255, 255, 0.01);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px); /* Safari 支援 */
+  -webkit-backdrop-filter: blur(8px);
+  /* Safari 支援 */
   border-radius: 16px;
   border: 2px solid white;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  position: relative; /* 👈 很重要 */
-  z-index: 10;         /* 👈 避免被背景圖蓋過 */
+  position: relative;
+  /* 👈 很重要 */
+  z-index: 10;
+  /* 👈 避免被背景圖蓋過 */
 }
 
 #license option {
-  background-color: #111; /* 深色選單背景 */
-  color: white;/* 文字白色 */
+  background-color: #111;
+  /* 深色選單背景 */
+  color: white;
+  /* 文字白色 */
 }
 
 .dashboard-card {
   border: 2px solid rgb(22, 21, 21) !important;
 
   border-radius: 18px;
-  background: white; /* 或 rgba(255, 255, 255, 0.96) 更通透 */
+  background: white;
+  /* 或 rgba(255, 255, 255, 0.96) 更通透 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   position: relative;
 }
@@ -571,13 +612,16 @@ main {
   animation: shift 6s ease-in-out infinite;
   background-color: #000;
 }
+
 @keyframes shift {
   0% {
     background-position: 0% center;
   }
+
   50% {
     background-position: 100% center;
   }
+
   100% {
     background-position: 0% center;
   }
@@ -590,4 +634,90 @@ main {
 
 button.custom-btn.primary-btn {
   background-color: #000 !important;
+}
+
+/* --- 品牌故事彈出式視窗 --- */
+.brand-info-popup {
+  position: absolute;
+  top: 70px; /* 從導覽列下方彈出 */
+  left: 50%;
+  transform: translateX(-50%); /* 水平置中 */
+  width: 600px; /* 設定一個固定寬度 */
+  max-width: 90vw; /* 在小螢幕上不要超出畫面 */
+  z-index: 1000;
+
+  /* 使用我們熟悉的玻璃擬態效果 */
+  background: rgba(25, 28, 40, 0.85);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  padding: 24px;
+
+  /* 預設狀態：隱藏且稍微向上移 */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(-10px);
+  pointer-events: none; /* 隱藏時不可點擊 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 當 JS 加上 .show class 時的樣式 */
+.brand-info-popup.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto; /* 顯示時恢復可點擊 */
+}
+
+.brand-info-layout {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand-info-visual {
+  flex-shrink: 0;
+  width: 150px;
+  height: 150px;
+}
+
+.brand-info-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  background-color: #fff; /* 如果圖片有透明背景，給一個白色底 */
+}
+
+.brand-info-content h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 10px 0;
+}
+
+.brand-info-content p {
+  font-size: 0.95rem;
+  color: #cfe4f8;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.btn-more-story {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #000;
+  text-decoration: none;
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.btn-more-story:hover {
+  background: #cfe4f8;
+  transform: scale(1.05);
 }

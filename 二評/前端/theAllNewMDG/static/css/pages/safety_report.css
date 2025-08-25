@@ -32,9 +32,10 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1.5rem;
-  
+
   /* 儀表板風格的玻璃擬態 */
-  background: rgba(40, 42, 54, 0.5); /* 帶有顏色的深色背景 */
+  /* 修改後的設定 (85% 不透明，顏色也微調得更深邃) */
+  background: rgba(25, 28, 40, 0.85);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -66,7 +67,8 @@
 .summary-score .score-number {
   font-size: 4rem;
   font-weight: 800;
-  color: #00f0ff; /* 亮藍色主題色 */
+  color: #00f0ff;
+  /* 亮藍色主題色 */
   line-height: 1.1;
 }
 
@@ -80,7 +82,8 @@
 
 .detail-card {
   /* 儀表板風格的玻璃擬態 */
-  background: rgba(40, 42, 54, 0.5);
+  /* 修改後的設定 (85% 不透明，顏色也微調得更深邃) */
+  background: rgba(25, 28, 40, 0.85);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
@@ -117,6 +120,7 @@
   padding: 0.8rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .metric-item:last-child {
   border-bottom: none;
 }
@@ -131,12 +135,48 @@
   font-weight: 600;
 }
 
-.metric-value.ok { color: #50fa7b; } /* 綠色 - 安全 */
-.metric-value.warning { color: #f1fa8c; } /* 黃色 - 警告 */
-.metric-value.danger { color: #ff5555; } /* 紅色 - 危險 */
+.metric-value.ok {
+  color: #50fa7b;
+}
+
+/* 綠色 - 安全 */
+.metric-value.warning {
+  color: #f1fa8c;
+}
+
+/* 黃色 - 警告 */
+.metric-value.danger {
+  color: #ff5555;
+}
+
+/* 紅色 - 危險 */
 .metric-value .deduction {
   font-size: 0.9rem;
   font-weight: 400;
   margin-left: 8px;
   opacity: 0.8;
+}
+
+/* --- 方案 B：互動滑鼠聚光燈 Hover 特效 --- */
+
+/* 1. 為卡片加上必要的設定和預設背景 */
+.detail-card {
+  position: relative;
+  /* 為了讓聚光燈能正確定位 */
+  overflow: hidden;
+  /* 隱藏超出的光暈 */
+
+  /* 透過 CSS 變數和 radial-gradient 來繪製聚光燈 */
+  /* 預設聚光燈在一個看不見的位置 */
+  background-image: radial-gradient(circle at var(--mouse-x) var(--mouse-y),
+      rgba(0, 240, 255, 0.15) 0%,
+      rgba(123, 92, 255, 0) 25%);
+
+  transition: transform 0.3s ease;
+  /* 保留一個簡單的動畫 */
+}
+
+.detail-card:hover {
+  transform: scale(1.02);
+  /* 滑鼠移上時稍微放大 */
 }

@@ -1,0 +1,110 @@
+/*     此檔案專門用於「建立群組」的第二步頁面 
+    (為群組命名)。
+*/
+
+/* --- 基礎佈局 --- */
+.create-group-section {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    /* 加上紅色框線來確認有沒有選到 */
+}
+
+.mega-title {
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+/* --- 主卡片 (玻璃擬態) --- */
+.create-group-card {
+    /* 修改後的設定 (85% 不透明，顏色也微調得更深邃) */
+    background: rgba(25, 28, 40, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2.5rem 3rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.card-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+/* --- 輸入框 --- */
+.name-input-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.group-name-input {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.group-name-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.group-name-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+/* --- 操作按鈕區 --- */
+.action-area {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.5rem;
+}
+
+/* 統一樣式 Primary Button */
+.custom-btn.primary-btn {
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+
+    background-color: #f0f2f5;
+    color: #0c0c0c;
+    padding: 14px 32px;
+    border-radius: 50px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.custom-btn.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+}
+
+/* 調整「上一步」按鈕的樣式 */
+.custom-btn.reverse-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f0f2f5;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+}
+
+.custom-btn.reverse-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}

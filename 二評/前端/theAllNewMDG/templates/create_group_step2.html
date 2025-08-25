@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}
+  建立新群組 - 命名 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/create_group_step2.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <section class="create-group-section">
+    <h2 class="mega-title gradient-text">建立新群組</h2>
+
+    <div class="create-group-card">
+      <div class="card-content">
+        <h3 class="card-title">第二步：為群組命名</h3>
+
+        <div class="name-input-wrapper">
+          <input type="text" class="group-name-input" placeholder="例如：新北跑山團、通勤共乘群" required />
+        </div>
+
+        <div class="action-area">
+          <a href="{{ url_for('create_group') }}" class="custom-btn primary-btn reverse-btn">上一步</a>
+          <button class="custom-btn primary-btn" type="submit">完成</button>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

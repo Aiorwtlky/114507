@@ -1,0 +1,107 @@
+/* --- Admin Dashboard 佈局 --- */
+.admin-dashboard-wrap {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 18px;
+}
+
+/* --- 駕駛員列表主卡片 --- */
+.driver-list-card {
+    background: rgba(25, 28, 40, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* --- 列表標頭 --- */
+.driver-list-header {
+    display: flex;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    color: #a0a0a0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* --- 駕駛員橫列 --- */
+.driver-row {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background-color 0.2s ease;
+}
+
+.driver-row:last-child {
+    border-bottom: none;
+}
+
+.driver-row:hover {
+    background-color: rgba(92, 116, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* --- 欄位寬度設定 --- */
+.driver-info-col {
+    flex: 3; /* 佔 3 等分 */
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.trip-info-col {
+    flex: 2; /* 佔 2 等分 */
+}
+.score-col {
+    flex: 1; /* 佔 1 等分 */
+    text-align: right;
+}
+
+/* --- 橫列內部細節 --- */
+.driver-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.driver-name {
+    font-weight: 600;
+    color: #FFFFFF;
+    margin: 0 0 4px 0;
+}
+
+.driver-group {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    margin: 0;
+}
+
+.trip-date {
+    font-size: 0.95rem;
+    color: #cfe4f8;
+}
+
+.driver-score {
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+/* --- 分數顏色 --- */
+.score-good {
+    color: #50fa7b;
+    text-shadow: 0 0 8px rgba(80, 250, 123, 0.7);
+}
+.score-warning {
+    color: #f1fa8c;
+    text-shadow: 0 0 8px rgba(241, 250, 140, 0.7);
+}
+.score-bad {
+    color: #ff5555;
+    text-shadow: 0 0 8px rgba(255, 85, 85, 0.7);
+}

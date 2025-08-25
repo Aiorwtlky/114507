@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}管理者儀表板 · My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-wrap">
+    <h2 class="mega-title gradient-text">駕駛員總覽</h2>
+
+    <div class="driver-list-card">
+        <div class="driver-list-header">
+            <div class="header-item driver-info-col">駕駛員</div>
+            <div class="header-item trip-info-col">最近行程</div>
+            <div class="header-item score-col">安全分數</div>
+        </div>
+
+        <div class="driver-list-body">
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">黃仁勳</p>
+                        <p class="driver-group">北大物流 C 組</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/23</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-good">95</p>
+                </div>
+            </div>
+
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/avatar2.png') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">潘廷軒</p>
+                        <p class="driver-group">2024 雙十一支援隊</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/22</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-warning">78</p>
+                </div>
+            </div>
+
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/avatar3.png') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">李寇超</p>
+                        <p class="driver-group">北大職訓 24 B 班</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/21</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-bad">62</p>
+                </div>
+            </div>
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/avatar4.png') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">Taylor Swift</p>
+                        <p class="driver-group">桃園機場 - 快遞專送</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/20</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-good">88</p>
+                </div>
+            </div>
+
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/avatar5.png') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">The Weeknd</p>
+                        <p class="driver-group">北大物流 A 組</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/19</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-good">96</p>
+                </div>
+            </div>
+
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/avatar6.png') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">Dua Lipa</p>
+                        <p class="driver-group">新竹科學園區 - 精密儀器運送</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/18</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-warning">71</p>
+                </div>
+            </div>
+
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/avatar7.png') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">Ed Sheeran</p>
+                        <p class="driver-group">北大職訓 23 A 班</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/17</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-good">99</p>
+                </div>
+            </div>
+
+            <div class="driver-row">
+                <div class="driver-info-col">
+                    <img src="{{ url_for('static', filename='images/avatar8.png') }}" alt="駕駛員頭像" class="driver-avatar">
+                    <div class="driver-meta">
+                        <p class="driver-name">Billie Eilish</p>
+                        <p class="driver-group">冷鏈物流專隊</p>
+                    </div>
+                </div>
+                <div class="trip-info-col">
+                    <p class="trip-date">2025/08/16</p>
+                </div>
+                <div class="score-col">
+                    <p class="driver-score score-bad">58</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

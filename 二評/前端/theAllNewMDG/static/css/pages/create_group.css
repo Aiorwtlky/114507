@@ -14,7 +14,8 @@
 
 /* --- 主卡片 (玻璃擬態) --- */
 .create-group-card {
-  background: rgba(40, 42, 54, 0.5);
+  /* 修改後的設定 (85% 不透明，顏色也微調得更深邃) */
+  background: rgba(25, 28, 40, 0.85);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -155,8 +156,10 @@
   padding-top: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
-  justify-content: flex-end; /* 按鈕靠右 */
-  gap: 1.5rem; /* <<<<<< 增加按鈕之間的間距 (從 1rem 變 1.5rem) */
+  justify-content: flex-end;
+  /* 按鈕靠右 */
+  gap: 1.5rem;
+  /* <<<<<< 增加按鈕之間的間距 (從 1rem 變 1.5rem) */
 }
 
 /* 統一樣式 Primary Button */
@@ -166,7 +169,8 @@
   text-decoration: none;
   text-align: center;
   font-weight: 700;
-  font-size: 1.1rem; /* <<<<<< 也可以微調字體大小 */
+  font-size: 1.1rem;
+  /* <<<<<< 也可以微調字體大小 */
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.3s ease;
@@ -174,13 +178,14 @@
   /* 統一外觀 */
   background-color: #f0f2f5;
   color: #0c0c0c;
-  padding: 14px 32px; /* <<<<<< 增加上下左右的內距，讓按鈕變大 */
+  padding: 14px 32px;
+  /* <<<<<< 增加上下左右的內距，讓按鈕變大 */
   border-radius: 50px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .custom-btn.primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   background-color: #ffffff;
 }
