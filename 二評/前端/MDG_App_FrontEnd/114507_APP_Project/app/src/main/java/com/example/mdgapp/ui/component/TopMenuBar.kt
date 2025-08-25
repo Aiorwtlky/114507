@@ -1,12 +1,14 @@
-// 📁 com.example.mdgapp.ui.component.TopMenuBar.kt
 package com.example.mdgapp.ui.component
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,12 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.mdgapp.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.Image
-import androidx.navigation.NavController
-
 
 @Composable
 fun TopMenuBar(
@@ -28,13 +28,13 @@ fun TopMenuBar(
     drawerState: DrawerState,
     selectedMenu: String,
     onMenuSelected: (String) -> Unit,
-    modifier: Modifier = Modifier, // ✅ 新增這一行
+    modifier: Modifier = Modifier,
     navController: NavController
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.68f)) // ✅ 新增背景透明
+            .background(Color.Black.copy(alpha = 0.68f))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -56,7 +56,7 @@ fun TopMenuBar(
         )
 
         // 🔘 三個選單按鈕
-        listOf("首頁", "公告", "上傳").forEach { label ->
+        listOf("首頁", "公告", "下載").forEach { label ->
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = if (selectedMenu == label) Color.White else Color.Gray,
@@ -64,12 +64,17 @@ fun TopMenuBar(
                     .height(32.dp)
                     .clickable { onMenuSelected(label) }
             ) {
-                Text(
-                    text = label,
-                    color = if (selectedMenu == label) Color.Black else Color.White,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                )
+                // 為了讓文字在按鈕中垂直置中，我們用 Box 包起來
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                ) {
+                    Text(
+                        text = label,
+                        color = if (selectedMenu == label) Color.Black else Color.White,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
     }

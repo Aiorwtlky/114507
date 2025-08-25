@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +18,7 @@ import androidx.navigation.NavController
 
 data class Announcement(val date: String, val title: String, val preview: String)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnouncementListScreen(navController: NavController?) {
     val announcements = listOf(
@@ -24,17 +27,35 @@ fun AnnouncementListScreen(navController: NavController?) {
         Announcement("2025/07/20", "放假公告", "吾駕仙團隊將於月底放假兩日，如需客服請提前聯繫...")
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .padding(16.dp)
-    ) {
-        Text("公告內容", color = Color.White, fontSize = 24.sp)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("公告列表") },
+                navigationIcon = {
+                    IconButton(onClick = { navController?.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Black,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        },
+        containerColor = Color.Black
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             items(announcements) { item ->
                 AnnouncementCard(item) {
                     navController?.navigate("announcementDetail/${item.title}")
@@ -49,7 +70,7 @@ fun AnnouncementCard(item: Announcement, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }, // ← 點擊回呼
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF2B2B2B))
     ) {
@@ -67,4 +88,3 @@ fun AnnouncementCard(item: Announcement, onClick: () -> Unit) {
         }
     }
 }
-

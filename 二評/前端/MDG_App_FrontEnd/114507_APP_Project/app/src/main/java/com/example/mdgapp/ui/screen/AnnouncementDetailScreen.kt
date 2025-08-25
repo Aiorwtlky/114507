@@ -10,8 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,8 +20,12 @@ fun AnnouncementDetailScreen(title: String, navController: NavController? = null
             TopAppBar(
                 title = { Text("公告內容", color = Color.White) },
                 navigationIcon = {
-                    IconButton(onClick = { navController?.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回", tint = Color.White)
+                    IconButton(onClick = { navController?.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, // 優化圖示
+                            contentDescription = "返回",
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
@@ -46,4 +49,3 @@ fun AnnouncementDetailScreen(title: String, navController: NavController? = null
         }
     }
 }
-

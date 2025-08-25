@@ -27,17 +27,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.rememberCoroutineScope // ← 這行加進去
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.mdgapp.ui.component.TopMenuBar
 import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.CoroutineScope
-import com.example.mdgapp.ui.screen.UploadFileListScreen
+import androidx.compose.foundation.BorderStroke
+// import com.example.mdgapp.ui.screen.UploadFileListScreen // <- 1. 移除這個 import
 import com.example.mdgapp.data.model.UploadedFile
-
-
-
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +44,7 @@ fun HomeScreen(navController: NavController? = null) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = true, // ✅ 改回預設啟用手勢
+        gesturesEnabled = true,
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier
@@ -66,7 +62,6 @@ fun HomeScreen(navController: NavController? = null) {
             }
         }
     ) {
-        // ✅ 這裡不再需要 nestedScroll 或 pointerInput
         MainContent(
             drawerState,
             coroutineScope,
@@ -77,8 +72,7 @@ fun HomeScreen(navController: NavController? = null) {
     }
 }
 
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
     drawerState: DrawerState,
@@ -102,7 +96,8 @@ fun MainContent(
                 selectedMenu = it
                 when (it) {
                     "公告" -> navController?.navigate("announcementList")
-                    "上傳" -> navController?.navigate("uploadFileList")
+                    // 2. 將 "上傳" 改為 "下載"，並將路由改為 "downloadFileList"
+                    "下載" -> navController?.navigate("downloadFileList")
                     else -> selectedMenu = it
                 }
             },
@@ -122,13 +117,11 @@ fun MainContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
-                    GaugeScoreCard(score = 80, label = "駕駛行為分數", modifier = Modifier.weight(1f))
+                    GaugeScoreCard(score = 30, label = "駕駛行為分數", modifier = Modifier.weight(1f))
                 }
                 Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
-                    GaugeScoreCard(score = 80, label = "平均駕駛行為分數", modifier = Modifier.weight(1f))
+                    GaugeScoreCard(score = 86, label = "平均駕駛行為分數", modifier = Modifier.weight(1f))
                 }
-
-
 
                 Text("平均分數", fontSize = 22.sp, color = Color.White)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -143,7 +136,6 @@ fun MainContent(
                 )
             }
         }
-
 
         // 底部導覽列
         Box(
@@ -182,25 +174,24 @@ fun MainContent(
     }
 }
 
-
-
-
 @Composable
 fun TabItem(title: String, selected: Boolean, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = if (selected) Color.Black else Color.LightGray,
-        modifier = Modifier.clickable { onClick() } // 支援點擊
+        // 核心修改：選中時背景為白，未選中為黑
+        color = if (selected) Color.White else Color.Black,
+        // 加上邊框讓黑色按鈕在黑色背景上更明顯
+        border = BorderStroke(1.dp, Color.Gray),
+        modifier = Modifier.clickable { onClick() }
     ) {
         Text(
             text = title,
-            color = if (selected) Color.White else Color.Black,
+            // 核心修改：選中時文字為黑，未選中為白
+            color = if (selected) Color.Black else Color.White,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )
     }
 }
-
-
 
 @Composable
 fun NavigationItem(
@@ -277,7 +268,6 @@ fun InfoCard(
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
