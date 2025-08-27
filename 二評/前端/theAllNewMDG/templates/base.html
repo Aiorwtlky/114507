@@ -40,16 +40,18 @@
             </div>
             <div class="brand-info-content">
               <h4>品牌故事 MyDrivingGod</h4>
-              <p>我們是來自國立臺北商業大學資訊管理系的畢業專題團隊，成立於 2024 年冬季 。身處常被稱為「交通地獄」的台灣，我們深刻感受到現行的駕駛輔助系統，多半僅針對車外風險，卻忽略了駕駛者因疲勞、分心等「人因風險」所帶來的潛在威脅 。
-                為此，我們投入開發「吾駕仙」這套專注於駕駛行為的智慧分析系統，期望補足現行技術的不足 。我們的目標是建立一套能「理解並回應」駕駛狀態的智慧防線 ，集監控、分析與 AI 教練於一體，透過數據回饋與改善建議，實踐真正以人為本的主動式安全防護，為每一趟旅程守望 。</p>
+              <p>我們是來自國立臺北商業大學資訊管理系的畢業專題團隊，成立於 2024 年冬季 。身處常被稱為「交通地獄」的台灣，我們深刻感受到現行的駕駛輔助系統，多半僅針對車外風險，卻忽略了駕駛者因疲勞、分心等「人因風險」所帶來的潛在威脅 。 為此，我們投入開發「吾駕仙」這套專注於駕駛行為的智慧分析系統，期望補足現行技術的不足 。我們的目標是建立一套能「理解並回應」駕駛狀態的智慧防線 ，集監控、分析與 AI 教練於一體，透過數據回饋與改善建議，實踐真正以人為本的主動式安全防護，為每一趟旅程守望 。</p>
               <a href="#" class="btn-more-story">探索完整故事</a>
             </div>
           </div>
         </div>
 
-        <ul class="nav-links">
+        <ul class="nav-links" id="navLinks">
           <li>
-            <a href="{{ url_for('home') }}">首頁</a>
+            <a href="{{ url_for('home') }}" aria-label="回到首頁"><i class="fa-solid fa-house"></i></a>
+          </li>
+          <li>
+            <a href="#" class="hamburger-btn" id="hamburgerBtn" aria-label="開啟或關閉導覽列" role="button"><i class="fa-solid fa-bars"></i></a>
           </li>
         </ul>
       </nav>
@@ -98,6 +100,16 @@
         
         infoBox.addEventListener('mouseleave', () => {
           infoBox.classList.remove('show')
+        })
+        document.addEventListener('DOMContentLoaded', () => {
+          const hamburgerBtn = document.getElementById('hamburgerBtn')
+          const navLinks = document.querySelector('.nav-links')
+        
+          if (hamburgerBtn && navLinks) {
+            hamburgerBtn.addEventListener('click', () => {
+              navLinks.classList.toggle('is-active')
+            })
+          }
         })
       </script>
     {% endblock %}

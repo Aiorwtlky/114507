@@ -209,7 +209,8 @@ body::before {
 /* --- 方案三：邊框呼吸 --- */
 .btn {
   --grad: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-  position: relative; /* 為了讓偽元素定位，這行是必須的 */
+  position: relative;
+  /* 為了讓偽元素定位，這行是必須的 */
   padding: 1rem 2.8rem;
   font-size: clamp(1.45rem, 3vw, 2.3rem);
   font-weight: 500;
@@ -231,15 +232,19 @@ body::before {
 .btn::before {
   content: '';
   position: absolute;
-  top: -2px; right: -2px; bottom: -2px; left: -2px;
+  top: -2px;
+  right: -2px;
+  bottom: -2px;
+  left: -2px;
   z-index: -1;
   background: linear-gradient(90deg, var(--primary), var(--accent));
-  border-radius: inherit; /* 跟隨按鈕的圓角 */
-  
+  border-radius: inherit;
+  /* 跟隨按鈕的圓角 */
+
   /* 預設狀態：透明且模糊 */
   opacity: 0;
   filter: blur(10px);
-  
+
   transition: opacity 0.3s ease;
 }
 
@@ -338,12 +343,13 @@ body::before {
   justify-content: center;
   text-align: center;
   transition: .4s;
-  font-size: 2rem; 
+  font-size: 2rem;
 }
 
 /* 內文字級 & 漸層標題 */
 .card i {
-  font-size: 3.4em; /* 圖示大小不變，作為視覺主體 */
+  font-size: 3.4em;
+  /* 圖示大小不變，作為視覺主體 */
   margin-bottom: .65em;
   color: var(--glow);
   filter: drop-shadow(0 0 6px var(--glow));
@@ -351,7 +357,8 @@ body::before {
 }
 
 .card h3 {
-  font-size: 1.2em;   /* <<< 已縮小 */
+  font-size: 1.2em;
+  /* <<< 已縮小 */
   margin-bottom: .4em;
   background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
   -webkit-background-clip: text;
@@ -361,10 +368,12 @@ body::before {
 }
 
 .card p {
-  font-size: 0.8em;   /* <<< 已縮小 */
-  line-height: 1.5;   /* 稍微增加行高，讓小字更好讀 */
+  font-size: 0.8em;
+  /* <<< 已縮小 */
+  line-height: 1.5;
+  /* 稍微增加行高，讓小字更好讀 */
   opacity: .9;
-  min-height: 2.5em; 
+  min-height: 2.5em;
   display: flex;
   align-items: flex-start;
 }
@@ -374,9 +383,11 @@ body::before {
   box-shadow: 0 14px 26px rgba(0, 0, 0, .45);
   border-color: var(--glow);
 }
+
 .card:hover i {
   transform: scale(1.1);
 }
+
 .card:hover h3 {
   transform: scale(1.05);
 }
@@ -412,11 +423,13 @@ body::before {
   }
 
   .card h3 {
-    font-size: 1.25rem; /* <<< 已縮小 */
+    font-size: 1.25rem;
+    /* <<< 已縮小 */
   }
 
   .card p {
-    font-size: .85rem;  /* <<< 已縮小 */
+    font-size: .85rem;
+    /* <<< 已縮小 */
   }
 }
 
@@ -433,11 +446,13 @@ body::before {
   }
 
   .card h3 {
-    font-size: 1.2rem; /* <<< 已縮小 */
+    font-size: 1.2rem;
+    /* <<< 已縮小 */
   }
 
   .card p {
-    font-size: .8rem;   /* <<< 已縮小 */
+    font-size: .8rem;
+    /* <<< 已縮小 */
   }
 }
 
@@ -639,11 +654,15 @@ button.custom-btn.primary-btn {
 /* --- 品牌故事彈出式視窗 --- */
 .brand-info-popup {
   position: absolute;
-  top: 70px; /* 從導覽列下方彈出 */
+  top: 70px;
+  /* 從導覽列下方彈出 */
   left: 50%;
-  transform: translateX(-50%); /* 水平置中 */
-  width: 600px; /* 設定一個固定寬度 */
-  max-width: 90vw; /* 在小螢幕上不要超出畫面 */
+  transform: translateX(-50%);
+  /* 水平置中 */
+  width: 600px;
+  /* 設定一個固定寬度 */
+  max-width: 90vw;
+  /* 在小螢幕上不要超出畫面 */
   z-index: 1000;
 
   /* 使用我們熟悉的玻璃擬態效果 */
@@ -659,7 +678,8 @@ button.custom-btn.primary-btn {
   opacity: 0;
   visibility: hidden;
   transform: translateX(-50%) translateY(-10px);
-  pointer-events: none; /* 隱藏時不可點擊 */
+  pointer-events: none;
+  /* 隱藏時不可點擊 */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -668,7 +688,8 @@ button.custom-btn.primary-btn {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
-  pointer-events: auto; /* 顯示時恢復可點擊 */
+  pointer-events: auto;
+  /* 顯示時恢復可點擊 */
 }
 
 .brand-info-layout {
@@ -688,7 +709,8 @@ button.custom-btn.primary-btn {
   height: 100%;
   object-fit: cover;
   border-radius: 12px;
-  background-color: #fff; /* 如果圖片有透明背景，給一個白色底 */
+  background-color: #fff;
+  /* 如果圖片有透明背景，給一個白色底 */
 }
 
 .brand-info-content h4 {
@@ -720,4 +742,52 @@ button.custom-btn.primary-btn {
 .btn-more-story:hover {
   background: #cfe4f8;
   transform: scale(1.05);
+}
+
+
+
+/* 1. 強制顯示漢堡選單按鈕 */
+/* 無論螢幕多寬，都讓漢堡按鈕顯示出來 */
+.hamburger-btn {
+  display: block !important;
+}
+
+.hamburger-btn i {
+  font-size: 2rem;
+  /* 原始大小 */
+  color: var(--text);
+  /* 原始顏色 */
+  transition: color 0.3s ease;
+  background: transparent
+}
+
+/* --- 貼到 style.css 檔案的最下方 --- */
+
+/* 確保移除漢堡按鈕的所有背景和邊框樣式 */
+.hamburger-btn {
+  background: transparent !important;
+  /* 再次強調背景透明 */
+  border: none !important;
+  /* 移除邊框 */
+  box-shadow: none !important;
+  /* 移除任何陰影 */
+  outline: none !important;
+  /* 移除焦點時的藍色或黑色外框 */
+  padding: 0 !important;
+  /* 移除任何內邊距，讓圖示緊貼邊緣 */
+}
+
+/* 確保漢堡按鈕內部的 i 標籤（圖示本身）沒有額外背景 */
+.hamburger-btn i {
+  background: transparent !important;
+}
+
+
+/* 設定導覽列中「首頁」圖示的樣式 */
+.nav-links a i.fa-house {
+  font-size: 2rem;
+  /* 調整圖示大小，您可以改成 2.5rem 或 3rem 試試看 */
+  /* 設定圖示顏色，#333 是深灰色，您可以改成 white 或其他顏色碼 */
+  transition: color 0.3s ease;
+  /* 讓顏色變化有平滑的過渡效果 */
 }
