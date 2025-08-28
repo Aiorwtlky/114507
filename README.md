@@ -33,7 +33,6 @@
 | API 傳輸格式 | JSON |
 | Web 前端 | Django templates（或可改為 Vue/React） |
 | App | Android Studio（Java/Kotlin） |
-| 跨來源支援 | flask-cors |
 | 資料庫 | SQLite /  MySQL/P|
 
 ---
