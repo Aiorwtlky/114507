@@ -8,171 +8,163 @@
 {% endblock %}
 
 {% block content %}
-  <section class="dashboard-grid-container">
-    <div class="dashboard-card driver-info-card">
-      <div class="card-header-section">
-        <div class="header-icon-wrapper">
-          <i class="icon-driver"></i>
+  <div class="dashboard-container">
+    <div class="dashboard-column-left">
+      <div class="d-card personal-info-card">
+        <div class="d-card-header">
+          <h3>個人資訊</h3>
+          <a href="#" class="header-link">行程數據</a>
         </div>
-        <h2 class="header-title-text">駕駛資訊</h2>
-      </div>
-      <div class="card-body-content driver-details-content">
-        <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="driver photo" class="driver-profile-photo" />
-        <h3 class="driver-name-text">黃仁勳</h3>
-        <p class="driver-role-text">北大物流 C 組 ‧ 組長</p>
-        <div class="driver-stats-section">
-          <p class="stat-item">
-            <span>車牌號碼</span> <span class="stat-value-text">ABC-1234</span>
-          </p>
-          <p class="stat-item">
-            <span>累計里程</span> <span class="stat-value-text">12,580 公里</span>
-          </p>
-          <p class="stat-item">
-            <span>上次登入</span> <span class="stat-value-text">2025/07/23 18:30</span>
-          </p>
+        <div class="d-card-body">
+          <div class="profile-summary">
+            <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="driver photo" class="profile-avatar" />
+            <div class="profile-details">
+              <h4 class="profile-name">黃仁勳</h4>
+              <p class="profile-meta">123-987-654-321</p>
+              <p class="profile-meta">北大物流 C 組 ‧ 組長</p>
+            </div>
+          </div>
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span>累計里程:</span>
+              <span class="stat-value">8.021 公里</span>
+            </div>
+            <div class="stat-item">
+              <span>上次登入:</span>
+              <span class="stat-value">2025/08/18 09:57</span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="dashboard-card last-trip-card">
-      <div class="card-header-section">
-        <div class="header-icon-wrapper">
-          <i class="icon-trip"></i>
+      <div class="d-card my-groups-card">
+        <div class="d-card-header">
+          <h3>我的群組</h3>
         </div>
-        <h2 class="header-title-text">前次行程</h2>
-      </div>
-      <div class="card-body-content last-trip-details">
-        <p class="trip-date-time">7 月 23 日 09:30 - 15:45</p>
-        <p class="trip-route-info">
-          <span class="route-location">北大八里集貨區</span>
-          <i class="icon-arrow"></i>
-          <span class="route-location">臺北港</span>
-          <i class="icon-arrow"></i>
-          <span class="route-location">信義遠百 A13</span>
-          <i class="icon-arrow"></i>
-          <span class="route-location">信義微風南山</span>
-        </p>
-        <hr class="card-divider" />
-        <div class="trip-summary-metrics">
-          <p class="metric-item">
-            <span>總耗時</span> <span class="metric-value">6 小時 15 分鐘</span>
-          </p>
-          <p class="metric-item">
-            <span>總里程</span> <span class="metric-value">98.5 公里</span>
-          </p>
-        </div>
-        <div class="card-action-area">
-          <button class="custom-btn primary-btn full-width-btn" onclick="window.location.href='{{ url_for('trip_report') }}'">查看本次行程報告</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-card safety-score-card">
-      <div class="card-header-section">
-        <div class="header-icon-wrapper">
-          <i class="icon-score"></i>
-        </div>
-        <h2 class="header-title-text">安全總分</h2>
-      </div>
-      <div class="card-body-content score-display-area">
-        <div class="safety-score-main-display">
-          <div id="dashboardTotalScore" class="highlight-score">89</div>
-          <p class="safety-score-context-text">本次行程平均得分</p>
-          <p class="safety-score-comparison-text">
-            <span class="safety-score-arrow up">▲</span> 與上次相比提升 <span class="safety-score-percentage-change">2%</span>
-          </p>
-        </div>
-        <hr class="card-divider" />
-        <div class="safety-violation-reporting-section">
-          <h3>本次違規項目</h3>
-          <ul class="score-list-items">
-            <li class="score-violation-entry">
-              <span class="violation-description"><i class="icon-warning"></i> 14:30 轉彎未打方向燈 林森忠孝路口</span> {# Combined icon and text #}
-              <span class="score-deduction-points">-1</span>
-            </li>
-            <li class="score-violation-entry">
-              <span class="violation-description"><i class="icon-warning"></i> 14:34 疲勞閉眼 (4 秒) 忠孝東路二段</span>
-              <span class="score-deduction-points">-2</span>
-            </li>
-            <li class="score-violation-entry">
-              <span class="violation-description"><i class="icon-warning"></i> 14:40 行車中分心使用手機 忠孝東路五段</span>
-              <span class="score-deduction-points">-4</span>
-            </li>
+        <div class="d-card-body">
+          <ul class="group-list">
+            <li>北大物流 C 組</li>
+            <li>2024 雙十一宅配臨時隊</li>
+            <li>北大職訓 23A</li>
           </ul>
-          <div class="score-violation-more-toggle" data-target="score-list-items">
-            <a href="{{ url_for('safety_report') }}" class="custom-btn primary-btn">查看更多</a>
+          <div class="card-actions">
+            <a href="#" class="action-link">查看更多</a>
+            <a href="#" class="action-button">+ 建立</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-card trends-card">
+        <div class="d-card-header">
+          <h3>趨勢追蹤</h3>
+          <a href="#" class="header-link">♡</a>
+        </div>
+        <div class="d-card-body">
+          <div class="chart-placeholder">
+            <p>這裡是折線圖區域</p>
+            <p>2025年 | 95分</p>
+            <p>2024年 | 98.1分</p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="dashboard-card my-groups-card">
-      <div class="card-header-section">
-        <div class="header-icon-wrapper">
-          <i class="icon-group"></i>
-        </div>
-        <h2 class="header-title-text">我的群組</h2>
-        <button class="custom-btn tertiary-small-btn" aria-label="建立新群組" onclick="window.location.href='{{ url_for('create_group') }}'"><i class="icon-add"></i> 建立</button>
-      </div>
-      <div class="card-body-content">
-        <ul class="group-list-items">
-          <li>北大物流 C (生鮮)組</li>
-          <li>2024雙十一宅配支援隊</li>
-          <li>2024-04桃園機場緊急運送(竹苗)</li>
-          <li>北大職訓 24 B 班</li>
-        </ul>
-        <div class="group-more-toggle" data-target="group-list-items">
-          <button class="custom-btn link-only-btn">查看全部群組</button>
-        </div>
-      </div>
-    </div>
+    <div class="dashboard-column-right">
+      <div class="d-card last-trip-card--large">
+        <div class="d-card-body">
+          <div class="trip-section">
+            <div class="d-card-header" style="padding-left:0; padding-top:0;">
+              <h3>前次行程</h3>
+              <a href="#" class="header-link">!</a>
+            </div>
+            <p class="trip-meta">2025 年 7 月 23 日 15:40 - 21:50 ‧ 北大物流 C 組</p>
+            <p class="trip-meta">07/23 北大往信義遠百 A13 例行</p>
+            <div class="trip-route">
+              <span>北大八里集貨區</span> → <span>臺北港</span> → <span>信義遠百 A13</span>
+            </div>
+            <div class="trip-summary">
+              <div>
+                總耗時: <span>6 小時 10 分</span>
+              </div>
+              <div>
+                總里程: <span>95 公里</span>
+              </div>
+            </div>
+          </div>
 
-    <div class="dashboard-card ai-suggestions-card">
-      <div class="card-header-section">
-        <div class="header-icon-wrapper">
-          <i class="icon-ai-suggest"></i>
-        </div>
-        <h2 class="header-title-text">AI 行車建議</h2>
-      </div>
-      <div class="card-body-content ai-advice-section">
-        <p class="ai-recommendation-text">系統偵測到您在本次行程中，方向燈未提示與疲勞閉眼次數有顯著上升。 為確保您的行車安全，建議每 90 分鐘休息 10 分鐘，並可考慮啟用車道維持輔助系統。</p>
-        <div class="card-action-area">
-          <button class="custom-btn primary-btn full-width-btn" onclick="window.location.href='/coaching'">查看完整建議</button>
-        </div>
-      </div>
-    </div>
+          <hr class="internal-divider" />
 
-    <div class="dashboard-card past-reports-card">
-      <div class="card-header-section">
-        <div class="header-icon-wrapper">
-          <i class="icon-report"></i>
-        </div>
-        <h2 class="header-title-text">近期行車報表</h2>
-      </div>
-      <div class="card-body-content report-listing-section">
-        <ul class="report-list-items">
-          <li>7 月 20 日：北大基隆集貨區 - 北大新莊總部 (87分)</li>
-          <li>7 月 18 日：北大八里集貨區 - 桃園機場 (95分)</li>
-          <li>7 月 15 日：臺北港 - 臺北第一果菜市場 (72分)</li>
-        </ul>
+          <div class="score-and-violations-section">
+            <div class="score-section">
+              <h3>安全總分</h3>
+              <div class="score-display">87</div>
+              <p class="score-comparison">▲ 與上次相比提升 2%</p>
+            </div>
+            <div class="violations-section">
+              <h3>本次違規項目</h3>
+              <ul>
+                <li>
+                  <span>14:20 轉彎未打方向燈</span> <span>林森忠孝路口</span> <span class="deduction">-1</span>
+                </li>
+                <li>
+                  <span>14:34 疲勞閉眼 (4 秒)</span> <span>忠孝東路二段</span> <span class="deduction">-2</span>
+                </li>
+                <li>
+                  <span>14:40 行車中使用手機</span> <span>忠孝東路五段</span> <span class="deduction">-4</span>
+                </li>
+              </ul>
+              <div class="card-actions">
+                <a href="#" class="action-link">查詢</a>
+                <a href="#" class="action-button">完整違規項目</a>
+              </div>
+            </div>
+          </div>
 
-        <div class="card-action-area">
-          <button class="custom-btn primary-btn full-width-btn" onclick="window.location.href='/all_reports'">查看所有報表</button>
+          <hr class="internal-divider" />
+
+          <div class="ai-suggestion-section">
+            <h3>AI 行車建議</h3>
+            <div class="ai-suggestion-content">
+              <p># 路線優化建議</p>
+              <p># 駕駛行為提醒</p>
+              <p># 多喝水</p>
+            </div>
+            <div class="card-actions vertical-right">
+              <a href="{{ url_for('coaching') }}" class="action-button">查看完整建議</a>
+              <a href="#" class="action-button">列印本次報表</a>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-  <a href="/admin_chat" class="floating-chatbot-btn" title="智慧客服"><i class="fa-solid fa-comments"></i></a>
-  <div class="driver-communication-wrapper">
-    <div class="driver-communication-inner">
-      <div class="driver-communication-buttons">
-        <button class="custom-btn secondary-btn" onclick="window.location.href='/announcements'">
-          <i class="icon">📢</i>
-          <span class="gradient-text">查看公告</span>
-        </button>
+      <div class="dashboard-row">
+        <div class="d-card commute-avg-card">
+          <h3>通勤平均</h3>
+          <div class="chart-placeholder gauge">
+            <p>儀表板圖區域</p>
+            <p>平均分數 92 分</p>
+          </div>
+        </div>
+
+        <div class="d-card past-trips-card">
+          <h3>過往行程</h3>
+          <ul>
+            <li>
+              <span>2025/7/23 北大物流 C 組</span> <span>87</span>
+            </li>
+            <li>
+              <span>2025/7/20 北大物流 C 組</span> <span>89</span>
+            </li>
+            <li>
+              <span>2025/7/15 北大物流 C 組</span> <span>83</span>
+            </li>
+          </ul>
+          <a href="#" class="action-link">其他過往行程</a>
+        </div>
       </div>
     </div>
   </div>
+
+  <a href="/admin_chat" class="floating-chatbot-btn" title="智慧客服"><i class="fa-solid fa-comments"></i></a>
 {% endblock %}
 
 {% block extra_js %}

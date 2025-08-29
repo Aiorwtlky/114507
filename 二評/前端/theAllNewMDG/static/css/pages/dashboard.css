@@ -1,719 +1,293 @@
-/* General Dashboard Layout */
-.dashboard-grid-container {
+/* --- 全新 Dashboard CSS --- */
+
+/* ===== 主容器與佈局 ===== */
+.dashboard-container {
     display: grid;
-    gap: 24px; /* Slightly more space between cards */
-    padding: 25px; /* More padding around the entire grid */
-    max-width: 1280px; /* Slightly wider max width */
-    margin: 30px auto; /* Center the dashboard with increased vertical margin */
+    grid-template-columns: 1fr;
+    /* 手機上預設為單欄 */
+    gap: 24px;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 30px auto;
+    font-family: 'Noto Sans TC', sans-serif;
 }
 
-/* Base Card Styling */
-.dashboard-card {
+/* 在平板和桌機上變為兩欄 */
+/* 在平板和桌機上變為兩欄 */
+@media (min-width: 768px) {
+    .dashboard-container {
+        /* 將比例從 1:2 (33%:67%) 改為 2:3 (40%:60%) */
+        grid-template-columns: 2fr 3fr;
+    }
+}
+
+.dashboard-column-left,
+.dashboard-column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dashboard-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+
+/* ===== 卡片基礎樣式 ===== */
+.d-card {
     background-color: #ffffff;
-    border-radius: 16px; /* Slightly more rounded corners */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Stronger, softer shadow */
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effect */
-    font-family: 'Noto Sans TC', sans-serif, Arial; /* Added a default font-family here for consistency if not set in base.css */
-}
-
-.dashboard-card:hover {
-    transform: translateY(-3px); /* Lift card on hover */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
-}
-
-/* Card Header Styles */
-.card-header-section {
-    display: flex;
-    align-items: center;
-    padding: 18px 25px; /* Increased padding */
-    border-bottom: 1px solid #e0e0e0; /* Lighter border */
-    background-color: #f8f8f8; /* Unified light gray background for all card headers */
-}
-
-.header-icon-wrapper {
-    margin-right: 12px;
-    font-size: 26px; /* Slightly larger icon size */
-    color: #007bff; /* Primary brand color for icons */
-}
-
-.header-title-text {
-    font-size: 1.35rem; /* Slightly larger title */
-    font-weight: 700; /* Bolder */
-    color: #2c3e50; /* Darker, more prominent title color */
-    margin: 0;
-    flex-grow: 1;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-/* Card Body Styles */
-.card-body-content {
-    padding: 25px; /* Increased padding */
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-/* Card Action Area (for buttons at the bottom) */
-.card-action-area {
-    margin-top: auto;
-    padding-top: 20px; /* Increased padding */
-    border-top: 1px solid #e0e0e0;
-    text-align: center;
-}
-
-/* Horizontal Divider for Sections */
-.card-divider {
-    border: 0;
-    height: 1px;
-    background-color: #ddd; /* Slightly darker divider */
-    margin: 25px 0; /* Increased margin */
-}
-
-/* --- Specific Card Styles --- */
-
-/* Driver Card */
-.driver-info-card .driver-details-content {
-    align-items: center;
-    text-align: center;
-}
-
-.driver-profile-photo {
-    width: 110px; /* Slightly larger photo */
-    height: 110px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 20px;
-    border: 4px solid #007bff; /* Thicker border */
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); /* Blue shadow */
-}
-
-.driver-name-text {
-    font-size: 1.6rem;
-    font-weight: 800; /* Even bolder */
-    color: #212529; /* Deep black for name */
-    margin-bottom: 8px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.driver-role-text {
-    font-size: 1rem;
-    color: #555;
-    margin-bottom: 25px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.driver-stats-section .stat-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    font-size: 0.95rem;
-    font-family: inherit; /* Ensure consistent font with values */
-    border-bottom: 1px dashed #e9ecef; /* Lighter dashed border */
-}
-
-.driver-stats-section .stat-item span:first-child {
-    font-weight: 500; /* Make label slightly bold */
-    color: #212529; /* Explicitly set to black for titles */
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.driver-stats-section .stat-item:last-child {
-    border-bottom: none;
-}
-
-.driver-stats-section .stat-value-text {
-    font-weight: 700;
-    color: #212529; /* Darker value, now matching title black */
-    font-family: inherit; /* Inherit font from parent */
-}
-
-/* Last Trip Card */
-.last-trip-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.trip-date-time {
-    font-size: 1.05rem;
-    color: #6c757d; /* Slightly muted date/time */
-    margin-bottom: 12px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.trip-route-info {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px; /* Increased gap */
-    font-size: 1.15rem; /* Slightly larger */
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 18px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.route-location {
-    color: #007bff;
-    padding: 3px 8px; /* Add some padding */
-    background-color: #e6f2ff; /* Light blue background for locations */
-    border-radius: 6px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.trip-route-info .icon-arrow {
-    font-size: 0.9em;
-    color: #999;
-}
-
-.trip-summary-metrics .metric-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    font-size: 1rem;
-    color: #555; /* Base color for the item, but we'll override the label */
-    border-bottom: 1px dashed #e9ecef;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.trip-summary-metrics .metric-item:last-child {
-    border-bottom: none;
-}
-
-/* NEW ADDITION: Ensure the first span (label) has the correct color and font */
-.trip-summary-metrics .metric-item span:first-child {
-    font-weight: 500; /* Make label slightly bold */
-    color: #212529; /* Deep black color, matching stat-value-text */
-    font-family: inherit; /* Inherit font family for consistency */
-}
-
-.trip-summary-metrics .metric-value {
-    font-weight: 700;
-    color: #1a1a1a; /* Ensure the value is also deep black */
-    font-family: inherit; /* Inherit font from parent */
-}
-
-
-/* Safety Score Card - REVISED */
-.safety-score-card .score-display-area {
-    background-color: #ffffff; /* Pure white background */
+    border: 2px solid #1a2a5f;
+    /* 根據設計圖的藍色邊框 */
+    border-radius: 8px;
     padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Lighter shadow */
-    font-family: inherit;
-}
-
-.safety-score-main-display { /* Unique class name */
-    padding: 10px 0;
-    margin-bottom: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-family: inherit;
 }
 
-.highlight-score {
-    font-size: 4.5rem;
-    font-weight: 900;
-    color: #28a745;
-    text-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
-    animation: pulseScore 1.8s infinite alternate ease-in-out;
-    font-family: inherit;
-}
-
-@keyframes pulseScore {
-    from { transform: scale(1); opacity: 1; text-shadow: 0 0 10px rgba(40, 167, 69, 0.3); }
-    to { transform: scale(1.08); opacity: 0.95; text-shadow: 0 0 20px rgba(40, 167, 69, 0.6); }
-}
-
-.safety-score-context-text { /* Unique class name */
-    font-size: 1.15rem;
-    color: #444;
-    margin-top: 8px;
-    font-weight: 500;
-    font-family: inherit;
-}
-
-.safety-score-comparison-text { /* Unique class name */
-    font-size: 0.95rem;
-    color: #666;
-    margin-top: 5px;
-    font-family: inherit;
-}
-
-.safety-score-arrow.up { /* Unique class name */
-    color: #28a745;
-    font-weight: bold;
-    font-family: inherit;
-}
-
-.safety-score-arrow.down { /* Unique class name */
-    color: #dc3545;
-    font-weight: bold;
-    font-family: inherit;
-}
-
-.safety-score-percentage-change { /* Unique class name */
-    font-weight: 700;
-    color: #28a745;
-    font-family: inherit;
-}
-
-.safety-violation-reporting-section h3 { /* Unique class name */
-    font-size: 1.25rem;
-    color: #333;
-    margin-bottom: 18px;
-    font-weight: 600;
-    font-family: inherit;
-}
-
-.score-list-items { /* New list class */
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-family: inherit;
-}
-
-.score-violation-entry {
-    display: flex; /* Keeps icon and text together on the left, points on the right */
+.d-card-header {
+    display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 12px 0;
-    border-bottom: 1px dashed #e9ecef;
-    font-size: 0.98rem;
-    line-height: 1.4;
-    font-family: inherit;
-    color: #212529; /* Set the main text color for the entry */
-}
-
-.score-violation-entry:last-child {
-    border-bottom: none;
-}
-
-/* New style for the description span that holds icon and text */
-.score-violation-entry .violation-description {
-    display: flex; /* Use flex to align icon and text neatly */
-    align-items: center; /* Vertically center icon with text */
-    color: #212529; /* Ensure text color matches stat-value-text black */
-    flex-grow: 1; /* Allow it to take up available space */
-}
-
-.score-violation-entry .violation-description .icon-warning {
-    color: #212529; /* Explicitly set to black, no !important needed with this structure */
-    margin-right: 10px;
-    font-size: 1.1em;
-    flex-shrink: 0; /* Prevent icon from shrinking */
-}
-
-.score-deduction-points { /* Unique class name */
-    color: #dc3545; /* Red for deductions */
-    font-weight: 800;
-    font-size: 1.1rem;
-    margin-left: 10px;
-    flex-shrink: 0;
-    font-family: inherit;
-}
-
-.score-list-items li:nth-child(n+4) { /* Hide items beyond 3 initially */
-    display: none;
-}
-
-.score-violation-more-toggle { /* Unique class name */
-    text-align: center;
-    margin-top: 18px;
-}
-
-
-/* My Groups Card */
-.group-list-items {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-family: inherit;
-}
-
-.group-list-items li {
-    padding: 12px 0;
-    border-bottom: 1px dashed #e9ecef;
-    font-size: 1rem;
-    color: #444;
-    font-family: inherit;
-}
-
-.group-list-items li:last-child {
-    border-bottom: none;
-}
-
-.group-list-items li:nth-child(n+5) {
-    display: none;
-}
-
-.group-more-toggle {
-    text-align: center;
-    margin-top: 18px;
-}
-
-/* AI Suggestions Card */
-.ai-advice-section {
-    display: flex;
-    flex-direction: column;
-}
-
-.ai-recommendation-text {
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: #333;
-    margin-bottom: 25px;
-    flex-grow: 1;
-    font-family: inherit;
-}
-
-/* Past Reports Card */
-.report-listing-section {
-    display: flex;
-    flex-direction: column;
-}
-
-.report-list-items {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1;
-    font-family: inherit;
-}
-
-.report-list-items li {
-    padding: 12px 0;
-    border-bottom: 1px dashed #e9ecef;
-    font-size: 1rem;
-    color: #444;
-    font-family: inherit;
-}
-
-.report-list-items li:last-child {
-    border-bottom: none;
-}
-
-.report-list-items li:nth-child(n+4) {
-    display: none;
-}
-
-.report-more-toggle {
-    text-align: center;
-    margin-top: 18px;
-}
-
-
-/* --- Custom Button Styles --- */
-.custom-btn {
-    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    padding: 12px 22px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.05rem;
-    font-weight: 600;
-    transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a2a5f;
+}
+
+.d-card h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #1a2a5f;
+}
+
+.header-link {
+    color: #1a2a5f;
     text-decoration: none;
-    text-align: center;
-    white-space: nowrap;
-    font-family: inherit;
+    font-weight: bold;
 }
 
-.custom-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.3);
+/* ===== 卡片內通用元素 ===== */
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    /* 將其推到卡片底部 */
+    padding-top: 16px;
 }
 
-/* Primary Button */
-.custom-btn.primary-btn {
-    background-color: #007bff;
-    color: #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-}
-
-.custom-btn.primary-btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
-}
-
-/* Secondary Button */
-.custom-btn.secondary-btn {
-    background-color: #6c757d;
-    color: #ffffff;
-    box-shadow: 0 4px 10px rgba(108, 117, 125, 0.2);
-}
-
-.custom-btn.secondary-btn:hover {
-    background-color: #545b62;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
-}
-
-/* Tertiary Small Button (for "Create" button) */
-.custom-btn.tertiary-small-btn {
-    background-color: #f0f2f5;
-    color: #555;
-    padding: 10px 16px;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    box-shadow: none;
-}
-
-.custom-btn.tertiary-small-btn:hover {
-    background-color: #e0e2e6;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-}
-.custom-btn.tertiary-small-btn .icon-add {
-    font-size: 1.2em;
-    margin-right: 5px;
-    color: #007bff;
-}
-
-
-/* Ghost Link Button (for "View More" toggles) */
-.custom-btn.ghost-link-btn {
-    background: none;
-    color: #007bff;
-    padding: 8px 15px;
-    text-decoration: none;
-    font-weight: 500;
-    border: 1px solid transparent;
-    border-radius: 8px;
-}
-
-.custom-btn.ghost-link-btn:hover {
-    color: #0056b3;
-    background-color: #e6f2ff;
-    text-decoration: none;
-    border-color: #b3d9ff;
-}
-
-/* Link Only Button (for "View All Groups") */
-.custom-btn.link-only-btn {
-    background: none;
-    border: none;
-    color: #007bff;
-    padding: 0;
+.action-link {
+    color: #1a2a5f;
     text-decoration: underline;
-    font-weight: 500;
-    margin-top: 10px;
 }
 
-.custom-btn.link-only-btn:hover {
-    color: #0056b3;
+.action-button {
+    background-color: #1a2a5f;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
     text-decoration: none;
+    font-weight: bold;
+}
+
+/* ===== 各卡片詳細樣式 ===== */
+
+/* 個人資訊 */
+.profile-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #1a2a5f;
+}
+
+.profile-name {
+    margin: 0 0 4px 0;
+    font-size: 1.5rem;
+}
+
+.profile-meta {
+    margin: 0;
+    color: #555;
+}
+
+.profile-stats .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+/* 我的群組 */
+.group-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.group-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #ccc;
+}
+
+.group-list li:last-child {
+    border-bottom: none;
+}
+
+/* 前次行程 */
+.trip-meta {
+    color: #555;
+    margin: 0 0 8px 0;
+}
+
+.trip-route {
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.trip-summary {
+    border-top: 1px solid #ccc;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.trip-summary span {
+    font-weight: bold;
+}
+
+/* 安全總分 */
+.safety-score-card .d-card-body {
+    display: flex;
+    gap: 20px;
+}
+
+.score-section,
+.violations-section {
+    flex: 1;
+}
+
+.score-display {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #1a2a5f;
+    text-align: center;
+}
+
+.score-comparison {
+    text-align: center;
+    color: green;
+}
+
+.violations-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.violations-section li {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.violations-section .deduction {
+    color: red;
+    font-weight: bold;
 }
 
 
-/* Full Width Button */
-.custom-btn.full-width-btn {
-    width: 100%;
-    margin-top: 15px;
+/* AI 建議 & 圖表卡片 */
+.ai-suggestion-card p {
+    background-color: #f0f2f5;
+    padding: 16px;
+    border-radius: 4px;
+    min-height: 100px;
+    flex-grow: 1;
 }
 
-/* --- Responsive Grid Layout --- */
-
-/* Default: 3 columns (3x2 like appearance on wider screens) */
-@media (min-width: 992px) {
-    .dashboard-grid-container {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-areas:
-            "driver trip score"
-            "group ai report";
-    }
-
-    .driver-info-card { grid-area: driver; }
-    .last-trip-card { grid-area: trip; }
-    .safety-score-card { grid-area: score; }
-    .my-groups-card { grid-area: group; }
-    .ai-suggestions-card { grid-area: ai; }
-    .past-reports-card { grid-area: report; }
+.chart-placeholder {
+    min-height: 150px;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+    border-radius: 4px;
 }
 
-/* Tablet (2x3 layout) */
-@media (min-width: 768px) and (max-width: 991px) {
-    .dashboard-grid-container {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-areas:
-            "driver trip"
-            "score group"
-            "ai report";
-    }
-
-    .driver-info-card { grid-area: driver; }
-    .last-trip-card { grid-area: trip; }
-    .safety-score-card { grid-area: score; }
-    .my-groups-card { grid-area: group; }
-    .ai-suggestions-card { grid-area: ai; }
-    .past-reports-card { grid-area: report; }
+/* 過往行程 (右下角小卡) */
+.past-trips-card ul {
+    list-style: none;
+    padding: 0;
 }
 
-/* Mobile (1x6 layout) */
-@media (max-width: 767px) {
-    .dashboard-grid-container {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-            "driver"
-            "trip"
-            "score"
-            "group"
-            "ai"
-            "report";
-    }
-
-    .driver-info-card { grid-area: driver; }
-    .last-trip-card { grid-area: trip; }
-    .safety-score-card { grid-area: score; }
-    .my-groups-card { grid-area: group; }
-    .ai-suggestions-card { grid-area: ai; }
-    .past-reports-card { grid-area: report; }
+.past-trips-card li {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
 }
 
-/* Basic Icon Styles (place these in your global style.css or ensure they are loaded) */
-/* Assuming you are using a font icon library or custom SVGs */
-/* For demonstration, these are placeholders */
-.icon-driver::before { content: '👤'; }
-.icon-trip::before { content: '🛣️'; }
-.icon-score::before { content: '⭐'; }
-.icon-group::before { content: '👥'; }
-.icon-ai-suggest::before { content: '💡'; }
-.icon-report::before { content: '📄'; }
-.icon-arrow::before { content: '→'; }
-.icon-warning::before { content: '⚠️'; }
-.icon-add::before { content: '+'; }
-
-/* 外層用來致中整組按鈕 */
-.driver-communication-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 1.5rem;
+.past-trips-card li span:last-child {
+    font-weight: bold;
 }
 
-.driver-communication-inner {
-  max-width: 500px; /* 控制最大寬度 */
-  width: 100%;
+/* 記得保留您原本的 floating-chatbot-btn 樣式 */
+/* 如果您將它放在全域 style.css，就不用動；如果它在 dashboard.css，請記得複製回來 */
+
+/* --- 貼到 style.css 檔案的最下方 --- */
+
+/* ===== 卡片佈局微調 ===== */
+
+/* 讓 AI 建議卡片自動伸展，填滿右側欄位的剩餘垂直空間 */
+.ai-suggestion-card {
+    flex-grow: 1;
 }
 
-.driver-communication-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.2rem;
-  margin-bottom: 50px;
-
+/* 確保 AI 卡片內的 body 也會跟著伸展 */
+.ai-suggestion-card .d-card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-.driver-communication-buttons .custom-btn {
-  flex: 1;
-  font-size: 1.1rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  background-color: #444b5d;
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-width: 150px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+/* AI 建議的內容區塊 */
+.ai-suggestion-content {
+    flex-grow: 1;
+    /* 這個區塊會佔據大部分空間，把按鈕推到底部 */
+    background-color: #f0f2f5;
+    padding: 16px;
+    border-radius: 4px;
 }
 
-.driver-communication-buttons .custom-btn:hover {
-  background-color: var(--primary-dark);
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* ===== 卡片內特殊按鈕佈局 ===== */
+
+/* 讓前次行程卡片的 body 可以容納推到底部的按鈕 */
+.last-trip-card .d-card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-.gradient-text {
-  background: linear-gradient(90deg, #b24dff, #2cd9ff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  font-weight: bold;
-  display: inline-block;
-}
-
-.gradient-text, .icon{
-    font-size: 25px;
-}
-
-.stat-item span:first-child {
-  min-width: 80px;
-}
-
-.stat-value-text{
-    margin-top: 4px;
-}
-
-/* -- 浮動聊天機器人按鈕 (業界升級版) -- */
-
-/* 1. 定義一個會呼吸、發光的動畫效果 */
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-  }
-}
-
-.floating-chatbot-btn {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 1000;
-
-  /* 2. 按鈕外觀升級 */
-  width: 60px;
-  height: 60px;
-  /* 將單色背景改成漂亮的漸層色 */
-  background-image: linear-gradient(45deg, #007bff 0%, #44c2fd 100%);
-  border: none; /* 移除可能的邊框 */
-  border-radius: 50%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* 讓陰影更有層次感 */
-  
-  /* 讓 icon 在圓圈正中間 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  /* 圖示本身樣式 */
-  color: white;
-  font-size: 28px;
-  
-  /* 3. 套用上面定義好的呼吸動畫 */
-  animation: pulse 2s infinite;
-
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1); /* 使用更流暢的動畫曲線 */
-}
-
-/* 4. 升級滑鼠懸停 (hover) 和點擊 (active) 效果 */
-.floating-chatbot-btn:hover {
-  /* 讓按鈕向上浮起來一點，更有互動感 */
-  transform: translateY(-5px); 
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-  /* 滑鼠移上去時，暫停呼吸動畫，避免閃爍 */
-  animation-play-state: paused;
-}
-
-.floating-chatbot-btn:active {
-  /* 點下去的時候稍微縮小，模擬按壓效果 */
-  transform: scale(0.95);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+/* 垂直排列、靠右對齊的按鈕容器樣式 */
+.card-actions.vertical-right {
+    display: flex;
+    flex-direction: column;
+    /* 讓內部元素垂直排列 */
+    align-items: flex-end;
+    /* 讓內部元素靠右對齊 */
+    gap: 10px;
+    /* 按鈕之間的垂直間距 */
+    margin-top: auto;
+    /* 關鍵：將整個區塊推到卡片底部 */
+    padding-top: 16px;
+    /* 確保與上方內容有間距 */
 }

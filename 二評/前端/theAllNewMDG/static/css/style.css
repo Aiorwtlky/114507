@@ -791,3 +791,271 @@ button.custom-btn.primary-btn {
   transition: color 0.3s ease;
   /* 讓顏色變化有平滑的過渡效果 */
 }
+
+/* --- 貼到 style.css 檔案的最下方 --- */
+
+/* ===== Sidebar & Overlay Styles ===== */
+
+/* 遮罩層樣式 */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* 半透明黑色 */
+  z-index: 998;
+  /* 數字比 header 低，但比 main 內容高 */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.overlay.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 側邊欄主要容器 (預設狀態：隱藏在畫面右側) */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 280px;
+  /* 側邊欄寬度，可自行調整 */
+  height: 100%;
+  background-color: #1a2a5f;
+  /* 一個接近設計圖的深藍色 */
+  color: white;
+  z-index: 999;
+  /* 確保在最上層 */
+  padding: 2rem;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+
+  /* 核心動畫：將其移出畫面外 */
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* 側邊欄滑入後的狀態 */
+.sidebar.is-active {
+  transform: translateX(0);
+}
+
+/* 側邊欄標題區域 */
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* 側邊欄關閉按鈕 */
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* 註冊/登入按鈕群組 */
+.sidebar-auth {
+  display: flex;
+  gap: 1rem;
+  /* 按鈕間的距離 */
+  margin-bottom: 2rem;
+}
+
+/* 側邊欄內的按鈕樣式 */
+.btn-sidebar {
+  flex-grow: 1;
+  text-align: center;
+  padding: 0.8rem 1rem;
+  border: 1px solid white;
+  border-radius: 50px;
+  /* 橢圓形外觀 */
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-sidebar:hover {
+  background-color: white;
+  color: #1a2a5f;
+}
+
+/* "關於" 連結樣式 */
+.sidebar-nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  display: block;
+  padding: 0.8rem 0;
+}
+
+.sidebar-nav a:hover {
+  text-decoration: underline;
+}
+
+/* --- 在 style.css 中找到側邊欄樣式區塊，並修改 .sidebar-nav a 如下 --- */
+
+.sidebar-nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  display: block;
+  padding: 0.8rem 0;
+  /* 保持原有的內邊距 */
+
+  /* 新增：在連結下方加一條細線 */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* 新增：讓線條與文字之間有點間距 */
+  padding-bottom: 1rem;
+
+  /* 新增：確保線條與下一個內容之間也有間距 */
+  margin-bottom: 1rem;
+}
+
+/* --- 貼到 style.css 檔案的最下方 --- */
+
+/* ===== Sidebar Visibility Logic (側邊欄顯示邏輯) ===== */
+
+/* 預設狀態 (登出) */
+#sidebar-logged-in {
+  display: none;
+}
+
+#sidebar-logged-out {
+  display: block;
+  /* 或者 flex, grid, 根據您的佈局需求 */
+}
+
+/* 登入狀態 (當 body 有 'logged-in' class 時) */
+body.logged-in #sidebar-logged-out {
+  display: none;
+}
+
+body.logged-in #sidebar-logged-in {
+  display: block;
+  /* 或者 flex, grid */
+}
+
+/* ===== Logged-in Sidebar Styles (登入版側邊欄樣式) ===== */
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 1rem;
+}
+
+.user-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.user-group {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.sidebar-nav-main a {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* -- 浮動聊天機器人按鈕 (請貼到 static/css/style.css 最下方) -- */
+
+/* 1. 定義一個會呼吸、發光的動畫效果 */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.floating-chatbot-btn {
+  position: fixed;
+  /* 固定在視窗中 */
+  bottom: 30px;
+  /* 距離底部 30px */
+  right: 30px;
+  /* 距離右側 30px */
+  z-index: 1000;
+  /* 確保它在大部分內容之上 */
+
+  /* 2. 按鈕外觀升級 */
+  width: 60px;
+  height: 60px;
+  /* 將單色背景改成漂亮的漸層色 */
+  background-image: linear-gradient(45deg, #007bff 0%, #44c2fd 100%);
+  border: none;
+  /* 移除可能的邊框 */
+  border-radius: 50%;
+  /* 變成圓形 */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  /* 讓陰影更有層次感 */
+
+  /* 讓 icon 在圓圈正中間 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* 圖示本身樣式 */
+  color: white;
+  font-size: 28px;
+
+  /* 3. 套用上面定義好的呼吸動畫 */
+  animation: pulse 2s infinite;
+
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+  /* 使用更流暢的動畫曲線 */
+}
+
+/* 4. 升級滑鼠懸停 (hover) 和點擊 (active) 效果 */
+.floating-chatbot-btn:hover {
+  /* 讓按鈕向上浮起來一點，更有互動感 */
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+  /* 滑鼠移上去時，暫停呼吸動畫，避免閃爍 */
+  animation-play-state: paused;
+}
+
+.floating-chatbot-btn:active {
+  /* 點下去的時候稍微縮小，模擬按壓效果 */
+  transform: scale(0.95);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
