@@ -1,12 +1,11 @@
-# api/views.py
-
 from rest_framework import generics
 from django.contrib.auth.models import User
 from .models import Group, Trip, VehicleDevice
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer, VideoRecord, AiVisionLog,
     TripDetailSerializer, VehicleDeviceSerializer, TripStartSerializer,
-    AiVisionLogCreateSerializer, VideoRecordCreateSerializer, TripEndSerializer
+    AiVisionLogCreateSerializer, VideoRecordCreateSerializer, TripEndSerializer,
+    UserRegisterSerializer
 )
 
 # --- 人員相關 API ---
@@ -73,3 +72,10 @@ class TripEndAPIView(generics.UpdateAPIView):
     """
     queryset = Trip.objects.all()
     serializer_class = TripEndSerializer
+
+class UserRegisterAPIView(generics.CreateAPIView):
+    """
+    API endpoint for new user registration.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserRegisterSerializer

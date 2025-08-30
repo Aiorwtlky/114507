@@ -139,3 +139,37 @@ class TripEndSerializer(serializers.ModelSerializer):
         model = Trip
         # Only the 'end_time' field can be updated through this serializer.
         fields = ['end_time']
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user registration.
+    Handles validation and creation of a new user with an encrypted password.
+    """
+    # 讓密碼欄位只在寫入時使用，讀取時不會被回傳
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+    # 我們自訂的 Profile 欄位，一併處理
+    personnelprofile = PersonnelProfileSerializer()
+
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'email', 'first_name', 'last_name', 'personnelprofile']
+
+    def create(self, validated_data):
+        """
+        Override the create method to handle user creation and password hashing.
+        """
+        profile_data = validated_data.pop('personnelprofile')
+
+        # 使用 User.objects.create_user() 來建立使用者，它會自動處理密碼加密
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+
+        # 建立關聯的 PersonnelProfile
+        PersonnelProfile.objects.create(user=user, **profile_data)
+
+        return user

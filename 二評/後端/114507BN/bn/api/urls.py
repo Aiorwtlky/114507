@@ -10,7 +10,8 @@ from .views import (
     TripStartAPIView,
     AiVisionLogCreateAPIView,
     VideoRecordCreateAPIView,
-    TripEndAPIView
+    TripEndAPIView,
+    UserRegisterAPIView
 )
 
 urlpatterns = [
@@ -26,4 +27,5 @@ urlpatterns = [
     path('events/', AiVisionLogCreateAPIView.as_view(), name='event-create'),
     path('videos/', VideoRecordCreateAPIView.as_view(), name='video-create'),
     path('trips/<int:pk>/end/', TripEndAPIView.as_view(), name='trip-end'),
+    path('register/', UserRegisterAPIView.as_view(), name='user-register'), 
 ]
