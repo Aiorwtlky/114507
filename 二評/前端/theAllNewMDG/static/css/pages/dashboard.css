@@ -38,6 +38,7 @@
 /* ===== 卡片基礎樣式 ===== */
 .d-card {
     background-color: #ffffff;
+    color: #000000;
     border: 2px solid #1a2a5f;
     /* 根據設計圖的藍色邊框 */
     border-radius: 8px;
@@ -96,26 +97,39 @@
 /* 個人資訊 */
 .profile-summary {
     display: flex;
+    /* 關鍵：讓頭像和文字區塊左右並排 */
     align-items: center;
-    gap: 16px;
+    /* 讓頭像和文字垂直置中對齊 */
+    gap: 24px;
+    /* 將文字推到「右邊一點」（增加頭像與文字的間距） */
     margin-bottom: 20px;
 }
 
+/* 頭像 */
 .profile-avatar {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     border: 2px solid #1a2a5f;
+    flex-shrink: 0;
+    /* 防止頭像在空間不足時被壓縮 */
 }
 
+/* 姓名 */
 .profile-name {
-    margin: 0 0 4px 0;
-    font-size: 1.5rem;
+    margin: 0 0 8px 0;
+    /* 名字與下方文字的間距 */
+    font-size: 1.8rem;
+    /* 「字大一點」 */
+    font-weight: bold;
+    /* 讓名字更突出 */
+    margin-left: 25px;
 }
 
 .profile-meta {
     margin: 0;
     color: #555;
+    margin-left: 25px;
 }
 
 .profile-stats .stat-item {
@@ -290,4 +304,405 @@
     /* 關鍵：將整個區塊推到卡片底部 */
     padding-top: 16px;
     /* 確保與上方內容有間距 */
+}
+
+/* --- 請找到並用這段程式碼「取代」舊的 .score-and-violations-section 樣式 --- */
+
+/* 修正合併後安全總分區塊的佈局 */
+.score-and-violations-section {
+    display: flex;
+    /* 啟用 Flexbox 佈局，讓子元素可以並排 */
+    gap: 24px;
+    /* 左右兩個區塊的間距 */
+    align-items: flex-start;
+    /* 讓兩個區塊的頂部對齊 */
+}
+
+/* 左側的安全總分區塊，設定彈性佔比為 1 */
+.score-section {
+    flex: 1;
+    text-align: center;
+    /* 將分數和文字置中，符合設計圖 */
+}
+
+/* 右側的違規項目區塊，設定彈性佔比為 2，使其更寬 */
+.violations-section {
+    flex: 2;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 前次行程 - 頂部資訊區塊排版 */
+.trip-details-header {
+    display: flex;
+    justify-content: space-between;
+    /* 左右貼齊 */
+    align-items: flex-start;
+    /* 頂部對齊 */
+    margin-bottom: 16px;
+}
+
+/* 右上角的數據區塊 */
+.trip-vitals {
+    text-align: right;
+    /* 文字靠右 */
+    flex-shrink: 0;
+    /* 避免被壓縮 */
+    margin-left: 20px;
+    /* 與左側資訊的間距 */
+}
+
+/* --- 請找到並用這段程式碼「取代」舊的 vital-item 相關樣式 --- */
+.vital-item {
+    display: flex;
+    /* 啟用 Flexbox */
+    justify-content: space-between;
+    /* 讓標題和數值左右貼齊 */
+    align-items: baseline;
+    /* 讓文字底部對齊，更整齊 */
+    gap: 16px;
+    /* 標題與數值間的最小間距 */
+    margin-bottom: 8px;
+}
+
+.vital-item span {
+    font-size: 0.9rem;
+    color: #555;
+    white-space: nowrap;
+    /* 避免標題換行 */
+}
+
+.vital-item strong {
+    font-size: 1.1rem;
+    color: #1a2a5f;
+    font-weight: bold;
+    /* 確保是粗體 */
+    white-space: nowrap;
+    /* 避免數值換行 */
+}
+
+
+.violation-text {
+    color: black;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 違規項目列表細節排版 */
+.violations-section li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 6px 0;
+    /* 調整行距 */
+}
+
+.violation-text {
+    flex-grow: 1;
+    /* 讓文字區塊佔滿可用空間 */
+    margin-right: 16px;
+    /* 與扣分數字的間距 */
+}
+
+.ai-suggestion-content>p {
+    color: black;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* AI 行車建議 - 內容與按鈕左右並排 */
+.ai-suggestion-body {
+    display: flex;
+    justify-content: space-between;
+    /* 關鍵：將左右兩塊推到最開 */
+    align-items: center;
+    /* 讓文字區塊和按鈕區塊垂直居中 */
+    flex-grow: 1;
+    margin-top: 16px;
+}
+
+/* AI 建議的內容區塊 */
+.ai-suggestion-section .ai-suggestion-content {
+    /* 移除 flex-grow: 1; 讓寬度自適應內容，這是最重要的修改！ */
+    flex-shrink: 1;
+    min-width: 0;
+    background-color: #f0f2f5;
+    padding: 16px;
+    border-radius: 4px;
+}
+
+.nnc_30 {
+    border-right: 2px solid #1a2a5f;
+    /* 新增：線與文字的間距 (您可以調整這個數值) */
+    margin-right: 450px;
+}
+
+.nnc_30>p {
+    color: #000000;
+}
+
+/* AI 建議按鈕區塊 (移除之前的 border 和 padding) */
+.ai-suggestion-section .ai-buttons {
+    flex-shrink: 0;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    /* 確保移除之前的 border-left 和 padding-left */
+    border-left: none;
+    padding-left: 0;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 新增的路線框樣式 */
+/* --- 請找到並用這段程式碼「取代」舊的 .route-box 樣式 --- */
+.route-box {
+    border: 2px solid #1a2a5f;
+    border-radius: 6px;
+    padding: 12px 15px;
+    display: inline-flex;
+    /* 關鍵修改：讓框框寬度自適應內容 */
+    align-items: center;
+    justify-content: flex-start;
+    /* 讓內容從左邊開始排列 */
+    flex-wrap: wrap;
+    font-weight: bold;
+    color: #333;
+}
+
+.route-box span {
+    white-space: nowrap;
+    /* 避免地點名稱換行 */
+    margin: 0 5px;
+    /* 地點名稱之間的間距 */
+}
+
+.route-box .fas.fa-arrow-right {
+    font-size: 1.1em;
+    color: #1a2a5f;
+    margin: 0 10px;
+    /* 箭頭與地點之間的間距 */
+}
+
+.route-box>span {
+    color: black;
+}
+
+.profile-details>p {
+    color: black;
+}
+
+.stat-item>span {
+    color: #000000;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 個人資訊卡片 - 下方佈局容器 */
+.profile-footer-layout {
+    display: flex;
+    align-items: flex-start;
+    /* 頂部對齊 */
+    gap: 20px;
+    /* 左右兩欄的間距 */
+    margin-top: 20px;
+    /* 與上方個人資訊的間距 */
+    padding-top: 20px;
+    /* 分隔線上方的間距 */
+    border-top: 1px dashed #ccc;
+    /* 加上分隔線 */
+}
+
+/* 左側「行車數據」按鈕樣式 */
+.btn-trip-data {
+    flex-shrink: 0;
+    /* 避免按鈕被壓縮 */
+    padding: 12px 20px;
+    border: 2px solid #1a2a5f;
+    /* 藍色邊框 */
+    border-radius: 6px;
+    text-decoration: none;
+    color: #1a2a5f;
+    font-weight: bold;
+    text-align: center;
+    background-color: white;
+    transition: background-color 0.2s, color 0.2s;
+    /* 加上 hover 效果 */
+    margin-top: 10px;
+}
+
+.btn-trip-data:hover {
+    background-color: #1a2a5f;
+    color: white;
+}
+
+/* 右側統計數據區塊 */
+.profile-footer-layout .profile-stats {
+    flex-grow: 1;
+    /* 讓統計數據區塊佔滿右側剩餘空間 */
+}
+
+.profile-name {
+    color: #000000;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 我的群組 - Icon 樣式 */
+.group-icon {
+    margin-right: 8px;
+    /* icon 與文字的間距 */
+    color: #1a2a5f;
+    /* icon 顏色 */
+}
+
+/* 我的群組 - 置中按鈕容器 */
+.card-actions-center {
+    display: flex;
+    justify-content: center;
+    /* 讓內容水平置中 */
+    margin-top: 20px;
+    /* 與上方列表的間距 */
+}
+
+/* 我的群組 - 「查看更多」按鈕樣式 */
+.btn-view-more {
+    padding: 10px 20px;
+    border: 2px solid #1a2a5f;
+    /* 藍色邊框 */
+    border-radius: 6px;
+    text-decoration: none;
+    color: #1a2a5f;
+    font-weight: bold;
+    background-color: white;
+    transition: background-color 0.2s, color 0.2s;
+    /* 加上 hover 效果 */
+}
+
+.btn-view-more:hover {
+    background-color: #1a2a5f;
+    color: white;
+}
+
+.group-list>li {
+    color: #000000;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 個人資訊卡片的 Icon 樣式 */
+.personal-info-card .fa-user {
+    margin-right: 8px;
+    color: #1a2a5f;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* ===== 圖表卡片通用樣式 ===== */
+
+.chart-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.control-item {
+    border: 2px solid #1a2a5f;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1a2a5f;
+    position: relative;
+    padding-right: 28px;
+    /* 留出空間給箭頭 */
+}
+
+/* 用 CSS 畫出下拉選單的箭頭 */
+.control-item::after {
+    content: '▼';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.6);
+    color: #1a2a5f;
+}
+
+/* ===== 通勤平均儀表板 (純 CSS 模擬) ===== */
+
+.gauge-area {
+    position: relative;
+    width: 90%;
+    padding-bottom: 45%;
+    /* 維持 2:1 的寬高比，形成半圓 */
+    margin: 20px auto 10px auto;
+    overflow: hidden;
+}
+
+/* 儀表板背景半圓 */
+/* --- 請找到並用這段程式碼「取代」舊的 .gauge-background 樣式 --- */
+.gauge-background {
+    position: absolute;
+    top: 50%; /* 將圓心錨點定在底部中心 */
+    left: 50%;
+    width: 100%;
+    height: 50%; /* 高度為寬度一半，形成半圓區域 */
+    background: transparent; /* 容器本身透明 */
+    border-top-left-radius: 100% 200%;  /* 畫出上半圓的弧度 */
+    border-top-right-radius: 100% 200%;
+    border: 20px solid #e9ecef; /* 軌道顏色和寬度 */
+    border-bottom: none; /* 移除底部邊框 */
+    transform: translate(-50%, -100%); /* 將半圓向上移動對齊 */
+    box-sizing: border-box; /* 確保邊框不會影響尺寸 */
+    bottom: 50px;
+}
+
+/* 儀表板指針 */
+.gauge-needle {
+    position: absolute;
+    bottom: 55px;
+    left: 50%;
+    width: 2px;
+    height: 50%;
+    background-color: #1a2a5f;
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(-45deg);
+    /* 指向 72 分大概的位置 */
+    transition: transform 0.5s ease;
+}
+
+/* 指針中心的圓點 */
+.gauge-center-circle {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background-color: #1a2a5f;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+/* 儀表板中間的文字 */
+.gauge-text {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.gauge-text strong {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #1a2a5f;
+}
+
+/* 儀表板下方的標籤 */
+.gauge-label {
+    text-align: center;
+    color: #555;
+    font-weight: 500;
 }

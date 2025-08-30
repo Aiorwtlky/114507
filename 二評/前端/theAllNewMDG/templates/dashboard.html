@@ -4,6 +4,7 @@
 {% endblock %}
 
 {% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
 {% endblock %}
 
@@ -12,8 +13,7 @@
     <div class="dashboard-column-left">
       <div class="d-card personal-info-card">
         <div class="d-card-header">
-          <h3>個人資訊</h3>
-          <a href="#" class="header-link">行程數據</a>
+          <h3><i class="fas fa-user"></i> 個人資訊</h3>
         </div>
         <div class="d-card-body">
           <div class="profile-summary">
@@ -24,46 +24,52 @@
               <p class="profile-meta">北大物流 C 組 ‧ 組長</p>
             </div>
           </div>
-          <div class="profile-stats">
-            <div class="stat-item">
-              <span>累計里程:</span>
-              <span class="stat-value">8.021 公里</span>
-            </div>
-            <div class="stat-item">
-              <span>上次登入:</span>
-              <span class="stat-value">2025/08/18 09:57</span>
+          <div class="profile-footer-layout">
+            <a href="#" class="btn-trip-data">行車數據</a>
+
+            <div class="profile-stats">
+              <div class="stat-item">
+                <span>累計里程:</span>
+                <span class="stat-value">8.021 公里</span>
+              </div>
+              <div class="stat-item">
+                <span>上次登入:</span>
+                <span class="stat-value">2025/08/18 09:57</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="d-card my-groups-card">
+      <div class="d-card my-group-card">
         <div class="d-card-header">
-          <h3>我的群組</h3>
+          <h3><i class="fas fa-users group-icon"></i> 我的群組</h3> {# 新增 Font Awesome icon #}
+          <a href="#" class="action-button">+ 建立</a>
         </div>
-        <div class="d-card-body">
-          <ul class="group-list">
-            <li>北大物流 C 組</li>
-            <li>2024 雙十一宅配臨時隊</li>
-            <li>北大職訓 23A</li>
-          </ul>
-          <div class="card-actions">
-            <a href="#" class="action-link">查看更多</a>
-            <a href="#" class="action-button">+ 建立</a>
-          </div>
+        <ul class="group-list">
+          <li>北大物流 C 組</li>
+          <li>2024雙十一宅配臨時</li>
+          <li>北大物流職訓23A</li>
+          <li>南區配送 B 隊</li> {# 新增群組 #}
+          <li>企業客戶專送組</li> {# 新增群組 #}
+        </ul>
+        <div class="card-actions-center">
+          {# 用新的 div 包裝置中按鈕 #}
+          <a href="#" class="btn-view-more">查看更多</a> {# 新增按鈕 class #}
         </div>
       </div>
-
       <div class="d-card trends-card">
         <div class="d-card-header">
           <h3>趨勢追蹤</h3>
           <a href="#" class="header-link">♡</a>
         </div>
         <div class="d-card-body">
-          <div class="chart-placeholder">
-            <p>這裡是折線圖區域</p>
-            <p>2025年 | 95分</p>
-            <p>2024年 | 98.1分</p>
+          <div class="chart-controls">
+            <div class="control-item">季</div>
+            <div class="control-item">2025年</div>
+          </div>
+          <div class="chart-area">
+            <canvas id="trendsChart"></canvas>
           </div>
         </div>
       </div>
@@ -75,20 +81,39 @@
           <div class="trip-section">
             <div class="d-card-header" style="padding-left:0; padding-top:0;">
               <h3>前次行程</h3>
-              <a href="#" class="header-link">!</a>
+              <a href="#" class="header-link"></a>
             </div>
-            <p class="trip-meta">2025 年 7 月 23 日 15:40 - 21:50 ‧ 北大物流 C 組</p>
-            <p class="trip-meta">07/23 北大往信義遠百 A13 例行</p>
+            <div class="trip-details-header">
+              <div class="trip-meta-group">
+                <p class="trip-meta">2025 年 7 月 23 日 15:40 - 21:50 ‧ 北大物流 C 組</p>
+                <p class="trip-meta">07/23 北大往信義遠百 A13 例行</p>
+              </div>
+              <div class="trip-vitals">
+                <div class="vital-item">
+                  <span>總耗時</span>
+                  <strong>6 小時 10 分</strong>
+                </div>
+                <div class="vital-item">
+                  <span>總里程</span>
+                  <strong>95 公里</strong>
+                </div>
+              </div>
+            </div>
+
+            {# ===== 新增的區塊從這裡開始 ===== #}
+            <div class="route-box">
+              <span>北大八里集貨區</span>
+              <i class="fas fa-arrow-right"></i> {# 使用 Font Awesome 箭頭圖標 #}
+              <span>臺北港</span>
+              <i class="fas fa-arrow-right"></i>
+              <span>信義遠百 A13</span>
+            </div>
+            {# ===== 新增的區塊到這裡結束 ===== #}
+
             <div class="trip-route">
-              <span>北大八里集貨區</span> → <span>臺北港</span> → <span>信義遠百 A13</span>
-            </div>
-            <div class="trip-summary">
-              <div>
-                總耗時: <span>6 小時 10 分</span>
-              </div>
-              <div>
-                總里程: <span>95 公里</span>
-              </div>
+              {# 原本的路線文字，現在變成強調路線的標題 #}
+              <p>詳細路線:</p> {# 這裡可以放一個標題 #}
+              {# 這裡可以選擇性放原本的路線文字，或將它移動到 route-box 中 #}
             </div>
           </div>
 
@@ -104,19 +129,18 @@
               <h3>本次違規項目</h3>
               <ul>
                 <li>
-                  <span>14:20 轉彎未打方向燈</span> <span>林森忠孝路口</span> <span class="deduction">-1</span>
+                  <span class="violation-text">14:20 轉彎未打方向燈 林森忠孝路口</span>
+                  <span class="deduction">-1</span>
                 </li>
                 <li>
-                  <span>14:34 疲勞閉眼 (4 秒)</span> <span>忠孝東路二段</span> <span class="deduction">-2</span>
+                  <span class="violation-text">14:34 疲勞閉眼 (4 秒) 忠孝東路二段</span>
+                  <span class="deduction">-2</span>
                 </li>
                 <li>
-                  <span>14:40 行車中使用手機</span> <span>忠孝東路五段</span> <span class="deduction">-4</span>
+                  <span class="violation-text">14:40 行車中使用手機 忠孝東路五段</span>
+                  <span class="deduction">-4</span>
                 </li>
               </ul>
-              <div class="card-actions">
-                <a href="#" class="action-link">查詢</a>
-                <a href="#" class="action-button">完整違規項目</a>
-              </div>
             </div>
           </div>
 
@@ -124,24 +148,44 @@
 
           <div class="ai-suggestion-section">
             <h3>AI 行車建議</h3>
-            <div class="ai-suggestion-content">
-              <p># 路線優化建議</p>
-              <p># 駕駛行為提醒</p>
-              <p># 多喝水</p>
-            </div>
-            <div class="card-actions vertical-right">
-              <a href="{{ url_for('coaching') }}" class="action-button">查看完整建議</a>
-              <a href="#" class="action-button">列印本次報表</a>
+            <div class="ai-suggestion-body">
+              {# 新增的容器 #}
+              <div class="ai-suggestion-content">
+                <div class="nnc_30">
+                  <p># 路線優化建議</p>
+                  <p># 駕駛行為提醒</p>
+                  <p># 多喝水</p>
+                </div>
+              </div>
+              <div class="card-actions vertical-right ai-buttons">
+                {# 增加 ai-buttons class #}
+                <a href="{{ url_for('coaching') }}" class="action-button">查看完整建議</a>
+                <a href="#" class="action-button">列印本次報表</a>
+              </div>
             </div>
           </div>
         </div>
       </div>
       <div class="dashboard-row">
         <div class="d-card commute-avg-card">
-          <h3>通勤平均</h3>
-          <div class="chart-placeholder gauge">
-            <p>儀表板圖區域</p>
-            <p>平均分數 92 分</p>
+          <div class="d-card-header">
+            <h3>通勤平均</h3>
+            <a href="#" class="header-link">♡</a>
+          </div>
+          <div class="d-card-body">
+            <div class="chart-controls">
+              <div class="control-item">季</div>
+              <div class="control-item">2025年第2季</div>
+            </div>
+            <div class="gauge-area">
+              <div class="gauge-background"></div>
+              <div class="gauge-needle"></div>
+              <div class="gauge-center-circle"></div>
+              <div class="gauge-text">
+                平均分數 <strong>72</strong> 分
+              </div>
+            </div>
+            <p class="gauge-label">2025年第二季 (4-6月)</p>
           </div>
         </div>
 
@@ -168,5 +212,7 @@
 {% endblock %}
 
 {% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('static', filename='js/pages/dashboard.js') }}" defer></script>
+  
 {% endblock %}

@@ -79,6 +79,7 @@ def admin_dashboard():
 def not_found(_):
     return redirect(url_for("home"))
 
+
 @app.route("/trip_report")
 def trip_report():
     trip = {
