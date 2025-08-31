@@ -1,0 +1,45 @@
+# AI 視覺處理
+opencv-python==4.8.1.78
+mediapipe==0.10.3
+numpy==1.24.3
+pillow==10.0.0
+
+# 深度學習 (Hailo-8 支援)
+onnxruntime==1.15.1
+# hailo-platform  # Hailo-8 專用套件
+
+# 雲端上傳
+cloudinary==1.34.0
+requests==2.31.0
+
+# 資料庫與檔案
+sqlite3  # Python 內建
+python-dotenv==1.0.0
+
+# GPIO 控制 (Raspberry Pi)
+RPi.GPIO==0.7.1
+gpiozero==1.6.2
+
+# 多執行緒與佇列
+threading  # Python 內建
+queue     # Python 內建
+multiprocessing  # Python 內建
+
+# 日誌與監控
+logging   # Python 內建
+psutil==5.9.5
+
+# 資料處理
+pandas==2.0.3
+scipy==1.11.1
+
+# 時間與日期
+datetime  # Python 內建
+time     # Python 內建
+
+# JSON 處理
+json     # Python 內建
+dataclasses  # Python 內建
+
+# 型別提示
+typing   # Python 內建
