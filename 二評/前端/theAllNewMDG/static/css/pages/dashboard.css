@@ -316,6 +316,7 @@
     /* 左右兩個區塊的間距 */
     align-items: flex-start;
     /* 讓兩個區塊的頂部對齊 */
+    margin: 20px 0px;
 }
 
 /* 左側的安全總分區塊，設定彈性佔比為 1 */
@@ -429,6 +430,10 @@
     background-color: #f0f2f5;
     padding: 16px;
     border-radius: 4px;
+}
+
+.ai-suggestion-section {
+    margin: 22px 0px;
 }
 
 .nnc_30 {
@@ -606,16 +611,19 @@
     margin-bottom: 20px;
 }
 
+/* --- 請找到並用這段程式碼「取代」舊的 .control-item 相關樣式 --- */
+
+/* 圖表上方的下拉選單容器 */
 .control-item {
     border: 2px solid #1a2a5f;
     border-radius: 4px;
-    padding: 6px 12px;
     font-size: 0.9rem;
     font-weight: 500;
     color: #1a2a5f;
     position: relative;
-    padding-right: 28px;
-    /* 留出空間給箭頭 */
+    /* 關鍵：讓內部的 select 可以定位 */
+    background-color: transparent;
+    /* 確保背景是白色 */
 }
 
 /* 用 CSS 畫出下拉選單的箭頭 */
@@ -626,83 +634,369 @@
     top: 50%;
     transform: translateY(-50%) scale(0.6);
     color: #1a2a5f;
+    pointer-events: none;
+    /* 讓點擊可以穿透箭頭，點到下方的 select */
+}
+
+/* 核心：美化 select 標籤本身 */
+.control-item select {
+    /* 移除原生外觀 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* 讓 select 填滿容器 */
+    width: 100%;
+    height: 100%;
+
+    /* 樣式重設 */
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 6px 32px 6px 12px;
+    /* 右邊 padding 留給箭頭 */
+
+    /* 字體樣式繼承 */
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+
+    cursor: pointer;
+}
+
+/* 移除IE/Edge的預設箭頭 */
+.control-item select::-ms-expand {
+    display: none;
 }
 
 /* ===== 通勤平均儀表板 (純 CSS 模擬) ===== */
 
-.gauge-area {
-    position: relative;
-    width: 90%;
-    padding-bottom: 45%;
-    /* 維持 2:1 的寬高比，形成半圓 */
-    margin: 20px auto 10px auto;
-    overflow: hidden;
+
+
+.trip-info>span {
+    color: #000000;
 }
 
-/* 儀表板背景半圓 */
-/* --- 請找到並用這段程式碼「取代」舊的 .gauge-background 樣式 --- */
-.gauge-background {
-    position: absolute;
-    top: 50%; /* 將圓心錨點定在底部中心 */
-    left: 50%;
-    width: 100%;
-    height: 50%; /* 高度為寬度一半，形成半圓區域 */
-    background: transparent; /* 容器本身透明 */
-    border-top-left-radius: 100% 200%;  /* 畫出上半圓的弧度 */
-    border-top-right-radius: 100% 200%;
-    border: 20px solid #e9ecef; /* 軌道顏色和寬度 */
-    border-bottom: none; /* 移除底部邊框 */
-    transform: translate(-50%, -100%); /* 將半圓向上移動對齊 */
-    box-sizing: border-box; /* 確保邊框不會影響尺寸 */
-    bottom: 50px;
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* ===== 過往行程卡片樣式微調 ===== */
+
+/* 讓 ul 列表自動填滿卡片剩餘的垂直空間 */
+.past-trips-card ul {
+    flex-grow: 1;
 }
 
-/* 儀表板指針 */
-.gauge-needle {
-    position: absolute;
-    bottom: 55px;
-    left: 50%;
-    width: 2px;
-    height: 50%;
-    background-color: #1a2a5f;
-    transform-origin: bottom center;
-    transform: translateX(-50%) rotate(-45deg);
-    /* 指向 72 分大概的位置 */
-    transition: transform 0.5s ease;
+/* 列表項目排版 (左資訊右分數) */
+.past-trips-card li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    /* 增加行距 */
 }
 
-/* 指針中心的圓點 */
-.gauge-center-circle {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    background-color: #1a2a5f;
-    border-radius: 50%;
-    transform: translateX(-50%);
+/* 左側的行程資訊 */
+.trip-info {
+    display: flex;
+    flex-direction: column;
+    /* 讓兩行文字垂直排列 */
 }
 
-/* 儀表板中間的文字 */
-.gauge-text {
-    position: absolute;
-    bottom: 5%;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    font-size: 1.1rem;
+.trip-date-group {
+    font-weight: 500;
     color: #333;
 }
 
-.gauge-text strong {
-    font-size: 1.8em;
-    font-weight: bold;
-    color: #1a2a5f;
+.trip-time-route {
+    font-size: 0.9rem;
+    color: #777;
 }
 
-/* 儀表板下方的標籤 */
+/* 右側的分數 */
+.trip-score {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #1a2a5f;
+    margin-left: 16px;
+    /* 與左側資訊的間距 */
+}
+
+
+/* ===== 關鍵：讓同一橫列的卡片底部對齊 ===== */
+.dashboard-row {
+    align-items: stretch;
+    /* 強制讓此橫列的所有卡片等高 */
+}
+
+.control-item select option {
+    color: black;
+    /* 強制設定選項文字為黑色，以便在白色背景上顯示 */
+    background-color: white;
+    /* 確保選項背景是白色 */
+}
+
+/* --- 請找到並用這段程式碼「取代」所有舊的「我的群組」相關樣式 --- */
+
+/* ===== 我的群組卡片整體設定 ===== */
+.my-group-card {
+    /* 確保卡片本身是 flex 容器，讓內部元素可以分配空間 */
+    display: flex;
+    flex-direction: column;
+    /* 讓卡片在空間不足時可以被壓縮，這對整體佈局很重要 */
+    min-height: 0;
+}
+
+/* ===== 我的群組 - 列表滾動樣式 ===== */
+.my-group-card .group-list {
+    /* 設定一個最大高度。
+      一個項目大約高 35px，5 個項目就是 175px。
+      您可以根據實際情況微調這個數值。
+    */
+    max-height: 180px;
+
+    /* 當內容超出 max-height 時，自動顯示垂直滾動軸 */
+    overflow-y: auto;
+
+    /* (可選) 增加右邊內距，避免文字緊貼滾動軸，更美觀 */
+    padding-right: 8px;
+    margin-bottom: 0;
+    /* 確保列表下方沒有多餘的 margin */
+}
+
+/* (可選) 美化滾動軸樣式，讓它更符合您的網站風格 */
+.my-group-card .group-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.my-group-card .group-list::-webkit-scrollbar-track {
+    background: #f0f2f5;
+    /* 滾動軸背景色 */
+    border-radius: 4px;
+}
+
+.my-group-card .group-list::-webkit-scrollbar-thumb {
+    background-color: #1a2a5f;
+    /* 滾動軸本身的顏色 */
+    border-radius: 4px;
+    border: 2px solid #f0f2f5;
+    /* 滾動軸與背景之間的邊框 */
+}
+
+.my-group-card .group-list::-webkit-scrollbar-thumb:hover {
+    background-color: #0d1530;
+    /* 滑鼠移上去時的顏色 */
+}
+
+/* --- 新增：過往行程卡片列表滾動樣式 --- */
+
+/* ===== 過往行程卡片整體設定 ===== */
+.past-trips-card {
+    /* 確保卡片本身是 flex 容器，讓內部元素可以分配空間 */
+    display: flex;
+    flex-direction: column;
+    /* 讓卡片在空間不足時可以被壓縮，這對整體佈局很重要 */
+    min-height: 0;
+}
+
+/* ===== 過往行程 - 列表滾動樣式 ===== */
+.past-trips-card .d-card-body ul {
+    /* 設定一個最大高度。
+       一個項目大約高 60px，顯示 3 個項目就是 180px。
+       您可以根據需求微調此數值。
+    */
+    max-height: 180px;
+
+    /* 當內容超出 max-height 時，自動顯示垂直滾動軸 */
+    overflow-y: auto;
+
+    /* (可選) 增加右邊內距，避免文字緊貼滾動軸 */
+    padding-right: 8px;
+}
+
+/* (可選) 美化滾動軸樣式，與網站風格保持一致 */
+.past-trips-card .d-card-body ul::-webkit-scrollbar {
+    width: 8px;
+}
+
+.past-trips-card .d-card-body ul::-webkit-scrollbar-track {
+    background: #f0f2f5;
+    border-radius: 4px;
+}
+
+.past-trips-card .d-card-body ul::-webkit-scrollbar-thumb {
+    background-color: #1a2a5f;
+    border-radius: 4px;
+    border: 2px solid #f0f2f5;
+}
+
+.past-trips-card .d-card-body ul::-webkit-scrollbar-thumb:hover {
+    background-color: #0d1530;
+}
+
+/* --- 新增：卡片標題圖示的通用樣式 --- */
+.d-card-header h3>i {
+    margin-right: 8px;
+    /* 增加圖示與標題之間的間距 */
+    color: #1a2a5f;
+    /* 將圖示顏色設定為與主題色一致 */
+}
+
+.ai-suggestion-section h3>i {
+    margin-right: 8px;
+    /* 增加圖示與標題之間的間距 */
+    color: #1a2a5f;
+    /* 將圖示顏色設定為與主題色一致 */
+}
+
+/* --- 全新儀錶板樣式 (Automotive Style) --- */
+
+/* 通勤平均卡片 - 標題新增圖示 */
+
+.gauge-area {
+    /* 使用 CSS 變數來集中控制儀錶板的數值，方便後續用 JS 或後端修改 */
+    --value: 72;
+    /* <--- 在這裡修改分數 (0 到 100) */
+    --rotation: calc((var(--value) / 100) * 180deg - 90deg);
+
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    /* 限制最大寬度，避免在大螢幕上過大 */
+    aspect-ratio: 2 / 1;
+    /* 維持 2:1 的寬高比，形成完美的半圓容器 */
+    margin: 20px auto 10px auto;
+    display: flex;
+    align-items: flex-end;
+    /* 讓內部元素都靠下對齊 */
+    justify-content: center;
+}
+
+/* 儀錶板的彩色圓弧背景 */
+.gauge-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(from -90deg,
+            #dc3545 0% 15%,
+            /* 紅色區域 (危險) */
+            #ffc107 15% 40%,
+            /* 黃色區域 (警告) */
+            #28a745 40% 60%,
+            /* 綠色區域 (良好) */
+            #ffc107 60% 85%,
+            /* 黃色區域 (警告) */
+            #dc3545 85% 100%
+            /* 紅色區域 (危險) */
+        );
+    border-radius: 50% / 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    -webkit-mask-image: radial-gradient(circle at 50% 100%,
+            transparent 65%,
+            /* 中間挖空的透明區域大小 */
+            black 66%
+            /* 保留的圓環寬度 */
+        );
+    mask-image: radial-gradient(circle at 50% 100%,
+            transparent 65%,
+            black 66%);
+}
+
+/* 新增：刻度標籤 (0 和 100) */
+.gauge-area::before,
+.gauge-area::after {
+    position: absolute;
+    bottom: -5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.gauge-area::before {
+    content: '0';
+    left: 5px;
+}
+
+.gauge-area::after {
+    content: '100';
+    right: 5px;
+}
+
+/* 儀錶板指針 */
+.gauge-needle {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    height: 40%;
+    background-color: #343a40;
+    /* 更深的指針顏色 */
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(var(--rotation));
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    /* 加上 Q 彈的動畫效果 */
+    z-index: 2;
+}
+
+/* 指針中心的圓點 (輪轂) */
+.gauge-center-circle {
+    position: absolute;
+    bottom: -10px;
+    /* 稍微往下移，更有立體感 */
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: #f8f9fa;
+    border: 3px solid #6c757d;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    /* 確保在最上層 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 儀錶板中間的文字 */
+.gauge-text {
+    position: relative;
+    /* 脫離 absolute 定位，使其自然在容器底部 */
+    text-align: center;
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 15%;
+    /* 向上移動一點，位置更置中 */
+}
+
+.gauge-text strong {
+    font-size: 2.2em;
+    /* 放大分數數字 */
+    font-weight: 700;
+    color: #1a2a5f;
+    margin: 0 4px;
+}
+
+/* 儀錶板下方的標籤 */
 .gauge-label {
     text-align: center;
     color: #555;
     font-weight: 500;
+}
+
+/* --- 新增：通勤平均 - 日曆輸入框樣式 --- */
+#trends-date-picker,
+#commute-date-picker {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    cursor: pointer;
 }

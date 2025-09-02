@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // --- 功能二：繪製「趨勢追蹤」折線圖 ---
-    
+
     // 1. 找到我們的 canvas 畫布
     const ctx = document.getElementById('trendsChart');
 
@@ -91,3 +91,4 @@ document.addEventListener('DOMContentLoaded', function () {
     } // if (ctx) 結束
 
 }); // DOMContentLoaded 結束
+
