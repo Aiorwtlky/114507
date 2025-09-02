@@ -1,508 +1,523 @@
 import cv2
-import numpy as np
-import time
-import threading
-from typing import Dict, Any, Optional, List
 import mediapipe as mp
-from utils import (
-    calculate_ear_robust,
-    setup_logging,
-    get_performance_monitor,
-    rotation_matrix_to_euler_angles
-)
-from config import config
+import numpy as np
+import logging
+import time
+from typing import Dict, List, Optional, Tuple
+from collections import deque
+import json
+import os
 
-class DriverMonitor:
-    """基礎駕駛員監控系統"""
+logger = logging.getLogger(__name__)
+
+class EyeSizeAdaptiveMonitor:
+    """眼睛大小自適應的駕駛員監控系統"""
     
-    def __init__(self, config_obj=None):
-        self.config = config_obj or config
-        self.logger = setup_logging()
-        self.performance_monitor = get_performance_monitor('driver_monitor')
+    def __init__(self, config, driver_profile_path: str = None):
+        self.config = config
+        self.driver_profile_path = driver_profile_path or "data/driver_profiles.json"
         
         # MediaPipe 初始化
         self.mp_face_mesh = mp.solutions.face_mesh
-        self.mp_hands = mp.solutions.hands
-        self.mp_pose = mp.solutions.pose
-        
         self.face_mesh = self.mp_face_mesh.FaceMesh(
-            static_image_mode=False,
-            max_num_faces=self.config.ai.mp_max_num_faces,
+            max_num_faces=1,
             refine_landmarks=True,
-            min_detection_confidence=self.config.ai.mp_detection_confidence,
-            min_tracking_confidence=self.config.ai.mp_tracking_confidence
+            min_detection_confidence=config.mediapipe_min_detection_confidence,
+            min_tracking_confidence=config.mediapipe_min_tracking_confidence
         )
         
-        self.hands = self.mp_hands.Hands(
-            static_image_mode=False,
-            max_num_hands=self.config.ai.mp_max_num_hands,
-            min_detection_confidence=self.config.ai.mp_detection_confidence,
-            min_tracking_confidence=self.config.ai.mp_tracking_confidence
-        )
+        # 眼部特徵點索引 (MediaPipe Face Mesh)
+        self.LEFT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
+        self.RIGHT_EYE_INDICES = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
         
-        # 面部關鍵點索引
-        self.LEFT_EYE_LANDMARKS = [33, 7, 163, 144, 145, 153]
-        self.RIGHT_EYE_LANDMARKS = [362, 382, 381, 380, 374, 373]
-        self.FACE_OVAL_LANDMARKS = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288]
+        # 更精確的 EAR 計算點
+        self.LEFT_EAR_POINTS = [145, 159, 33, 133, 153, 144]  # 上下左右關鍵點
+        self.RIGHT_EAR_POINTS = [374, 386, 362, 263, 380, 373]
         
-        # 狀態追蹤
-        self.eye_closed_start_time = None
-        self.head_distraction_start_time = None
-        self.phone_usage_start_time = None
+        # 動態追蹤參數
+        self.ear_history = deque(maxlen=30)  # 30 frame 歷史
+        self.blink_history = deque(maxlen=10)  # 眨眼歷史
+        self.eye_openness_baseline = deque(maxlen=100)  # 基準線
         
-        # 歷史資料
-        self.ear_history = []
-        self.head_pose_history = []
+        # 個人化參數
+        self.driver_profile = None
+        self.is_calibrated = False
+        self.calibration_frames = 0
+        self.calibration_data = {
+            'normal_ear_values': [],
+            'blink_ear_values': [],
+            'eye_size_metrics': [],
+            'head_pose_range': []
+        }
         
-        # 執行緒安全
-        self._lock = threading.Lock()
+        # 警報狀態
+        self.consecutive_closed_frames = 0
+        self.consecutive_drowsy_frames = 0
+        self.consecutive_distraction_frames = 0
+        self.last_blink_time = time.time()
+        self.blink_rate_history = deque(maxlen=20)
         
-        self.logger.info("基礎駕駛員監控系統已初始化")
-    
-    def analyze_frame(self, frame: np.ndarray) -> Dict[str, Any]:
-        """
-        分析單幀影像
-        
-        Args:
-            frame: 輸入影像
-            
-        Returns:
-            Dict: 分析結果
-        """
-        self.performance_monitor.start_frame()
-        current_time = time.time()
-        
+    def load_driver_profile(self, driver_id: str) -> bool:
+        """載入駕駛員個人檔案"""
         try:
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-            # 面部檢測
-            face_results = self.face_mesh.process(rgb_frame)
-            hand_results = self.hands.process(rgb_frame)
-            
-            alerts = []
-            driver_state = {}
-            
-            if face_results.multi_face_landmarks:
-                face_landmarks = face_results.multi_face_landmarks[0]
-                landmarks = np.array([[lm.x * frame.shape[1], lm.y * frame.shape[0]] 
-                                    for lm in face_landmarks.landmark])
-                
-                # 眼部狀態分析
-                eye_state = self._analyze_eye_state(landmarks, current_time)
-                driver_state.update(eye_state)
-                
-                # 頭部姿態分析
-                head_pose = self._analyze_head_pose(landmarks, current_time)
-                driver_state.update(head_pose)
-                
-                # 疲勞檢測
-                fatigue_alerts = self._detect_fatigue(eye_state, current_time)
-                alerts.extend(fatigue_alerts)
-                
-                # 分心檢測
-                distraction_alerts = self._detect_distraction(head_pose, current_time)
-                alerts.extend(distraction_alerts)
-            
-            # 手機使用檢測
-            if hand_results.multi_hand_landmarks:
-                phone_alerts = self._detect_phone_usage(hand_results, current_time)
-                alerts.extend(phone_alerts)
-            
-            result = {
-                'timestamp': current_time,
-                'alerts': alerts,
-                'driver_state': driver_state,
-                'face_detected': face_results.multi_face_landmarks is not None,
-                'hands_detected': hand_results.multi_hand_landmarks is not None
-            }
-            
-            self.performance_monitor.end_frame()
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"分析幀時發生錯誤: {e}")
-            self.performance_monitor.end_frame()
-            return {
-                'timestamp': current_time,
-                'alerts': [],
-                'driver_state': {},
-                'error': str(e)
-            }
-    
-    def _analyze_eye_state(self, landmarks: np.ndarray, current_time: float) -> Dict[str, Any]:
-        """分析眼部狀態"""
-        try:
-            # 提取眼部地標
-            left_eye = landmarks[self.LEFT_EYE_LANDMARKS]
-            right_eye = landmarks[self.RIGHT_EYE_LANDMARKS]
-            
-            # 計算 EAR
-            left_ear = calculate_ear_robust(left_eye)
-            right_ear = calculate_ear_robust(right_eye)
-            avg_ear = (left_ear + right_ear) / 2.0
-            
-            # 更新歷史記錄
-            with self._lock:
-                self.ear_history.append({
-                    'ear': avg_ear,
-                    'timestamp': current_time
-                })
-                
-                # 保持最近的記錄
-                if len(self.ear_history) > self.config.ai.ear_history_size:
-                    self.ear_history.pop(0)
-            
-            # 判斷眼睛是否閉合
-            is_closed = avg_ear < self.config.ai.default_ear_threshold
-            
-            # 計算眼部不對稱性
-            asymmetry = abs(left_ear - right_ear)
-            
-            return {
-                'ear': avg_ear,
-                'left_ear': left_ear,
-                'right_ear': right_ear,
-                'is_closed': is_closed,
-                'asymmetry': asymmetry,
-                'ear_threshold': self.config.ai.default_ear_threshold
-            }
-            
-        except Exception as e:
-            self.logger.error(f"眼部狀態分析錯誤: {e}")
-            return {}
-    
-    def _analyze_head_pose(self, landmarks: np.ndarray, current_time: float) -> Dict[str, Any]:
-        """分析頭部姿態"""
-        try:
-            # 使用面部地標估算頭部姿態
-            # 簡化版本，使用關鍵點的相對位置
-            
-            # 鼻尖
-            nose_tip = landmarks[1]  # 鼻尖點
-            # 下巴
-            chin = landmarks[18]     # 下巴點
-            # 額頭中心
-            forehead = landmarks[10] # 額頭點
-            
-            # 計算角度（簡化版本）
-            # 實際應用中可能需要更複雜的 3D 姿態估算
-            
-            # 垂直角度（點頭）
-            vertical_diff = nose_tip[1] - forehead[1]
-            pitch = np.arctan2(vertical_diff, abs(nose_tip[0] - forehead[0])) * 180 / np.pi
-            
-            # 水平角度（搖頭）
-            horizontal_diff = nose_tip[0] - (landmarks[33][0] + landmarks[362][0]) / 2
-            yaw = np.arctan2(horizontal_diff, 100) * 180 / np.pi  # 假設距離
-            
-            # 傾斜角度
-            left_eye_center = np.mean(landmarks[self.LEFT_EYE_LANDMARKS], axis=0)
-            right_eye_center = np.mean(landmarks[self.RIGHT_EYE_LANDMARKS], axis=0)
-            eye_diff = left_eye_center[1] - right_eye_center[1]
-            roll = np.arctan2(eye_diff, abs(left_eye_center[0] - right_eye_center[0])) * 180 / np.pi
-            
-            # 更新歷史記錄
-            pose_data = {
-                'pitch': pitch,
-                'yaw': yaw,
-                'roll': roll,
-                'timestamp': current_time
-            }
-            
-            with self._lock:
-                self.head_pose_history.append(pose_data)
-                if len(self.head_pose_history) > 100:
-                    self.head_pose_history.pop(0)
-            
-            return {
-                'head_pitch': pitch,
-                'head_yaw': yaw,
-                'head_roll': roll,
-                'head_pose_magnitude': np.sqrt(pitch**2 + yaw**2 + roll**2)
-            }
-            
-        except Exception as e:
-            self.logger.error(f"頭部姿態分析錯誤: {e}")
-            return {}
-    
-    def _detect_fatigue(self, eye_state: Dict[str, Any], current_time: float) -> List[Dict[str, Any]]:
-        """檢測疲勞狀態"""
-        alerts = []
-        
-        try:
-            if not eye_state or 'is_closed' not in eye_state:
-                return alerts
-            
-            is_closed = eye_state['is_closed']
-            
-            if is_closed:
-                # 開始計時或繼續計時
-                if self.eye_closed_start_time is None:
-                    self.eye_closed_start_time = current_time
-                
-                closed_duration = current_time - self.eye_closed_start_time
-                
-                # 重度疲勞駕駛 (閉眼超過3秒)
-                if closed_duration >= self.config.time_thresholds['eye_closed_severe']:
-                    alerts.append({
-                        'code': 'A01',
-                        'name': self.config.alert_scoring['A01']['name'],
-                        'score': self.config.alert_scoring['A01']['score'],
-                        'duration': closed_duration,
-                        'confidence': self._calculate_alert_confidence('A01', eye_state),
-                        'timestamp': current_time
-                    })
-                
-                # 中度疲勞駕駛 (閉眼1-3秒)
-                elif closed_duration >= self.config.time_thresholds['eye_closed_medium']:
-                    alerts.append({
-                        'code': 'A02',
-                        'name': self.config.alert_scoring['A02']['name'],
-                        'score': self.config.alert_scoring['A02']['score'],
-                        'duration': closed_duration,
-                        'confidence': self._calculate_alert_confidence('A02', eye_state),
-                        'timestamp': current_time
-                    })
-            
-            else:
-                # 眼睛張開，重置計時器
-                self.eye_closed_start_time = None
-            
-        except Exception as e:
-            self.logger.error(f"疲勞檢測錯誤: {e}")
-        
-        return alerts
-    
-    def _detect_distraction(self, head_pose: Dict[str, Any], current_time: float) -> List[Dict[str, Any]]:
-        """檢測分心狀態"""
-        alerts = []
-        
-        try:
-            if not head_pose or 'head_pose_magnitude' not in head_pose:
-                return alerts
-            
-            # 設定分心閾值（角度）
-            distraction_threshold = 30.0  # 度
-            pose_magnitude = head_pose['head_pose_magnitude']
-            
-            is_distracted = pose_magnitude > distraction_threshold
-            
-            if is_distracted:
-                # 開始計時或繼續計時
-                if self.head_distraction_start_time is None:
-                    self.head_distraction_start_time = current_time
-                
-                distraction_duration = current_time - self.head_distraction_start_time
-                
-                # 長時間分心 (低頭/轉頭超過5秒)
-                if distraction_duration >= self.config.time_thresholds['head_distraction']:
-                    alerts.append({
-                        'code': 'A03',
-                        'name': self.config.alert_scoring['A03']['name'],
-                        'score': self.config.alert_scoring['A03']['score'],
-                        'duration': distraction_duration,
-                        'head_angle': pose_magnitude,
-                        'confidence': self._calculate_alert_confidence('A03', head_pose),
-                        'timestamp': current_time
-                    })
-            
-            else:
-                # 頭部回到正常位置，重置計時器
-                self.head_distraction_start_time = None
-        
-        except Exception as e:
-            self.logger.error(f"分心檢測錯誤: {e}")
-        
-        return alerts
-    
-    def _detect_phone_usage(self, hand_results, current_time: float) -> List[Dict[str, Any]]:
-        """檢測手機使用"""
-        alerts = []
-        
-        try:
-            if not hand_results.multi_hand_landmarks:
-                self.phone_usage_start_time = None
-                return alerts
-            
-            # 簡化的手機檢測邏輯
-            # 檢測手部是否在耳部附近或面部前方
-            phone_gesture_detected = self._analyze_phone_gesture(hand_results)
-            
-            if phone_gesture_detected:
-                if self.phone_usage_start_time is None:
-                    self.phone_usage_start_time = current_time
-                
-                usage_duration = current_time - self.phone_usage_start_time
-                
-                # 駕駛中使用手機
-                if usage_duration >= self.config.time_thresholds['phone_detection']:
-                    alerts.append({
-                        'code': 'A04',
-                        'name': self.config.alert_scoring['A04']['name'],
-                        'score': self.config.alert_scoring['A04']['score'],
-                        'duration': usage_duration,
-                        'confidence': 0.7,  # 簡化的信心度
-                        'timestamp': current_time
-                    })
-            
-            else:
-                self.phone_usage_start_time = None
-        
-        except Exception as e:
-            self.logger.error(f"手機使用檢測錯誤: {e}")
-        
-        return alerts
-    
-    def _analyze_phone_gesture(self, hand_results) -> bool:
-        """分析手機使用手勢"""
-        try:
-            # 簡化的手機檢測邏輯
-            # 檢查手部位置是否在可能使用手機的區域
-            
-            for hand_landmarks in hand_results.multi_hand_landmarks:
-                # 檢查拇指和食指的相對位置
-                thumb_tip = hand_landmarks.landmark[4]  # 拇指尖
-                index_tip = hand_landmarks.landmark[8]  # 食指尖
-                
-                # 如果手指呈現握持姿態且位置在面部區域
-                finger_distance = np.sqrt(
-                    (thumb_tip.x - index_tip.x)**2 + 
-                    (thumb_tip.y - index_tip.y)**2
-                )
-                
-                # 手部在面部高度
-                hand_height = (thumb_tip.y + index_tip.y) / 2
-                
-                # 簡化判斷：手指距離小且在面部高度
-                if finger_distance < 0.1 and hand_height < 0.6:
+            if os.path.exists(self.driver_profile_path):
+                with open(self.driver_profile_path, 'r', encoding='utf-8') as f:
+                    profiles = json.load(f)
+                    
+                if driver_id in profiles:
+                    self.driver_profile = profiles[driver_id]
+                    self.is_calibrated = True
+                    logger.info(f"載入駕駛員檔案: {driver_id}")
+                    logger.info(f"駕駛員: {self.driver_profile.get('driver_name', 'Unknown')}")
+                    logger.info(f"眼睛類型: {self.driver_profile.get('eye_size_category', 'Unknown')}")
                     return True
             
+            logger.warning(f"找不到駕駛員檔案: {driver_id}")
             return False
             
-        except Exception:
+        except Exception as e:
+            logger.error(f"載入駕駛員檔案失敗: {e}")
             return False
     
-    def _calculate_alert_confidence(self, alert_code: str, state_data: Dict[str, Any]) -> float:
-        """計算警報信心度"""
+    def calculate_adaptive_ear(self, landmarks, eye_indices) -> float:
+        """計算自適應 EAR (Eye Aspect Ratio)"""
         try:
-            if alert_code in ['A01', 'A02']:
-                # 疲勞警報信心度基於 EAR 值
-                if 'ear' in state_data and 'ear_threshold' in state_data:
-                    ear = state_data['ear']
-                    threshold = state_data['ear_threshold']
-                    confidence = max(0.5, min(1.0, (threshold - ear) / threshold + 0.5))
-                    return confidence
+            # 取得眼部關鍵點
+            eye_points = []
+            for idx in eye_indices:
+                point = landmarks[idx]
+                eye_points.append([point.x, point.y])
             
-            elif alert_code == 'A03':
-                # 分心警報信心度基於頭部角度
-                if 'head_pose_magnitude' in state_data:
-                    angle = state_data['head_pose_magnitude']
-                    confidence = max(0.5, min(1.0, angle / 60.0))
-                    return confidence
+            eye_points = np.array(eye_points)
             
-            return 0.7  # 預設信心度
+            # 計算多個垂直距離 (更準確)
+            vertical_distances = []
             
-        except Exception:
+            # 上下眼瞼距離 (多個測量點)
+            if len(eye_indices) >= 6:
+                # 外側垂直距離
+                v1 = np.linalg.norm(eye_points[1] - eye_points[5])
+                # 中間垂直距離
+                v2 = np.linalg.norm(eye_points[2] - eye_points[4])
+                # 內側垂直距離  
+                v3 = np.linalg.norm(eye_points[0] - eye_points[3])
+                
+                vertical_distances = [v1, v2, v3]
+            
+            # 水平距離
+            horizontal_distance = np.linalg.norm(eye_points[0] - eye_points[3])
+            
+            # 加權平均垂直距離
+            avg_vertical = np.mean(vertical_distances) if vertical_distances else 0
+            
+            # 避免除零
+            if horizontal_distance < 1e-6:
+                return 0.0
+            
+            ear = avg_vertical / horizontal_distance
+            return ear
+            
+        except Exception as e:
+            logger.error(f"EAR 計算錯誤: {e}")
+            return 0.0
+    
+    def calculate_eye_size_metrics(self, landmarks) -> Dict:
+        """計算眼睛大小相關指標"""
+        try:
+            # 左眼範圍
+            left_eye_points = np.array([[landmarks[i].x, landmarks[i].y] for i in self.LEFT_EYE_INDICES])
+            right_eye_points = np.array([[landmarks[i].x, landmarks[i].y] for i in self.RIGHT_EYE_INDICES])
+            
+            # 眼睛寬度 (水平範圍)
+            left_eye_width = np.max(left_eye_points[:, 0]) - np.min(left_eye_points[:, 0])
+            right_eye_width = np.max(right_eye_points[:, 0]) - np.min(right_eye_points[:, 0])
+            
+            # 眼睛高度 (垂直範圍)
+            left_eye_height = np.max(left_eye_points[:, 1]) - np.min(left_eye_points[:, 1])
+            right_eye_height = np.max(right_eye_points[:, 1]) - np.min(right_eye_points[:, 1])
+            
+            # 眼睛面積 (近似)
+            left_eye_area = left_eye_width * left_eye_height
+            right_eye_area = right_eye_width * right_eye_height
+            
+            # 眼睛形狀比例
+            left_aspect_ratio = left_eye_width / (left_eye_height + 1e-6)
+            right_aspect_ratio = right_eye_width / (right_eye_height + 1e-6)
+            
+            return {
+                'left_eye_width': left_eye_width,
+                'right_eye_width': right_eye_width,
+                'left_eye_height': left_eye_height,
+                'right_eye_height': right_eye_height,
+                'left_eye_area': left_eye_area,
+                'right_eye_area': right_eye_area,
+                'left_aspect_ratio': left_aspect_ratio,
+                'right_aspect_ratio': right_aspect_ratio,
+                'avg_eye_width': (left_eye_width + right_eye_width) / 2,
+                'avg_eye_height': (left_eye_height + right_eye_height) / 2,
+                'avg_eye_area': (left_eye_area + right_eye_area) / 2
+            }
+            
+        except Exception as e:
+            logger.error(f"眼睛大小計算錯誤: {e}")
+            return {}
+    
+    def detect_head_pose(self, landmarks) -> Dict:
+        """檢測頭部姿態"""
+        try:
+            # 關鍵臉部特徵點
+            nose_tip = landmarks[1]
+            chin = landmarks[152]
+            left_eye_corner = landmarks[33]
+            right_eye_corner = landmarks[263]
+            left_mouth = landmarks[61]
+            right_mouth = landmarks[291]
+            
+            # 計算頭部傾斜
+            eye_center_x = (left_eye_corner.x + right_eye_corner.x) / 2
+            eye_center_y = (left_eye_corner.y + right_eye_corner.y) / 2
+            
+            mouth_center_x = (left_mouth.x + right_mouth.x) / 2
+            mouth_center_y = (left_mouth.y + right_mouth.y) / 2
+            
+            # 垂直方向 (點頭/抬頭)
+            vertical_ratio = (nose_tip.y - eye_center_y) / (chin.y - eye_center_y + 1e-6)
+            
+            # 水平方向 (左右轉頭)
+            horizontal_ratio = (nose_tip.x - eye_center_x) / (right_eye_corner.x - left_eye_corner.x + 1e-6)
+            
+            # 判斷狀態
+            looking_down = vertical_ratio > 0.6  # 低頭
+            looking_up = vertical_ratio < 0.3    # 抬頭
+            looking_left = horizontal_ratio < -0.3  # 左轉
+            looking_right = horizontal_ratio > 0.3   # 右轉
+            
+            distracted = looking_down or looking_up or looking_left or looking_right
+            
+            return {
+                'vertical_ratio': vertical_ratio,
+                'horizontal_ratio': horizontal_ratio,
+                'looking_down': looking_down,
+                'looking_up': looking_up,
+                'looking_left': looking_left,
+                'looking_right': looking_right,
+                'distracted': distracted
+            }
+            
+        except Exception as e:
+            logger.error(f"頭部姿態檢測錯誤: {e}")
+            return {'distracted': False}
+    
+    def get_adaptive_thresholds(self, eye_metrics: Dict) -> Dict:
+        """根據眼睛大小動態調整閾值"""
+        if not self.is_calibrated or not self.driver_profile:
+            # 使用動態基準線
+            if len(self.eye_openness_baseline) > 10:
+                baseline_ear = np.mean(list(self.eye_openness_baseline))
+                baseline_std = np.std(list(self.eye_openness_baseline))
+                
+                # 根據基準線動態調整
+                if baseline_ear < 0.2:  # 小眼睛
+                    closed_threshold = max(0.08, baseline_ear - 2.0 * baseline_std)
+                    drowsy_threshold = max(closed_threshold + 0.02, baseline_ear - 1.0 * baseline_std)
+                elif baseline_ear > 0.35:  # 大眼睛
+                    closed_threshold = max(0.15, baseline_ear - 2.5 * baseline_std)
+                    drowsy_threshold = max(closed_threshold + 0.03, baseline_ear - 1.2 * baseline_std)
+                else:  # 中等眼睛
+                    closed_threshold = max(0.12, baseline_ear - 2.2 * baseline_std)
+                    drowsy_threshold = max(closed_threshold + 0.025, baseline_ear - 1.1 * baseline_std)
+            else:
+                # 預設值
+                closed_threshold = 0.15
+                drowsy_threshold = 0.22
+        else:
+            # 使用校準的個人化閾值
+            profile = self.driver_profile
+            closed_threshold = profile.get('closed_threshold', 0.15)
+            drowsy_threshold = profile.get('drowsy_threshold', 0.22)
+        
+        return {
+            'closed_threshold': closed_threshold,
+            'drowsy_threshold': drowsy_threshold,
+            'blink_threshold': drowsy_threshold * 0.9
+        }
+    
+    def analyze_frame(self, frame) -> Dict:
+        """分析影像框架"""
+        result = {
+            'face_detected': False,
+            'left_ear': 0.0,
+            'right_ear': 0.0,
+            'avg_ear': 0.0,
+            'eye_state': 'unknown',
+            'head_pose': {},
+            'alerts': [],
+            'eye_metrics': {},
+            'thresholds': {},
+            'debug_info': {}
+        }
+        
+        try:
+            # 轉換為 RGB
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = self.face_mesh.process(rgb_frame)
+            
+            if results.multi_face_landmarks:
+                face_landmarks = results.multi_face_landmarks[0]
+                result['face_detected'] = True
+                
+                # 計算 EAR
+                left_ear = self.calculate_adaptive_ear(face_landmarks.landmark, self.LEFT_EAR_POINTS)
+                right_ear = self.calculate_adaptive_ear(face_landmarks.landmark, self.RIGHT_EAR_POINTS)
+                avg_ear = (left_ear + right_ear) / 2
+                
+                result['left_ear'] = left_ear
+                result['right_ear'] = right_ear
+                result['avg_ear'] = avg_ear
+                
+                # 計算眼睛大小指標
+                eye_metrics = self.calculate_eye_size_metrics(face_landmarks.landmark)
+                result['eye_metrics'] = eye_metrics
+                
+                # 檢測頭部姿態
+                head_pose = self.detect_head_pose(face_landmarks.landmark)
+                result['head_pose'] = head_pose
+                
+                # 更新基準線
+                if avg_ear > 0.1:  # 有效的 EAR 值
+                    self.eye_openness_baseline.append(avg_ear)
+                
+                # 取得自適應閾值
+                thresholds = self.get_adaptive_thresholds(eye_metrics)
+                result['thresholds'] = thresholds
+                
+                # 眼睛狀態和頭部姿態判斷
+                eye_state, alerts = self.determine_driver_state(avg_ear, head_pose, thresholds)
+                result['eye_state'] = eye_state
+                result['alerts'] = alerts
+                
+                # 調試資訊
+                result['debug_info'] = {
+                    'baseline_ear': np.mean(list(self.eye_openness_baseline)) if self.eye_openness_baseline else 0,
+                    'calibrated': self.is_calibrated,
+                    'consecutive_closed': self.consecutive_closed_frames,
+                    'consecutive_drowsy': self.consecutive_drowsy_frames,
+                    'consecutive_distraction': self.consecutive_distraction_frames,
+                    'baseline_samples': len(self.eye_openness_baseline)
+                }
+                
+        except Exception as e:
+            logger.error(f"影像分析錯誤: {e}")
+        
+        return result
+    
+    def determine_driver_state(self, avg_ear: float, head_pose: Dict, thresholds: Dict) -> Tuple[str, List]:
+        """判斷駕駛員狀態並產生警報"""
+        alerts = []
+        
+        closed_threshold = thresholds['closed_threshold']
+        drowsy_threshold = thresholds['drowsy_threshold']
+        
+        # 眼睛狀態判斷
+        if avg_ear < closed_threshold:
+            # 閉眼狀態
+            self.consecutive_closed_frames += 1
+            self.consecutive_drowsy_frames = 0
+            
+            if self.consecutive_closed_frames >= self.config.eye_closed_frames_threshold:
+                # 重度疲勞 (閉眼超過3秒)
+                alerts.append({
+                    'code': 'A01',
+                    'name': '重度疲勞駕駛',
+                    'score': 25,
+                    'description': f'閉眼超過 {self.consecutive_closed_frames/self.config.internal_camera_fps:.1f} 秒'
+                })
+                eye_state = 'severely_drowsy'
+            elif self.consecutive_closed_frames >= self.config.drowsy_frames_threshold:
+                # 中度疲勞 (閉眼1-3秒)
+                alerts.append({
+                    'code': 'A02',
+                    'name': '中度疲勞駕駛',
+                    'score': 15,
+                    'description': f'閉眼 {self.consecutive_closed_frames/self.config.internal_camera_fps:.1f} 秒'
+                })
+                eye_state = 'drowsy'
+            else:
+                eye_state = 'closed'
+                
+        elif avg_ear < drowsy_threshold:
+            # 微閉眼/疲勞狀態
+            self.consecutive_drowsy_frames += 1
+            self.consecutive_closed_frames = 0
+            
+            if self.consecutive_drowsy_frames >= self.config.drowsy_frames_threshold * 2:
+                alerts.append({
+                    'code': 'A02',
+                    'name': '輕度疲勞駕駛',
+                    'score': 10,
+                    'description': '持續微閉眼狀態'
+                })
+            
+            eye_state = 'drowsy'
+            
+        else:
+            # 正常狀態
+            if self.consecutive_closed_frames > 0 or self.consecutive_drowsy_frames > 0:
+                # 記錄一次眨眼
+                current_time = time.time()
+                blink_interval = current_time - self.last_blink_time
+                self.blink_rate_history.append(blink_interval)
+                self.last_blink_time = current_time
+            
+            self.consecutive_closed_frames = 0
+            self.consecutive_drowsy_frames = 0
+            eye_state = 'open'
+        
+        # 頭部姿態判斷 (分心檢測)
+        if head_pose.get('distracted', False):
+            self.consecutive_distraction_frames += 1
+            
+            if self.consecutive_distraction_frames >= self.config.distraction_frames_threshold:
+                alerts.append({
+                    'code': 'A03',
+                    'name': '長時間分心',
+                    'score': 20,
+                    'description': f'分心超過 {self.consecutive_distraction_frames/self.config.internal_camera_fps:.1f} 秒'
+                })
+        else:
+            self.consecutive_distraction_frames = 0
+        
+        return eye_state, alerts
+    
+    def start_calibration(self, driver_name: str):
+        """開始個人化校準"""
+        self.calibration_frames = 0
+        self.calibration_data = {
+            'driver_name': driver_name,
+            'normal_ear_values': [],
+            'blink_ear_values': [],
+            'eye_size_metrics': [],
+            'head_pose_range': []
+        }
+        logger.info(f"開始校準駕駛員: {driver_name}")
+    
+    def add_calibration_frame(self, frame, calibration_type: str = 'normal'):
+        """添加校準框架"""
+        result = self.analyze_frame(frame)
+        
+        if result['face_detected']:
+            if calibration_type == 'normal':
+                self.calibration_data['normal_ear_values'].append(result['avg_ear'])
+                self.calibration_data['eye_size_metrics'].append(result['eye_metrics'])
+            elif calibration_type == 'blink':
+                self.calibration_data['blink_ear_values'].append(result['avg_ear'])
+            
+            self.calibration_frames += 1
+    
+    def finish_calibration(self) -> bool:
+        """完成校準並儲存個人檔案"""
+        try:
+            if len(self.calibration_data['normal_ear_values']) < 30:
+                logger.error("校準資料不足，需要至少30個有效框架")
+                return False
+            
+            # 計算個人化閾值
+            normal_ears = np.array(self.calibration_data['normal_ear_values'])
+            normal_ear_mean = np.mean(normal_ears)
+            normal_ear_std = np.std(normal_ears)
+            
+            # 根據個人眼睛特徵調整閾值
+            if normal_ear_mean < 0.2:  # 小眼睛
+                closed_threshold = max(0.08, normal_ear_mean - 2.0 * normal_ear_std)
+                drowsy_threshold = max(closed_threshold + 0.02, normal_ear_mean - 1.0 * normal_ear_std)
+                eye_size_category = 'small'
+            elif normal_ear_mean > 0.35:  # 大眼睛
+                closed_threshold = max(0.15, normal_ear_mean - 2.5 * normal_ear_std)
+                drowsy_threshold = max(closed_threshold + 0.03, normal_ear_mean - 1.2 * normal_ear_std)
+                eye_size_category = 'large'
+            else:  # 一般眼睛
+                closed_threshold = max(0.12, normal_ear_mean - 2.2 * normal_ear_std)
+                drowsy_threshold = max(closed_threshold + 0.025, normal_ear_mean - 1.1 * normal_ear_std)
+                eye_size_category = 'medium'
+            
+            # 安全範圍限制
+            closed_threshold = max(0.08, min(0.25, closed_threshold))
+            drowsy_threshold = max(closed_threshold + 0.02, min(0.35, drowsy_threshold))
+            
+            # 建立個人檔案
+            driver_profile = {
+                'driver_name': self.calibration_data['driver_name'],
+                'calibration_date': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'normal_ear_mean': float(normal_ear_mean),
+                'normal_ear_std': float(normal_ear_std),
+                'closed_threshold': float(closed_threshold),
+                'drowsy_threshold': float(drowsy_threshold),
+                'eye_size_category': eye_size_category,
+                'calibration_frames': self.calibration_frames,
+                'calibration_quality': self._calculate_calibration_quality(normal_ears)
+            }
+            
+            # 儲存到檔案
+            driver_id = self.save_driver_profile(driver_profile)
+            self.driver_profile = driver_profile
+            self.is_calibrated = True
+            
+            logger.info(f"校準完成 - 駕駛員ID: {driver_id}")
+            logger.info(f"眼睛類型: {eye_size_category}")
+            logger.info(f"閾值 - 閉眼: {closed_threshold:.3f}, 疲勞: {drowsy_threshold:.3f}")
+            logger.info(f"校準品質: {driver_profile['calibration_quality']:.2f}")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"校準失敗: {e}")
+            return False
+    
+    def _calculate_calibration_quality(self, ear_values: np.ndarray) -> float:
+        """計算校準品質分數 (0-1)"""
+        try:
+            # 基於標準差和樣本數量的品質評分
+            std_score = max(0, 1 - (np.std(ear_values) / np.mean(ear_values)))
+            sample_score = min(1, len(ear_values) / 100)  # 100個樣本為滿分
+            
+            # 檢查數值範圍合理性
+            mean_val = np.mean(ear_values)
+            range_score = 1.0 if 0.1 <= mean_val <= 0.6 else 0.5
+            
+            quality = (std_score * 0.4 + sample_score * 0.4 + range_score * 0.2)
+            return quality
+            
+        except:
             return 0.5
     
-    def get_system_status(self) -> Dict[str, Any]:
-        """獲取系統狀態"""
+    def save_driver_profile(self, profile: Dict) -> str:
+        """儲存駕駛員檔案並返回駕駛員ID"""
         try:
-            with self._lock:
-                ear_count = len(self.ear_history)
-                pose_count = len(self.head_pose_history)
+            profiles = {}
+            if os.path.exists(self.driver_profile_path):
+                with open(self.driver_profile_path, 'r', encoding='utf-8') as f:
+                    profiles = json.load(f)
             
-            performance_stats = self.performance_monitor.get_stats()
+            driver_id = f"driver_{int(time.time())}"
+            profiles[driver_id] = profile
             
-            return {
-                'system_name': 'DriverMonitor',
-                'status': 'running',
-                'ear_history_count': ear_count,
-                'pose_history_count': pose_count,
-                'performance': performance_stats,
-                'config': {
-                    'ear_threshold': self.config.ai.default_ear_threshold,
-                    'detection_confidence': self.config.ai.mp_detection_confidence
-                }
-            }
+            with open(self.driver_profile_path, 'w', encoding='utf-8') as f:
+                json.dump(profiles, f, ensure_ascii=False, indent=2)
+            
+            logger.info(f"駕駛員檔案已儲存: {driver_id}")
+            return driver_id
             
         except Exception as e:
-            return {
-                'system_name': 'DriverMonitor',
-                'status': 'error',
-                'error': str(e)
-            }
+            logger.error(f"儲存駕駛員檔案失敗: {e}")
+            return ""
     
-    def reset_state(self):
-        """重置監控狀態"""
+    def list_driver_profiles(self) -> Dict:
+        """列出所有駕駛員檔案"""
         try:
-            with self._lock:
-                self.eye_closed_start_time = None
-                self.head_distraction_start_time = None
-                self.phone_usage_start_time = None
-                self.ear_history.clear()
-                self.head_pose_history.clear()
-            
-            self.logger.info("駕駛員監控狀態已重置")
-            
+            if os.path.exists(self.driver_profile_path):
+                with open(self.driver_profile_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            return {}
         except Exception as e:
-            self.logger.error(f"重置狀態時發生錯誤: {e}")
-    
-    def __del__(self):
-        """清理資源"""
-        try:
-            if hasattr(self, 'face_mesh'):
-                self.face_mesh.close()
-            if hasattr(self, 'hands'):
-                self.hands.close()
-        except Exception:
-            pass
-
-# 如果直接執行此檔案，則進入測試模式
-if __name__ == "__main__":
-    import sys
-    
-    print("駕駛員監控測試模式")
-    
-    monitor = DriverMonitor()
-    cap = cv2.VideoCapture(config.camera.internal_camera_index)
-    
-    if not cap.isOpened():
-        print("無法開啟攝影機")
-        sys.exit(1)
-    
-    print("開始監控，按 'q' 退出")
-    
-    try:
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            
-            # 分析幀
-            result = monitor.analyze_frame(frame)
-            
-            # 顯示結果
-            if result['alerts']:
-                for alert in result['alerts']:
-                    print(f"警報: {alert['code']} - {alert['name']} (信心度: {alert['confidence']:.2f})")
-            
-            # 顯示狀態
-            if result['driver_state']:
-                state = result['driver_state']
-                if 'ear' in state:
-                    cv2.putText(frame, f"EAR: {state['ear']:.3f}", 
-                               (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            
-            cv2.imshow('Driver Monitor Test', frame)
-            
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-    
-    except KeyboardInterrupt:
-        print("用戶中斷測試")
-    
-    finally:
-        cap.release()
-        cv2.destroyAllWindows()
-        print("測試結束")
+            logger.error(f"讀取駕駛員檔案失敗: {e}")
+            return {}
