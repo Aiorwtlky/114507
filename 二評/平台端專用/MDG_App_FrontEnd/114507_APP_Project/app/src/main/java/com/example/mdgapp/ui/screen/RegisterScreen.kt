@@ -11,8 +11,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.mdgapp.ui.theme.MyApplicationTheme
 import androidx.navigation.NavController
+import com.example.mdgapp.ui.theme.MyApplicationTheme // 確保您的 theme 路徑正確
 
 @Composable
 fun RegisterScreen(navController: NavController? = null) {
@@ -35,7 +35,7 @@ fun RegisterScreen(navController: NavController? = null) {
         OutlinedTextField(
             value = driverId,
             onValueChange = { driverId = it },
-            label = { Text("駕駛編號") }
+            label = { Text("駕駛編號") },
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -63,7 +63,27 @@ fun RegisterScreen(navController: NavController? = null) {
 
         Button(
             onClick = {
-                navController?.navigate("home")
+                // --- ✅ 這裡是修改後的核心邏輯 ---
+                if (driverId.isNotBlank()) {
+                    when (driverId.first().uppercaseChar()) {
+                        'M' -> {
+                            // 駕駛編號第一個字母為 M，導航到管理者主頁
+                            navController?.navigate("managerHome") {
+                                popUpTo("register") { inclusive = true }
+                            }
+                        }
+                        'D' -> {
+                            // 駕駛編號第一個字母為 D，導航到駕駛者主頁
+                            navController?.navigate("home") {
+                                popUpTo("register") { inclusive = true }
+                            }
+                        }
+                        else -> {
+                            // 可以加上錯誤提示，例如一個 Toast
+                            println("無效的駕駛編號開頭")
+                        }
+                    }
+                }
             },
             shape = CircleShape
         ) {
