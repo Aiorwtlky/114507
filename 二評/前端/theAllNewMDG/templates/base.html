@@ -33,16 +33,25 @@
         <a href="{{ url_for('home') }}" class="brand" id="brand-hover">My&nbsp;Driving&nbsp;God&nbsp;吾駕仙</a>
 
         <!-- 新增介紹區塊 -->
+        <div class="brand-info-popup" id="brand-info">
+          <div class="brand-info-layout">
+            <div class="brand-info-visual">
+              <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="My Driving God Logo" />
+            </div>
+            <div class="brand-info-content">
+              <h4>品牌故事 MyDrivingGod</h4>
+              <p>我們是來自國立臺北商業大學資訊管理系的畢業專題團隊，成立於 2024 年冬季 。身處常被稱為「交通地獄」的台灣，我們深刻感受到現行的駕駛輔助系統，多半僅針對車外風險，卻忽略了駕駛者因疲勞、分心等「人因風險」所帶來的潛在威脅 。 為此，我們投入開發「吾駕仙」這套專注於駕駛行為的智慧分析系統，期望補足現行技術的不足 。我們的目標是建立一套能「理解並回應」駕駛狀態的智慧防線 ，集監控、分析與 AI 教練於一體，透過數據回饋與改善建議，實踐真正以人為本的主動式安全防護，為每一趟旅程守望 。</p>
+              <a href="#" class="btn-more-story">探索完整故事</a>
+            </div>
+          </div>
+        </div>
 
-        <ul class="nav-links">
+        <ul class="nav-links" id="navLinks">
           <li>
-            <a href="{{ url_for('home') }}">首頁</a>
+            <a href="{{ url_for('home') }}" aria-label="回到首頁"><i class="fa-solid fa-house"></i></a>
           </li>
           <li>
-            <a href="{{ url_for('register') }}">註冊</a>
-          </li>
-          <li>
-            <a href="{{ url_for('login') }}">登入</a>
+            <a href="#" class="hamburger-btn" id="hamburgerBtn" aria-label="開啟或關閉導覽列" role="button"><i class="fa-solid fa-bars"></i></a>
           </li>
         </ul>
       </nav>
@@ -62,6 +71,52 @@
     <footer class="footer">
       <p>© 2025 My Driving God 吾駕仙智慧交通系統 — All Rights Reserved.</p>
     </footer>
+
+    <aside class="sidebar" id="sidebar-logged-out">
+      <div class="sidebar-header">
+        <h3>功能概覽</h3>
+        <button class="sidebar-close-btn" data-action="close-sidebar" aria-label="關閉選單">&times;</button>
+      </div>
+      <div class="sidebar-content">
+        <div class="sidebar-auth">
+          <a href="{{ url_for('register') }}" class="btn-sidebar">註冊</a>
+          <a href="{{ url_for('login') }}" class="btn-sidebar">登入</a>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="#">關於 MyDrivingGod</a>
+        </nav>
+      </div>
+    </aside>
+
+    <aside class="sidebar" id="sidebar-logged-in">
+      <div class="sidebar-header">
+        <h3>功能概覽</h3>
+        <button class="sidebar-close-btn" data-action="close-sidebar" aria-label="關閉選單">&times;</button>
+      </div>
+      <div class="sidebar-content">
+        <div class="user-profile">
+          <img src="https://i.pravatar.cc/100" alt="使用者頭像" class="user-avatar" />
+          <div class="user-details">
+            <span class="user-name">黃仁勳</span>
+            <span class="user-group">北大物理 C 組</span>
+          </div>
+        </div>
+        <nav class="sidebar-nav sidebar-nav-main">
+          <a href="#">我的數位儀表板</a>
+          <a href="#">個人資料設定</a>
+          <a href="#">我的群組</a>
+          <a href="#">行程數據</a>
+          <a href="#">過往行程</a>
+          <a href="#">行車影片</a>
+          <a href="#">設定</a>
+          <a href="#">關於 MDG</a>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="overlay" id="overlay"></div>
 
     <!-- 共用 JS -->
     <script src="{{ url_for('static', filename='js/scroll.js') }}" defer></script>
@@ -92,7 +147,51 @@
         infoBox.addEventListener('mouseleave', () => {
           infoBox.classList.remove('show')
         })
+        document.addEventListener('DOMContentLoaded', () => {
+          const hamburgerBtn = document.getElementById('hamburgerBtn')
+          const navLinks = document.querySelector('.nav-links')
         
+          if (hamburgerBtn && navLinks) {
+            hamburgerBtn.addEventListener('click', () => {
+              navLinks.classList.toggle('is-active')
+            })
+          }
+        })
+        
+        // --- 用這段新的 JS 取代舊的漢堡選單邏輯 ---
+        
+        // 獲取我們需要操作的元素
+        // --- 用這段新的 JS 取代舊的漢堡選單邏輯 ---
+        
+        // 獲取我們需要操作的元素
+        const hamburgerBtn = document.getElementById('hamburgerBtn')
+        const sidebars = document.querySelectorAll('.sidebar') // 獲取所有側邊欄
+        const closeBtns = document.querySelectorAll('[data-action="close-sidebar"]') // 獲取所有關閉按鈕
+        const overlay = document.getElementById('overlay')
+        
+        // 函數：開啟側邊欄
+        function openSidebar() {
+          const activeSidebar = document.querySelector(document.body.classList.contains('logged-in') ? '#sidebar-logged-in' : '#sidebar-logged-out')
+          if (activeSidebar) {
+            activeSidebar.classList.add('is-active')
+          }
+          overlay.classList.add('is-active')
+        }
+        
+        // 函數：關閉側邊欄
+        function closeSidebar() {
+          sidebars.forEach((bar) => bar.classList.remove('is-active')) // 關閉所有側邊欄
+          overlay.classList.remove('is-active')
+        }
+        
+        // 事件監聽
+        hamburgerBtn.addEventListener('click', (event) => {
+          event.preventDefault()
+          openSidebar()
+        })
+        
+        closeBtns.forEach((btn) => btn.addEventListener('click', closeSidebar))
+        overlay.addEventListener('click', closeSidebar)
       </script>
     {% endblock %}
   </body>

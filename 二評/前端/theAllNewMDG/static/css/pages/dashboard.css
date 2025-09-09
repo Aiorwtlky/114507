@@ -1,719 +1,1002 @@
-/* General Dashboard Layout */
-.dashboard-grid-container {
+/* --- 全新 Dashboard CSS --- */
+
+/* ===== 主容器與佈局 ===== */
+.dashboard-container {
     display: grid;
-    gap: 24px; /* Slightly more space between cards */
-    padding: 25px; /* More padding around the entire grid */
-    max-width: 1280px; /* Slightly wider max width */
-    margin: 30px auto; /* Center the dashboard with increased vertical margin */
+    grid-template-columns: 1fr;
+    /* 手機上預設為單欄 */
+    gap: 24px;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 30px auto;
+    font-family: 'Noto Sans TC', sans-serif;
 }
 
-/* Base Card Styling */
-.dashboard-card {
+/* 在平板和桌機上變為兩欄 */
+/* 在平板和桌機上變為兩欄 */
+@media (min-width: 768px) {
+    .dashboard-container {
+        /* 將比例從 1:2 (33%:67%) 改為 2:3 (40%:60%) */
+        grid-template-columns: 2fr 3fr;
+    }
+}
+
+.dashboard-column-left,
+.dashboard-column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dashboard-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+
+/* ===== 卡片基礎樣式 ===== */
+.d-card {
     background-color: #ffffff;
-    border-radius: 16px; /* Slightly more rounded corners */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Stronger, softer shadow */
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effect */
-    font-family: 'Noto Sans TC', sans-serif, Arial; /* Added a default font-family here for consistency if not set in base.css */
-}
-
-.dashboard-card:hover {
-    transform: translateY(-3px); /* Lift card on hover */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
-}
-
-/* Card Header Styles */
-.card-header-section {
-    display: flex;
-    align-items: center;
-    padding: 18px 25px; /* Increased padding */
-    border-bottom: 1px solid #e0e0e0; /* Lighter border */
-    background-color: #f8f8f8; /* Unified light gray background for all card headers */
-}
-
-.header-icon-wrapper {
-    margin-right: 12px;
-    font-size: 26px; /* Slightly larger icon size */
-    color: #007bff; /* Primary brand color for icons */
-}
-
-.header-title-text {
-    font-size: 1.35rem; /* Slightly larger title */
-    font-weight: 700; /* Bolder */
-    color: #2c3e50; /* Darker, more prominent title color */
-    margin: 0;
-    flex-grow: 1;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-/* Card Body Styles */
-.card-body-content {
-    padding: 25px; /* Increased padding */
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-/* Card Action Area (for buttons at the bottom) */
-.card-action-area {
-    margin-top: auto;
-    padding-top: 20px; /* Increased padding */
-    border-top: 1px solid #e0e0e0;
-    text-align: center;
-}
-
-/* Horizontal Divider for Sections */
-.card-divider {
-    border: 0;
-    height: 1px;
-    background-color: #ddd; /* Slightly darker divider */
-    margin: 25px 0; /* Increased margin */
-}
-
-/* --- Specific Card Styles --- */
-
-/* Driver Card */
-.driver-info-card .driver-details-content {
-    align-items: center;
-    text-align: center;
-}
-
-.driver-profile-photo {
-    width: 110px; /* Slightly larger photo */
-    height: 110px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 20px;
-    border: 4px solid #007bff; /* Thicker border */
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); /* Blue shadow */
-}
-
-.driver-name-text {
-    font-size: 1.6rem;
-    font-weight: 800; /* Even bolder */
-    color: #212529; /* Deep black for name */
-    margin-bottom: 8px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.driver-role-text {
-    font-size: 1rem;
-    color: #555;
-    margin-bottom: 25px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.driver-stats-section .stat-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    font-size: 0.95rem;
-    font-family: inherit; /* Ensure consistent font with values */
-    border-bottom: 1px dashed #e9ecef; /* Lighter dashed border */
-}
-
-.driver-stats-section .stat-item span:first-child {
-    font-weight: 500; /* Make label slightly bold */
-    color: #212529; /* Explicitly set to black for titles */
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.driver-stats-section .stat-item:last-child {
-    border-bottom: none;
-}
-
-.driver-stats-section .stat-value-text {
-    font-weight: 700;
-    color: #212529; /* Darker value, now matching title black */
-    font-family: inherit; /* Inherit font from parent */
-}
-
-/* Last Trip Card */
-.last-trip-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.trip-date-time {
-    font-size: 1.05rem;
-    color: #6c757d; /* Slightly muted date/time */
-    margin-bottom: 12px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.trip-route-info {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px; /* Increased gap */
-    font-size: 1.15rem; /* Slightly larger */
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 18px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.route-location {
-    color: #007bff;
-    padding: 3px 8px; /* Add some padding */
-    background-color: #e6f2ff; /* Light blue background for locations */
-    border-radius: 6px;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.trip-route-info .icon-arrow {
-    font-size: 0.9em;
-    color: #999;
-}
-
-.trip-summary-metrics .metric-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    font-size: 1rem;
-    color: #555; /* Base color for the item, but we'll override the label */
-    border-bottom: 1px dashed #e9ecef;
-    font-family: inherit; /* Inherit font from parent */
-}
-
-.trip-summary-metrics .metric-item:last-child {
-    border-bottom: none;
-}
-
-/* NEW ADDITION: Ensure the first span (label) has the correct color and font */
-.trip-summary-metrics .metric-item span:first-child {
-    font-weight: 500; /* Make label slightly bold */
-    color: #212529; /* Deep black color, matching stat-value-text */
-    font-family: inherit; /* Inherit font family for consistency */
-}
-
-.trip-summary-metrics .metric-value {
-    font-weight: 700;
-    color: #1a1a1a; /* Ensure the value is also deep black */
-    font-family: inherit; /* Inherit font from parent */
-}
-
-
-/* Safety Score Card - REVISED */
-.safety-score-card .score-display-area {
-    background-color: #ffffff; /* Pure white background */
+    color: #000000;
+    border: 2px solid #1a2a5f;
+    /* 根據設計圖的藍色邊框 */
+    border-radius: 8px;
     padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Lighter shadow */
-    font-family: inherit;
+    display: flex;
+    flex-direction: column;
 }
 
-.safety-score-main-display { /* Unique class name */
-    padding: 10px 0;
-    margin-bottom: 10px;
+.d-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a2a5f;
+}
+
+.d-card h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #1a2a5f;
+}
+
+.header-link {
+    color: #1a2a5f;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* ===== 卡片內通用元素 ===== */
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    /* 將其推到卡片底部 */
+    padding-top: 16px;
+}
+
+.action-link {
+    color: #1a2a5f;
+    text-decoration: underline;
+}
+
+.action-button {
+    background-color: #1a2a5f;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* ===== 各卡片詳細樣式 ===== */
+
+/* 個人資訊 */
+.profile-summary {
+    display: flex;
+    /* 關鍵：讓頭像和文字區塊左右並排 */
+    align-items: center;
+    /* 讓頭像和文字垂直置中對齊 */
+    gap: 24px;
+    /* 將文字推到「右邊一點」（增加頭像與文字的間距） */
+    margin-bottom: 20px;
+}
+
+/* 頭像 */
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #1a2a5f;
+    flex-shrink: 0;
+    /* 防止頭像在空間不足時被壓縮 */
+}
+
+/* 姓名 */
+.profile-name {
+    margin: 0 0 8px 0;
+    /* 名字與下方文字的間距 */
+    font-size: 1.8rem;
+    /* 「字大一點」 */
+    font-weight: bold;
+    /* 讓名字更突出 */
+    margin-left: 25px;
+}
+
+.profile-meta {
+    margin: 0;
+    color: #555;
+    margin-left: 25px;
+}
+
+.profile-stats .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+/* 我的群組 */
+.group-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.group-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #ccc;
+}
+
+.group-list li:last-child {
+    border-bottom: none;
+}
+
+/* 前次行程 */
+.trip-meta {
+    color: #555;
+    margin: 0 0 8px 0;
+}
+
+.trip-route {
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.trip-summary {
+    border-top: 1px solid #ccc;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.trip-summary span {
+    font-weight: bold;
+}
+
+/* 安全總分 */
+.safety-score-card .d-card-body {
+    display: flex;
+    gap: 20px;
+}
+
+.score-section,
+.violations-section {
+    flex: 1;
+}
+
+.score-display {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #1a2a5f;
+    text-align: center;
+}
+
+.score-comparison {
+    text-align: center;
+    color: green;
+}
+
+.violations-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.violations-section li {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.violations-section .deduction {
+    color: red;
+    font-weight: bold;
+}
+
+
+/* AI 建議 & 圖表卡片 */
+.ai-suggestion-card p {
+    background-color: #f0f2f5;
+    padding: 16px;
+    border-radius: 4px;
+    min-height: 100px;
+    flex-grow: 1;
+}
+
+.chart-placeholder {
+    min-height: 150px;
+    background-color: #f0f2f5;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    font-family: inherit;
+    color: #999;
+    border-radius: 4px;
 }
 
-.highlight-score {
-    font-size: 4.5rem;
-    font-weight: 900;
-    color: #28a745;
-    text-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
-    animation: pulseScore 1.8s infinite alternate ease-in-out;
-    font-family: inherit;
-}
-
-@keyframes pulseScore {
-    from { transform: scale(1); opacity: 1; text-shadow: 0 0 10px rgba(40, 167, 69, 0.3); }
-    to { transform: scale(1.08); opacity: 0.95; text-shadow: 0 0 20px rgba(40, 167, 69, 0.6); }
-}
-
-.safety-score-context-text { /* Unique class name */
-    font-size: 1.15rem;
-    color: #444;
-    margin-top: 8px;
-    font-weight: 500;
-    font-family: inherit;
-}
-
-.safety-score-comparison-text { /* Unique class name */
-    font-size: 0.95rem;
-    color: #666;
-    margin-top: 5px;
-    font-family: inherit;
-}
-
-.safety-score-arrow.up { /* Unique class name */
-    color: #28a745;
-    font-weight: bold;
-    font-family: inherit;
-}
-
-.safety-score-arrow.down { /* Unique class name */
-    color: #dc3545;
-    font-weight: bold;
-    font-family: inherit;
-}
-
-.safety-score-percentage-change { /* Unique class name */
-    font-weight: 700;
-    color: #28a745;
-    font-family: inherit;
-}
-
-.safety-violation-reporting-section h3 { /* Unique class name */
-    font-size: 1.25rem;
-    color: #333;
-    margin-bottom: 18px;
-    font-weight: 600;
-    font-family: inherit;
-}
-
-.score-list-items { /* New list class */
+/* 過往行程 (右下角小卡) */
+.past-trips-card ul {
     list-style: none;
     padding: 0;
-    margin: 0;
-    font-family: inherit;
 }
 
-.score-violation-entry {
-    display: flex; /* Keeps icon and text together on the left, points on the right */
+.past-trips-card li {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.past-trips-card li span:last-child {
+    font-weight: bold;
+}
+
+/* 記得保留您原本的 floating-chatbot-btn 樣式 */
+/* 如果您將它放在全域 style.css，就不用動；如果它在 dashboard.css，請記得複製回來 */
+
+/* --- 貼到 style.css 檔案的最下方 --- */
+
+/* ===== 卡片佈局微調 ===== */
+
+/* 讓 AI 建議卡片自動伸展，填滿右側欄位的剩餘垂直空間 */
+.ai-suggestion-card {
+    flex-grow: 1;
+}
+
+/* 確保 AI 卡片內的 body 也會跟著伸展 */
+.ai-suggestion-card .d-card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* AI 建議的內容區塊 */
+.ai-suggestion-content {
+    flex-grow: 1;
+    /* 這個區塊會佔據大部分空間，把按鈕推到底部 */
+    background-color: #f0f2f5;
+    padding: 16px;
+    border-radius: 4px;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* ===== 卡片內特殊按鈕佈局 ===== */
+
+/* 讓前次行程卡片的 body 可以容納推到底部的按鈕 */
+.last-trip-card .d-card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 垂直排列、靠右對齊的按鈕容器樣式 */
+.card-actions.vertical-right {
+    display: flex;
+    flex-direction: column;
+    /* 讓內部元素垂直排列 */
+    align-items: flex-end;
+    /* 讓內部元素靠右對齊 */
+    gap: 10px;
+    /* 按鈕之間的垂直間距 */
+    margin-top: auto;
+    /* 關鍵：將整個區塊推到卡片底部 */
+    padding-top: 16px;
+    /* 確保與上方內容有間距 */
+}
+
+/* --- 請找到並用這段程式碼「取代」舊的 .score-and-violations-section 樣式 --- */
+
+/* 修正合併後安全總分區塊的佈局 */
+.score-and-violations-section {
+    display: flex;
+    /* 啟用 Flexbox 佈局，讓子元素可以並排 */
+    gap: 24px;
+    /* 左右兩個區塊的間距 */
+    align-items: flex-start;
+    /* 讓兩個區塊的頂部對齊 */
+    margin: 20px 0px;
+}
+
+/* 左側的安全總分區塊，設定彈性佔比為 1 */
+.score-section {
+    flex: 1;
+    text-align: center;
+    /* 將分數和文字置中，符合設計圖 */
+}
+
+/* 右側的違規項目區塊，設定彈性佔比為 2，使其更寬 */
+.violations-section {
+    flex: 2;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 前次行程 - 頂部資訊區塊排版 */
+.trip-details-header {
+    display: flex;
+    justify-content: space-between;
+    /* 左右貼齊 */
+    align-items: flex-start;
+    /* 頂部對齊 */
+    margin-bottom: 16px;
+}
+
+/* 右上角的數據區塊 */
+.trip-vitals {
+    text-align: right;
+    /* 文字靠右 */
+    flex-shrink: 0;
+    /* 避免被壓縮 */
+    margin-left: 20px;
+    /* 與左側資訊的間距 */
+}
+
+/* --- 請找到並用這段程式碼「取代」舊的 vital-item 相關樣式 --- */
+.vital-item {
+    display: flex;
+    /* 啟用 Flexbox */
+    justify-content: space-between;
+    /* 讓標題和數值左右貼齊 */
+    align-items: baseline;
+    /* 讓文字底部對齊，更整齊 */
+    gap: 16px;
+    /* 標題與數值間的最小間距 */
+    margin-bottom: 8px;
+}
+
+.vital-item span {
+    font-size: 0.9rem;
+    color: #555;
+    white-space: nowrap;
+    /* 避免標題換行 */
+}
+
+.vital-item strong {
+    font-size: 1.1rem;
+    color: #1a2a5f;
+    font-weight: bold;
+    /* 確保是粗體 */
+    white-space: nowrap;
+    /* 避免數值換行 */
+}
+
+
+.violation-text {
+    color: black;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 違規項目列表細節排版 */
+.violations-section li {
+    display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 12px 0;
-    border-bottom: 1px dashed #e9ecef;
-    font-size: 0.98rem;
-    line-height: 1.4;
-    font-family: inherit;
-    color: #212529; /* Set the main text color for the entry */
+    padding: 6px 0;
+    /* 調整行距 */
 }
 
-.score-violation-entry:last-child {
-    border-bottom: none;
-}
-
-/* New style for the description span that holds icon and text */
-.score-violation-entry .violation-description {
-    display: flex; /* Use flex to align icon and text neatly */
-    align-items: center; /* Vertically center icon with text */
-    color: #212529; /* Ensure text color matches stat-value-text black */
-    flex-grow: 1; /* Allow it to take up available space */
-}
-
-.score-violation-entry .violation-description .icon-warning {
-    color: #212529; /* Explicitly set to black, no !important needed with this structure */
-    margin-right: 10px;
-    font-size: 1.1em;
-    flex-shrink: 0; /* Prevent icon from shrinking */
-}
-
-.score-deduction-points { /* Unique class name */
-    color: #dc3545; /* Red for deductions */
-    font-weight: 800;
-    font-size: 1.1rem;
-    margin-left: 10px;
-    flex-shrink: 0;
-    font-family: inherit;
-}
-
-.score-list-items li:nth-child(n+4) { /* Hide items beyond 3 initially */
-    display: none;
-}
-
-.score-violation-more-toggle { /* Unique class name */
-    text-align: center;
-    margin-top: 18px;
-}
-
-
-/* My Groups Card */
-.group-list-items {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-family: inherit;
-}
-
-.group-list-items li {
-    padding: 12px 0;
-    border-bottom: 1px dashed #e9ecef;
-    font-size: 1rem;
-    color: #444;
-    font-family: inherit;
-}
-
-.group-list-items li:last-child {
-    border-bottom: none;
-}
-
-.group-list-items li:nth-child(n+5) {
-    display: none;
-}
-
-.group-more-toggle {
-    text-align: center;
-    margin-top: 18px;
-}
-
-/* AI Suggestions Card */
-.ai-advice-section {
-    display: flex;
-    flex-direction: column;
-}
-
-.ai-recommendation-text {
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: #333;
-    margin-bottom: 25px;
+.violation-text {
     flex-grow: 1;
-    font-family: inherit;
+    /* 讓文字區塊佔滿可用空間 */
+    margin-right: 16px;
+    /* 與扣分數字的間距 */
 }
 
-/* Past Reports Card */
-.report-listing-section {
+.ai-suggestion-content>p {
+    color: black;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* AI 行車建議 - 內容與按鈕左右並排 */
+.ai-suggestion-body {
     display: flex;
-    flex-direction: column;
-}
-
-.report-list-items {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1;
-    font-family: inherit;
-}
-
-.report-list-items li {
-    padding: 12px 0;
-    border-bottom: 1px dashed #e9ecef;
-    font-size: 1rem;
-    color: #444;
-    font-family: inherit;
-}
-
-.report-list-items li:last-child {
-    border-bottom: none;
-}
-
-.report-list-items li:nth-child(n+4) {
-    display: none;
-}
-
-.report-more-toggle {
-    text-align: center;
-    margin-top: 18px;
-}
-
-
-/* --- Custom Button Styles --- */
-.custom-btn {
-    display: inline-flex;
+    justify-content: space-between;
+    /* 關鍵：將左右兩塊推到最開 */
     align-items: center;
-    justify-content: center;
-    padding: 12px 22px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.05rem;
-    font-weight: 600;
-    transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
-    text-decoration: none;
-    text-align: center;
-    white-space: nowrap;
-    font-family: inherit;
+    /* 讓文字區塊和按鈕區塊垂直居中 */
+    flex-grow: 1;
+    margin-top: 16px;
 }
 
-.custom-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.3);
-}
-
-/* Primary Button */
-.custom-btn.primary-btn {
-    background-color: #007bff;
-    color: #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-}
-
-.custom-btn.primary-btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
-}
-
-/* Secondary Button */
-.custom-btn.secondary-btn {
-    background-color: #6c757d;
-    color: #ffffff;
-    box-shadow: 0 4px 10px rgba(108, 117, 125, 0.2);
-}
-
-.custom-btn.secondary-btn:hover {
-    background-color: #545b62;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
-}
-
-/* Tertiary Small Button (for "Create" button) */
-.custom-btn.tertiary-small-btn {
+/* AI 建議的內容區塊 */
+.ai-suggestion-section .ai-suggestion-content {
+    /* 移除 flex-grow: 1; 讓寬度自適應內容，這是最重要的修改！ */
+    flex-shrink: 1;
+    min-width: 0;
     background-color: #f0f2f5;
-    color: #555;
-    padding: 10px 16px;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    box-shadow: none;
+    padding: 16px;
+    border-radius: 4px;
 }
 
-.custom-btn.tertiary-small-btn:hover {
-    background-color: #e0e2e6;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-}
-.custom-btn.tertiary-small-btn .icon-add {
-    font-size: 1.2em;
-    margin-right: 5px;
-    color: #007bff;
+.ai-suggestion-section {
+    margin: 22px 0px;
 }
 
+.nnc_30 {
+    border-right: 2px solid #1a2a5f;
+    /* 新增：線與文字的間距 (您可以調整這個數值) */
+    margin-right: 450px;
+}
 
-/* Ghost Link Button (for "View More" toggles) */
-.custom-btn.ghost-link-btn {
-    background: none;
-    color: #007bff;
-    padding: 8px 15px;
+.nnc_30>p {
+    color: #000000;
+}
+
+/* AI 建議按鈕區塊 (移除之前的 border 和 padding) */
+.ai-suggestion-section .ai-buttons {
+    flex-shrink: 0;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    /* 確保移除之前的 border-left 和 padding-left */
+    border-left: none;
+    padding-left: 0;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 新增的路線框樣式 */
+/* --- 請找到並用這段程式碼「取代」舊的 .route-box 樣式 --- */
+.route-box {
+    border: 2px solid #1a2a5f;
+    border-radius: 6px;
+    padding: 12px 15px;
+    display: inline-flex;
+    /* 關鍵修改：讓框框寬度自適應內容 */
+    align-items: center;
+    justify-content: flex-start;
+    /* 讓內容從左邊開始排列 */
+    flex-wrap: wrap;
+    font-weight: bold;
+    color: #333;
+}
+
+.route-box span {
+    white-space: nowrap;
+    /* 避免地點名稱換行 */
+    margin: 0 5px;
+    /* 地點名稱之間的間距 */
+}
+
+.route-box .fas.fa-arrow-right {
+    font-size: 1.1em;
+    color: #1a2a5f;
+    margin: 0 10px;
+    /* 箭頭與地點之間的間距 */
+}
+
+.route-box>span {
+    color: black;
+}
+
+.profile-details>p {
+    color: black;
+}
+
+.stat-item>span {
+    color: #000000;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 個人資訊卡片 - 下方佈局容器 */
+.profile-footer-layout {
+    display: flex;
+    align-items: flex-start;
+    /* 頂部對齊 */
+    gap: 20px;
+    /* 左右兩欄的間距 */
+    margin-top: 20px;
+    /* 與上方個人資訊的間距 */
+    padding-top: 20px;
+    /* 分隔線上方的間距 */
+    border-top: 1px dashed #ccc;
+    /* 加上分隔線 */
+}
+
+/* 左側「行車數據」按鈕樣式 */
+.btn-trip-data {
+    flex-shrink: 0;
+    /* 避免按鈕被壓縮 */
+    padding: 12px 20px;
+    border: 2px solid #1a2a5f;
+    /* 藍色邊框 */
+    border-radius: 6px;
     text-decoration: none;
-    font-weight: 500;
-    border: 1px solid transparent;
-    border-radius: 8px;
-}
-
-.custom-btn.ghost-link-btn:hover {
-    color: #0056b3;
-    background-color: #e6f2ff;
-    text-decoration: none;
-    border-color: #b3d9ff;
-}
-
-/* Link Only Button (for "View All Groups") */
-.custom-btn.link-only-btn {
-    background: none;
-    border: none;
-    color: #007bff;
-    padding: 0;
-    text-decoration: underline;
-    font-weight: 500;
+    color: #1a2a5f;
+    font-weight: bold;
+    text-align: center;
+    background-color: white;
+    transition: background-color 0.2s, color 0.2s;
+    /* 加上 hover 效果 */
     margin-top: 10px;
 }
 
-.custom-btn.link-only-btn:hover {
-    color: #0056b3;
+.btn-trip-data:hover {
+    background-color: #1a2a5f;
+    color: white;
+}
+
+/* 右側統計數據區塊 */
+.profile-footer-layout .profile-stats {
+    flex-grow: 1;
+    /* 讓統計數據區塊佔滿右側剩餘空間 */
+}
+
+.profile-name {
+    color: #000000;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 我的群組 - Icon 樣式 */
+.group-icon {
+    margin-right: 8px;
+    /* icon 與文字的間距 */
+    color: #1a2a5f;
+    /* icon 顏色 */
+}
+
+/* 我的群組 - 置中按鈕容器 */
+.card-actions-center {
+    display: flex;
+    justify-content: center;
+    /* 讓內容水平置中 */
+    margin-top: 20px;
+    /* 與上方列表的間距 */
+}
+
+/* 我的群組 - 「查看更多」按鈕樣式 */
+.btn-view-more {
+    padding: 10px 20px;
+    border: 2px solid #1a2a5f;
+    /* 藍色邊框 */
+    border-radius: 6px;
     text-decoration: none;
+    color: #1a2a5f;
+    font-weight: bold;
+    background-color: white;
+    transition: background-color 0.2s, color 0.2s;
+    /* 加上 hover 效果 */
 }
 
+.btn-view-more:hover {
+    background-color: #1a2a5f;
+    color: white;
+}
 
-/* Full Width Button */
-.custom-btn.full-width-btn {
+.group-list>li {
+    color: #000000;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* 個人資訊卡片的 Icon 樣式 */
+.personal-info-card .fa-user {
+    margin-right: 8px;
+    color: #1a2a5f;
+}
+
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
+
+/* ===== 圖表卡片通用樣式 ===== */
+
+.chart-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* --- 請找到並用這段程式碼「取代」舊的 .control-item 相關樣式 --- */
+
+/* 圖表上方的下拉選單容器 */
+.control-item {
+    border: 2px solid #1a2a5f;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1a2a5f;
+    position: relative;
+    /* 關鍵：讓內部的 select 可以定位 */
+    background-color: transparent;
+    /* 確保背景是白色 */
+}
+
+/* 用 CSS 畫出下拉選單的箭頭 */
+.control-item::after {
+    content: '▼';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.6);
+    color: #1a2a5f;
+    pointer-events: none;
+    /* 讓點擊可以穿透箭頭，點到下方的 select */
+}
+
+/* 核心：美化 select 標籤本身 */
+.control-item select {
+    /* 移除原生外觀 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* 讓 select 填滿容器 */
     width: 100%;
-    margin-top: 15px;
+    height: 100%;
+
+    /* 樣式重設 */
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 6px 32px 6px 12px;
+    /* 右邊 padding 留給箭頭 */
+
+    /* 字體樣式繼承 */
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+
+    cursor: pointer;
 }
 
-/* --- Responsive Grid Layout --- */
-
-/* Default: 3 columns (3x2 like appearance on wider screens) */
-@media (min-width: 992px) {
-    .dashboard-grid-container {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-areas:
-            "driver trip score"
-            "group ai report";
-    }
-
-    .driver-info-card { grid-area: driver; }
-    .last-trip-card { grid-area: trip; }
-    .safety-score-card { grid-area: score; }
-    .my-groups-card { grid-area: group; }
-    .ai-suggestions-card { grid-area: ai; }
-    .past-reports-card { grid-area: report; }
+/* 移除IE/Edge的預設箭頭 */
+.control-item select::-ms-expand {
+    display: none;
 }
 
-/* Tablet (2x3 layout) */
-@media (min-width: 768px) and (max-width: 991px) {
-    .dashboard-grid-container {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-areas:
-            "driver trip"
-            "score group"
-            "ai report";
-    }
+/* ===== 通勤平均儀表板 (純 CSS 模擬) ===== */
 
-    .driver-info-card { grid-area: driver; }
-    .last-trip-card { grid-area: trip; }
-    .safety-score-card { grid-area: score; }
-    .my-groups-card { grid-area: group; }
-    .ai-suggestions-card { grid-area: ai; }
-    .past-reports-card { grid-area: report; }
+
+
+.trip-info>span {
+    color: #000000;
 }
 
-/* Mobile (1x6 layout) */
-@media (max-width: 767px) {
-    .dashboard-grid-container {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-            "driver"
-            "trip"
-            "score"
-            "group"
-            "ai"
-            "report";
-    }
+/* --- 貼到 dashboard.css 檔案的最下方 --- */
 
-    .driver-info-card { grid-area: driver; }
-    .last-trip-card { grid-area: trip; }
-    .safety-score-card { grid-area: score; }
-    .my-groups-card { grid-area: group; }
-    .ai-suggestions-card { grid-area: ai; }
-    .past-reports-card { grid-area: report; }
+/* ===== 過往行程卡片樣式微調 ===== */
+
+/* 讓 ul 列表自動填滿卡片剩餘的垂直空間 */
+.past-trips-card ul {
+    flex-grow: 1;
 }
 
-/* Basic Icon Styles (place these in your global style.css or ensure they are loaded) */
-/* Assuming you are using a font icon library or custom SVGs */
-/* For demonstration, these are placeholders */
-.icon-driver::before { content: '👤'; }
-.icon-trip::before { content: '🛣️'; }
-.icon-score::before { content: '⭐'; }
-.icon-group::before { content: '👥'; }
-.icon-ai-suggest::before { content: '💡'; }
-.icon-report::before { content: '📄'; }
-.icon-arrow::before { content: '→'; }
-.icon-warning::before { content: '⚠️'; }
-.icon-add::before { content: '+'; }
-
-/* 外層用來致中整組按鈕 */
-.driver-communication-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 1.5rem;
+/* 列表項目排版 (左資訊右分數) */
+.past-trips-card li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    /* 增加行距 */
 }
 
-.driver-communication-inner {
-  max-width: 500px; /* 控制最大寬度 */
-  width: 100%;
+/* 左側的行程資訊 */
+.trip-info {
+    display: flex;
+    flex-direction: column;
+    /* 讓兩行文字垂直排列 */
 }
 
-.driver-communication-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.2rem;
-  margin-bottom: 50px;
-
+.trip-date-group {
+    font-weight: 500;
+    color: #333;
 }
 
-.driver-communication-buttons .custom-btn {
-  flex: 1;
-  font-size: 1.1rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  background-color: #444b5d;
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-width: 150px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+.trip-time-route {
+    font-size: 0.9rem;
+    color: #777;
 }
 
-.driver-communication-buttons .custom-btn:hover {
-  background-color: var(--primary-dark);
+/* 右側的分數 */
+.trip-score {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #1a2a5f;
+    margin-left: 16px;
+    /* 與左側資訊的間距 */
 }
 
-.gradient-text {
-  background: linear-gradient(90deg, #b24dff, #2cd9ff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  font-weight: bold;
-  display: inline-block;
+
+/* ===== 關鍵：讓同一橫列的卡片底部對齊 ===== */
+.dashboard-row {
+    align-items: stretch;
+    /* 強制讓此橫列的所有卡片等高 */
 }
 
-.gradient-text, .icon{
-    font-size: 25px;
+.control-item select option {
+    color: black;
+    /* 強制設定選項文字為黑色，以便在白色背景上顯示 */
+    background-color: white;
+    /* 確保選項背景是白色 */
 }
 
-.stat-item span:first-child {
-  min-width: 80px;
+/* --- 請找到並用這段程式碼「取代」所有舊的「我的群組」相關樣式 --- */
+
+/* ===== 我的群組卡片整體設定 ===== */
+.my-group-card {
+    /* 確保卡片本身是 flex 容器，讓內部元素可以分配空間 */
+    display: flex;
+    flex-direction: column;
+    /* 讓卡片在空間不足時可以被壓縮，這對整體佈局很重要 */
+    min-height: 0;
 }
 
-.stat-value-text{
-    margin-top: 4px;
+/* ===== 我的群組 - 列表滾動樣式 ===== */
+.my-group-card .group-list {
+    /* 設定一個最大高度。
+      一個項目大約高 35px，5 個項目就是 175px。
+      您可以根據實際情況微調這個數值。
+    */
+    max-height: 180px;
+
+    /* 當內容超出 max-height 時，自動顯示垂直滾動軸 */
+    overflow-y: auto;
+
+    /* (可選) 增加右邊內距，避免文字緊貼滾動軸，更美觀 */
+    padding-right: 8px;
+    margin-bottom: 0;
+    /* 確保列表下方沒有多餘的 margin */
 }
 
-/* -- 浮動聊天機器人按鈕 (業界升級版) -- */
-
-/* 1. 定義一個會呼吸、發光的動畫效果 */
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-  }
+/* (可選) 美化滾動軸樣式，讓它更符合您的網站風格 */
+.my-group-card .group-list::-webkit-scrollbar {
+    width: 8px;
 }
 
-.floating-chatbot-btn {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 1000;
-
-  /* 2. 按鈕外觀升級 */
-  width: 60px;
-  height: 60px;
-  /* 將單色背景改成漂亮的漸層色 */
-  background-image: linear-gradient(45deg, #007bff 0%, #44c2fd 100%);
-  border: none; /* 移除可能的邊框 */
-  border-radius: 50%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* 讓陰影更有層次感 */
-  
-  /* 讓 icon 在圓圈正中間 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  /* 圖示本身樣式 */
-  color: white;
-  font-size: 28px;
-  
-  /* 3. 套用上面定義好的呼吸動畫 */
-  animation: pulse 2s infinite;
-
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1); /* 使用更流暢的動畫曲線 */
+.my-group-card .group-list::-webkit-scrollbar-track {
+    background: #f0f2f5;
+    /* 滾動軸背景色 */
+    border-radius: 4px;
 }
 
-/* 4. 升級滑鼠懸停 (hover) 和點擊 (active) 效果 */
-.floating-chatbot-btn:hover {
-  /* 讓按鈕向上浮起來一點，更有互動感 */
-  transform: translateY(-5px); 
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-  /* 滑鼠移上去時，暫停呼吸動畫，避免閃爍 */
-  animation-play-state: paused;
+.my-group-card .group-list::-webkit-scrollbar-thumb {
+    background-color: #1a2a5f;
+    /* 滾動軸本身的顏色 */
+    border-radius: 4px;
+    border: 2px solid #f0f2f5;
+    /* 滾動軸與背景之間的邊框 */
 }
 
-.floating-chatbot-btn:active {
-  /* 點下去的時候稍微縮小，模擬按壓效果 */
-  transform: scale(0.95);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+.my-group-card .group-list::-webkit-scrollbar-thumb:hover {
+    background-color: #0d1530;
+    /* 滑鼠移上去時的顏色 */
+}
+
+/* --- 新增：過往行程卡片列表滾動樣式 --- */
+
+/* ===== 過往行程卡片整體設定 ===== */
+.past-trips-card {
+    /* 確保卡片本身是 flex 容器，讓內部元素可以分配空間 */
+    display: flex;
+    flex-direction: column;
+    /* 讓卡片在空間不足時可以被壓縮，這對整體佈局很重要 */
+    min-height: 0;
+}
+
+/* ===== 過往行程 - 列表滾動樣式 ===== */
+.past-trips-card .d-card-body ul {
+    /* 設定一個最大高度。
+       一個項目大約高 60px，顯示 3 個項目就是 180px。
+       您可以根據需求微調此數值。
+    */
+    max-height: 180px;
+
+    /* 當內容超出 max-height 時，自動顯示垂直滾動軸 */
+    overflow-y: auto;
+
+    /* (可選) 增加右邊內距，避免文字緊貼滾動軸 */
+    padding-right: 8px;
+}
+
+/* (可選) 美化滾動軸樣式，與網站風格保持一致 */
+.past-trips-card .d-card-body ul::-webkit-scrollbar {
+    width: 8px;
+}
+
+.past-trips-card .d-card-body ul::-webkit-scrollbar-track {
+    background: #f0f2f5;
+    border-radius: 4px;
+}
+
+.past-trips-card .d-card-body ul::-webkit-scrollbar-thumb {
+    background-color: #1a2a5f;
+    border-radius: 4px;
+    border: 2px solid #f0f2f5;
+}
+
+.past-trips-card .d-card-body ul::-webkit-scrollbar-thumb:hover {
+    background-color: #0d1530;
+}
+
+/* --- 新增：卡片標題圖示的通用樣式 --- */
+.d-card-header h3>i {
+    margin-right: 8px;
+    /* 增加圖示與標題之間的間距 */
+    color: #1a2a5f;
+    /* 將圖示顏色設定為與主題色一致 */
+}
+
+.ai-suggestion-section h3>i {
+    margin-right: 8px;
+    /* 增加圖示與標題之間的間距 */
+    color: #1a2a5f;
+    /* 將圖示顏色設定為與主題色一致 */
+}
+
+/* --- 全新儀錶板樣式 (Automotive Style) --- */
+
+/* 通勤平均卡片 - 標題新增圖示 */
+
+.gauge-area {
+    /* 使用 CSS 變數來集中控制儀錶板的數值，方便後續用 JS 或後端修改 */
+    --value: 72;
+    /* <--- 在這裡修改分數 (0 到 100) */
+    --rotation: calc((var(--value) / 100) * 180deg - 90deg);
+
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    /* 限制最大寬度，避免在大螢幕上過大 */
+    aspect-ratio: 2 / 1;
+    /* 維持 2:1 的寬高比，形成完美的半圓容器 */
+    margin: 20px auto 10px auto;
+    display: flex;
+    align-items: flex-end;
+    /* 讓內部元素都靠下對齊 */
+    justify-content: center;
+}
+
+/* 儀錶板的彩色圓弧背景 */
+.gauge-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(from -90deg,
+            #dc3545 0% 15%,
+            /* 紅色區域 (危險) */
+            #ffc107 15% 40%,
+            /* 黃色區域 (警告) */
+            #28a745 40% 60%,
+            /* 綠色區域 (良好) */
+            #ffc107 60% 85%,
+            /* 黃色區域 (警告) */
+            #dc3545 85% 100%
+            /* 紅色區域 (危險) */
+        );
+    border-radius: 50% / 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    -webkit-mask-image: radial-gradient(circle at 50% 100%,
+            transparent 65%,
+            /* 中間挖空的透明區域大小 */
+            black 66%
+            /* 保留的圓環寬度 */
+        );
+    mask-image: radial-gradient(circle at 50% 100%,
+            transparent 65%,
+            black 66%);
+}
+
+/* 新增：刻度標籤 (0 和 100) */
+.gauge-area::before,
+.gauge-area::after {
+    position: absolute;
+    bottom: -5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.gauge-area::before {
+    content: '0';
+    left: 5px;
+}
+
+.gauge-area::after {
+    content: '100';
+    right: 5px;
+}
+
+/* 儀錶板指針 */
+.gauge-needle {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    height: 40%;
+    background-color: #343a40;
+    /* 更深的指針顏色 */
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(var(--rotation));
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    /* 加上 Q 彈的動畫效果 */
+    z-index: 2;
+}
+
+/* 指針中心的圓點 (輪轂) */
+.gauge-center-circle {
+    position: absolute;
+    bottom: -10px;
+    /* 稍微往下移，更有立體感 */
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: #f8f9fa;
+    border: 3px solid #6c757d;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    /* 確保在最上層 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 儀錶板中間的文字 */
+.gauge-text {
+    position: relative;
+    /* 脫離 absolute 定位，使其自然在容器底部 */
+    text-align: center;
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 15%;
+    /* 向上移動一點，位置更置中 */
+}
+
+.gauge-text strong {
+    font-size: 2.2em;
+    /* 放大分數數字 */
+    font-weight: 700;
+    color: #1a2a5f;
+    margin: 0 4px;
+}
+
+/* 儀錶板下方的標籤 */
+.gauge-label {
+    text-align: center;
+    color: #555;
+    font-weight: 500;
+}
+
+/* --- 新增：通勤平均 - 日曆輸入框樣式 --- */
+#trends-date-picker,
+#commute-date-picker {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    cursor: pointer;
 }

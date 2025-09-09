@@ -54,15 +54,31 @@ def create_group():
     # 這裡未來可以從資料庫載入好友列表
     return render_template('create_group.html')
 
+@app.route('/create_group_step2')
+def create_group_step2():
+    # 這裡未來可以從資料庫載入好友列表
+    return render_template('create_group_step2.html')
+
 @app.route('/safety_report')
 def safety_report():
     # 在這裡您可以從資料庫傳入真實數據
     # 目前我們先直接渲染靜態頁面
     return render_template('safety_report.html')
 
+# 在您的 app.py 中新增這個路由
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    # 這裡未來會從資料庫撈取真實的駕駛員資料
+    # 現在我們先用假資料
+    dummy_drivers = [
+        # ... 您的駕駛員資料 ...
+    ]
+    return render_template('admin_dashboard.html') # 確保檔名正確
+
 @app.errorhandler(404)
 def not_found(_):
     return redirect(url_for("home"))
+
 
 @app.route("/trip_report")
 def trip_report():
