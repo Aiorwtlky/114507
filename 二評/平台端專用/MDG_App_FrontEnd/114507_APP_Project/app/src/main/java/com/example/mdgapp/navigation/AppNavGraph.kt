@@ -71,5 +71,8 @@ fun AppNavGraph(navController: NavHostController) {
                 viewModel = managerReportViewModel
             )
         }
+        composable("driverHistory") {
+            DriverHistoryScreen(navController = navController)
+        }
     }
 }
