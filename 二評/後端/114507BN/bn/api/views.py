@@ -1,6 +1,6 @@
 # api/views.py
 
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, views # 【修改】匯入 views
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .models import Group, Trip, VehicleDevice, AiVisionLog, VideoRecord
@@ -10,9 +10,10 @@ from .serializers import (
     AiVisionLogCreateSerializer, VideoRecordCreateSerializer, TripEndSerializer,
     UserRegisterSerializer
 )
-# 導入我們擴充後的服務和新建的權限
-from .services import calculate_trip_score, is_driver_on_active_trip
+# 【修改】導入 get_chatbot_response 服務
+from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin
+from datetime import datetime
 
 # --- 註冊與登入 ---
 class UserRegisterAPIView(generics.CreateAPIView):
@@ -23,7 +24,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
 # --- 數據讀取 API (加入更精細的權限) ---
 class PersonnelListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser] # 【修改】只有管理員才能看所有人員列表
+    permission_classes = [permissions.IsAdminUser]
     def get_queryset(self):
         return User.objects.filter(is_active=True).order_by('username')
 
@@ -31,48 +32,33 @@ class TripListAPIView(generics.ListAPIView):
     serializer_class = TripListSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get_queryset(self):
-        """
-        Overrides the default queryset to return trips only for the current user.
-        If the user is an admin (staff), return all trips.
-        """
         user = self.request.user
         if user.is_staff:
             return Trip.objects.all().order_by('-start_time')
-        # 【修改】普通使用者只能看到自己的行程
         return Trip.objects.filter(personnel=user).order_by('-start_time')
 
 class TripDetailAPIView(generics.RetrieveAPIView):
     queryset = Trip.objects.all()
     serializer_class = TripDetailSerializer
-    # 【修改】登入且是行程擁有者或管理員才能看
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin] 
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
-# --- 數據接收 API (加入商業邏輯驗證) ---
 class TripStartAPIView(generics.CreateAPIView):
     queryset = Trip.objects.all()
     serializer_class = TripStartSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        # 將當前登入的使用者，自動設為行程的駕駛員
-        serializer.save(personnel=self.request.user)
-
     def create(self, request, *args, **kwargs):
-        # 【商業邏輯】檢查駕駛是否已在另一趟行程中
         driver = request.user
         if is_driver_on_active_trip(driver):
             return Response(
                 {"error": "Driver is already on an active trip."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # 如果檢查通過，才執行預設的建立操作
         return super().create(request, *args, **kwargs)
 
 class TripEndAPIView(generics.UpdateAPIView):
     queryset = Trip.objects.all()
     serializer_class = TripEndSerializer
-    # 【修改】只有行程擁有者或管理員才能結束行程
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def update(self, request, *args, **kwargs):
@@ -103,3 +89,37 @@ class VideoRecordCreateAPIView(generics.CreateAPIView):
     queryset = VideoRecord.objects.all()
     serializer_class = VideoRecordCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+# =============================================================================
+# 【全新】AI 助理聊天 API 端點
+# =============================================================================
+class ChatbotAPIView(views.APIView):
+    """
+    處理前端 AI 助理的即時聊天請求。
+    接收前端傳來的完整對話歷史，回傳 AI 的單次回覆。
+    """
+    permission_classes = [permissions.IsAuthenticated] # 只有登入的使用者才能使用聊天功能
+
+    def post(self, request, *args, **kwargs):
+        # 1. 從前端請求中獲取對話歷史
+        chat_history = request.data.get('messages', [])
+
+        # 2. 進行基本驗證
+        if not isinstance(chat_history, list) or not chat_history:
+            return Response(
+                {"error": "請求的 'messages' 欄位必須是一個非空的列表。"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3. 呼叫我們在 services.py 中寫好的強大邏輯
+        try:
+            ai_reply = get_chatbot_response(chat_history)
+            # 4. 將 AI 的回覆打包成 JSON 回傳給前端
+            return Response({"reply": ai_reply}, status=status.HTTP_200_OK)
+        except Exception as e:
+            # 處理 service 層可能發生的未知錯誤
+            print(f"[ChatbotAPIView] 發生未預期錯誤: {e}")
+            return Response(
+                {"error": "助理系統內部發生錯誤，請稍後再試。"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

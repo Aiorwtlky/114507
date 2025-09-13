@@ -135,3 +135,19 @@ CORS_ALLOW_ORIGINS = [
     "http://localhost:5000",
     "http://127.0.0.1:5000",
 ]
+
+# =============================================================================
+# DJANGO REST FRAMEWORK SETTINGS
+# =============================================================================
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 讓您可以登入 DRF 的網頁版 API (方便偵錯)
+        'rest_framework.authentication.SessionAuthentication',
+        # 【關鍵】讓 API 客戶端 (curl, Postman) 可以使用 Token 認證
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        # 除非特別允許，否則預設所有 API 都需要登入才能存取
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
