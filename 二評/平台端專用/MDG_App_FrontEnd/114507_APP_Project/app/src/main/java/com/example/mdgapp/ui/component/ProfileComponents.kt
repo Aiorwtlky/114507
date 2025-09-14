@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.mdgapp.R
 import com.example.mdgapp.data.model.LinkedAccount
 
-// 頂部個人資料頭像區
+// ... ProfileHeader, InfoRow, SettingsSwitchRow, LinkedAccountRow 保持不變 ...
 @Composable
 fun ProfileHeader(name: String, employeeId: String) {
     Row(
@@ -45,7 +45,8 @@ fun ProfileHeader(name: String, employeeId: String) {
     }
 }
 
-// 帶標題的區塊容器
+
+// ✅ 步驟一：將 ProfileSection 恢復成您原本的無邊距版本
 @Composable
 fun ProfileSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -59,12 +60,38 @@ fun ProfileSection(title: String, content: @Composable ColumnScope.() -> Unit) {
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
             modifier = Modifier.fillMaxWidth()
         ) {
+            // 恢復成原本的 Column，沒有額外 Modifier
             Column(content = content)
         }
     }
 }
 
-// 用於顯示資訊的通用橫條
+// ✅ 步驟一：新增一個專為歷史頁面設計的卡片元件
+@Composable
+fun HistorySection(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            color = Color.White, // 歷史頁的標題用白色
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // 這個 Column 包含我們需要的內邊距和垂直間距
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                content = content
+            )
+        }
+    }
+}
+
+
 @Composable
 fun InfoRow(label: String, value: String, isClickable: Boolean = false, onClick: () -> Unit = {}) {
     Row(
@@ -90,7 +117,6 @@ fun InfoRow(label: String, value: String, isClickable: Boolean = false, onClick:
     }
 }
 
-// 帶開關的設定橫條
 @Composable
 fun SettingsSwitchRow(label: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
@@ -114,7 +140,6 @@ fun SettingsSwitchRow(label: String, isChecked: Boolean, onCheckedChange: (Boole
     }
 }
 
-// 已連結的外部平台帳號橫條
 @Composable
 fun LinkedAccountRow(account: LinkedAccount) {
     Row(

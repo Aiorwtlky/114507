@@ -105,7 +105,7 @@ class TripStartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trip
         # 指定樹莓派在開始行程時，必須提供的欄位
-        fields = ['trip_number', 'name', 'group', 'device', 'personnel', 'start_time']
+        fields = ['id', 'trip_number', 'name', 'group', 'device', 'personnel', 'start_time']
 
 class AiVisionLogCreateSerializer(serializers.ModelSerializer):
     """

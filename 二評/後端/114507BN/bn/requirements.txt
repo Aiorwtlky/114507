@@ -1,0 +1,18 @@
+# Core Frameworks
+django
+djangorestframework
+
+# Database Connector (for MySQL)
+mysqlclient
+pymysql
+
+# API Helpers
+django-cors-headers
+
+# AI Engine
+transformers
+torch
+# 或者 tensorflow，torch 通常更通用
+
+# Environment variables (Best Practice)
+python-decouple

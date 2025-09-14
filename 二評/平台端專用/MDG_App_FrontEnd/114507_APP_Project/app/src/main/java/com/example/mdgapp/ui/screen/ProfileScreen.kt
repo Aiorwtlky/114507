@@ -65,6 +65,17 @@ fun ProfileScreen(
                 }
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // =======================================================
+                // ✅ 新增的「數據分析」區塊，按鈕會出現在這裡
+                // =======================================================
+                ProfileSection(title = "數據分析") {
+                    InfoRow(label = "個人歷史數據總覽", value = "", isClickable = true) {
+                        navController.navigate("driverHistory")
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                // =======================================================
+
                 // 個人詳細資料
                 ProfileSection(title = "個人詳細資料") {
                     InfoRow(label = "電子郵件", value = profile.email, isClickable = true) {

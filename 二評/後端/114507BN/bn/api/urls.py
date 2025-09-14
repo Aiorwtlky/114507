@@ -11,7 +11,8 @@ from .views import (
     AiVisionLogCreateAPIView,
     VideoRecordCreateAPIView,
     TripEndAPIView,
-    UserRegisterAPIView
+    UserRegisterAPIView,
+    ChatbotAPIView # 【修改】匯入新的 Chatbot View
 )
 
 urlpatterns = [
@@ -21,8 +22,11 @@ urlpatterns = [
     path('devices/', DeviceListAPIView.as_view(), name='device-list'),
     path('trips/', TripListAPIView.as_view(), name='trip-list'),
     path('trips/<int:pk>/', TripDetailAPIView.as_view(), name='trip-detail'),
+    
+    # --- AI Chatbot API ---
+    path('chatbot/', ChatbotAPIView.as_view(), name='chatbot'), # 【全新】AI 聊天機器人的路由
 
-    # --- POST/PUT (Write) APIs for Raspberry Pi ---
+    # --- POST/PUT (Write) APIs for Raspberry Pi & User Management ---
     path('trips/start/', TripStartAPIView.as_view(), name='trip-start'),
     path('events/', AiVisionLogCreateAPIView.as_view(), name='event-create'),
     path('videos/', VideoRecordCreateAPIView.as_view(), name='video-create'),
