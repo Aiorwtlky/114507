@@ -96,6 +96,25 @@ def admin_dashboard():
 def not_found(_):
     return redirect(url_for("home"))
 
+@app.route('/create_announcement')
+def create_announcement():
+    return render_template('create_announcement.html')
+
+@app.route('/group_settings')
+def group_settings():
+    return render_template('group_settings.html')
+
+@app.route('/invite_member')
+def invite_member():
+    return render_template('invite_member.html')
+
+@app.route('/member_videos/<member_id>')
+def member_videos(member_id):
+    # 未來您可以根據 member_id 從資料庫查詢真實的姓名和影片資料
+    # 現在我們先用假資料來渲染頁面
+    member_name = "黃仁勳" 
+    return render_template('member_videos.html', member_name=member_name)
+
 
 @app.route("/trip_report")
 def trip_report():

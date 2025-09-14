@@ -1,0 +1,110 @@
+/* 檔案的第一行必須是這個，才能載入共用樣式(包含按鈕) */
+@import url('dashboard.css');
+
+body {
+    color: #f0f2f5;
+    /* 預設文字顏色設為淺色 */
+}
+
+.videos-container {
+    max-width: 1280px;
+    margin: 30px auto;
+    padding: 24px;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.daily-videos {
+    margin-bottom: 48px;
+}
+
+.date-header {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #fff;
+    margin-bottom: 24px;
+}
+
+.video-gallery {
+    display: grid;
+    /* 響應式網格佈局：每行盡量放，每個影片最少 280px 寬 */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.video-item {
+    cursor: pointer;
+}
+
+.video-thumbnail {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    /* 保持 16:9 的影片比例 */
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.video-thumbnail i.fa-play {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.2s, transform 0.2s;
+}
+
+.video-item:hover .video-thumbnail {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.video-item:hover .video-thumbnail i.fa-play {
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.video-meta {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.no-videos-message {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 40px 0;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.custom-btn.primary-btn {
+    display: block;
+    margin: 40px auto 60px auto;
+    /* 自動置中 */
+    font-size: 24px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    width: fit-content;
+    /* 寬度剛好包文字 */
+
+    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
+    background-color: #1a2a5f;
+    color: white;
+    border: 1px solid #1a2a5f;
+    transition: background-color 0.2s, color 0.2s;
+}

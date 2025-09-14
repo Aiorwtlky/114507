@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}
+  行車影片 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/member_videos.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <div class="videos-container">
+    <h1 class="page-title">
+      <i class="fa-solid fa-truck-pickup"></i>
+      北大物流 C組 組員 黃仁勳 行車影片
+    </h1>
+
+    <div class="videos-list">
+      <section class="daily-videos">
+        <h2 class="date-header">2025 / 08 / 27</h2>
+        <div class="video-gallery">
+          <div class="video-item">
+            <div class="video-thumbnail">
+              <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="video-meta">
+              <span>14:00 - 15:36 · 北大物流C</span>
+            </div>
+          </div>
+          <div class="video-item">
+            <div class="video-thumbnail">
+              <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="video-meta">
+              <span>10:15 - 11:05 · 北大物流C</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="daily-videos">
+        <h2 class="date-header">2025 / 08 / 26</h2>
+        <p class="no-videos-message">無影片</p>
+      </section>
+
+      <section class="daily-videos">
+        <h2 class="date-header">2025 / 08 / 25</h2>
+        <div class="video-gallery">
+          <div class="video-item">
+            <div class="video-thumbnail">
+              <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="video-meta">
+              <span>18:30 - 19:10 · 北大物流C</span>
+            </div>
+          </div>
+          <div class="video-item">
+            <div class="video-thumbnail">
+              <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="video-meta">
+              <span>16:00 - 17:30 · 北大物流C</span>
+            </div>
+          </div>
+          <div class="video-item">
+            <div class="video-thumbnail">
+              <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="video-meta">
+              <span>09:00 - 12:15 · 北大物流C</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <a href="{{ url_for('group_leader_view') }}" class="custom-btn primary-btn">返回組長儀表板</a>
+{% endblock %}

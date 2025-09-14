@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}
+  發布新公告 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/create_announcement.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <div class="form-container">
+    <div class="d-card">
+      <div class="d-card-body">
+        <form class="announcement-form">
+          <header class="form-header">
+            <div class="info-card">
+              <p>
+                <strong>所屬單位:</strong> 台灣北大物流股份有限公司萬華分公司
+              </p>
+              <p>
+                <strong>群組組長:</strong> 江澤民, 胡錦濤
+              </p>
+            </div>
+            <h1 class="page-title">公告發佈</h1>
+            <div class="info-card publisher-card">
+              <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="江澤民" class="publisher-avatar" />
+              <div class="publisher-details">
+                <span class="publisher-title">發布者</span>
+                <span class="publisher-name">江澤民</span>
+                <span class="publisher-role">組長</span>
+              </div>
+            </div>
+          </header>
+
+          <main class="form-main">
+            <div class="form-column-left">
+              <div class="form-group">
+                <label for="subject">主旨</label>
+                <input type="text" id="subject" name="subject" rows="10" placeholder="請輸入公告主旨..." />
+              </div>
+              <div class="form-group">
+                <label>發佈日期</label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="publish_time" value="now" checked />
+                    <span>即時</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="publish_time" value="scheduled" />
+                    <span>排定日程</span>
+                  </label>
+                </div>
+                <input type="datetime-local" id="scheduled_time" name="scheduled_time" class="datetime-picker hidden" />
+              </div>
+            </div>
+
+            <div class="form-column-right">
+              <div class="form-group">
+                <label for="content">內容</label>
+                <textarea id="content" name="content" rows="15" placeholder="請輸入公告內容..."></textarea>
+              </div>
+            </div>
+          </main>
+
+          <div class="form-actions">
+            <a href="{{ url_for('group_leader_view') }}" class="custom-btn primary-btn">取消</a>
+            <button type="submit" class="custom-btn primary-btn">發佈公告</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.querySelectorAll('input[name="publish_time"]').forEach((radio) => {
+      radio.addEventListener('change', function () {
+        const dateTimePicker = document.getElementById('scheduled_time')
+        if (this.value === 'scheduled') {
+          dateTimePicker.classList.remove('hidden')
+        } else {
+          dateTimePicker.classList.add('hidden')
+        }
+      })
+    })
+  </script>
+{% endblock %}

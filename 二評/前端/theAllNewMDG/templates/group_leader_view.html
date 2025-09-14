@@ -12,7 +12,7 @@
   <div class="group-detail-container">
     <div class="d-card group-header-card">
       <div class="d-card-body">
-        <a href="#" class="action-icon"><i class="fa-solid fa-gear"></i></a>
+        <a href="{{ url_for('group_settings') }}" class="settings-link" title="群組設定"><i class="fa-solid fa-truck"></i></a>
         <h1 class="group-title">北大物流 C組</h1>
         <p class="group-meta">
           <strong>所屬事業:</strong> 北大物流股份有限公司
@@ -41,7 +41,7 @@
     <div class="d-card group-members-card">
       <div class="d-card-header">
         <h3><i class="fa-solid fa-truck"></i> 群組成員</h3>
-        <a href="#" class="action-button">+ 邀請新成員</a>
+        <a href="{{ url_for('invite_member') }}" class="action-button">+ 新增成員</a>
       </div>
       <div class="d-card-body">
         <table class="member-table">
@@ -61,11 +61,11 @@
                 <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="董仁勳" class="table-avatar" />
               </td>
               <td>B0C01</td>
-              <td>董仁勳</td>
+              <td>黃仁勳</td>
               <td>98</td>
               <td>2025.01.31</td>
               <td class="actions-col">
-                <i class="fa-solid fa-truck"></i>
+                <a href="{{ url_for('member_videos', member_id='B0C01') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
               </td>
             </tr>
             <tr>
@@ -77,7 +77,7 @@
               <td>85</td>
               <td>2025.03.15</td>
               <td class="actions-col">
-                <i class="fa-solid fa-truck"></i>
+                <a href="{{ url_for('member_videos', member_id='B0C02') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
               </td>
             </tr>
             <tr>
@@ -89,7 +89,7 @@
               <td>92</td>
               <td>2025.06.01</td>
               <td class="actions-col">
-                <i class="fa-solid fa-truck"></i>
+                <a href="{{ url_for('member_videos', member_id='B0C03') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
               </td>
             </tr>
             <tr>
@@ -101,7 +101,7 @@
               <td>78</td>
               <td>2025.08.20</td>
               <td class="actions-col">
-                <i class="fa-solid fa-truck"></i>
+                <a href="{{ url_for('member_videos', member_id='B0C04') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
               </td>
             </tr>
           </tbody>
@@ -112,7 +112,7 @@
     <div class="d-card announcements-card">
       <div class="d-card-header">
         <h3><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
-        <a href="#" class="action-button">+ 新增公告</a>
+        <a href="{{ url_for('create_announcement') }}" class="action-button">+ 新增公告</a>
       </div>
       <div class="d-card-body">
         <ul class="announcement-list">

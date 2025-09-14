@@ -1,0 +1,123 @@
+@import url('dashboard.css');
+
+.invite-container {
+    display: flex;
+    flex-direction: column;
+    /* 改成垂直排列 */
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 24px;
+}
+
+.invite-card {
+    width: 100%;
+    max-width: 700px;
+}
+
+.invite-card .d-card-body {
+    padding: 40px;
+}
+
+.invite-header {
+    text-align: left;
+    margin-bottom: 32px;
+}
+
+.invite-header h1 {
+    font-size: 2rem;
+    margin: 0 0 8px 0;
+    color: #1a2a5f;
+}
+
+.invite-header p {
+    font-size: 1.1rem;
+    color: #555;
+    margin: 0;
+}
+
+.invite-main {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    align-items: center;
+    gap: 32px;
+}
+
+.qr-code-section img {
+    width: 150px;
+    height: 150px;
+    display: block;
+    border-radius: 8px;
+}
+
+.link-section .invite-instruction {
+    font-size: 1rem;
+    color: #333;
+    margin: 0 0 12px 0;
+}
+
+.url-input-group {
+    display: flex;
+}
+
+.url-input-group input {
+    flex-grow: 1;
+    padding: 10px 14px;
+    font-size: 1rem;
+    color: #212529;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 6px 0 0 6px;
+    border-right: none;
+    outline: none;
+}
+
+.btn-copy {
+    padding: 10px 16px;
+    border: 1px solid #1a2a5f;
+    background-color: #1a2a5f;
+    color: white;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-copy:hover {
+    background-color: #0d1530;
+}
+
+.btn-copy.copied {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+
+/* --- ▼▼▼ 全新的按鈕區塊樣式 ▼▼▼ --- */
+.button-wrapper {
+    margin-top: 40px;
+    /* 按鈕與上方卡片的間距 */
+    text-align: center;
+    /* 讓內部按鈕置中 */
+}
+
+/* 一個全新的、獨立的、不受干擾的按鈕樣式 */
+.btn-solid-return {
+    display: inline-block;
+    padding: 12px 32px;
+    background-color: #6c757d;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-solid-return:hover {
+    background-color: #5a6268;
+    transform: scale(1.05);
+}

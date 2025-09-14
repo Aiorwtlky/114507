@@ -1,0 +1,172 @@
+/* 引用儀表板的基礎卡片樣式 */
+@import url('dashboard.css');
+
+.settings-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 24px;
+}
+
+.settings-card .d-card-body {
+    padding: 32px 40px;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    /* 標籤固定寬度，輸入區塊佔滿剩餘 */
+    align-items: center;
+    gap: 16px;
+}
+
+.form-row label {
+    font-weight: 500;
+    font-size: 1rem;
+    color: #333;
+    text-align: right;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    color: #212529;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #1a2a5f;
+    box-shadow: 0 0 0 3px rgba(26, 42, 95, 0.2);
+}
+
+.info-text {
+    font-size: 1rem;
+    color: #333;
+    margin: 0;
+}
+
+.leaders-management {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.leader-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #e9ecef;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+
+.remove-btn,
+.add-btn {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+}
+
+.remove-btn {
+    background-color: #dc3545;
+}
+
+.add-btn {
+    background-color: #28a745;
+}
+
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* --- 全新漸層光暈按鈕樣式 (套用至設定頁面) --- */
+
+/* 1. 在檔案頂部或 :root 中定義漸層色變數 */
+:root {
+    --aurora-gradient: linear-gradient(90deg, #00F0FF 0%, #BE00FF 100%);
+    --aurora-danger-gradient: linear-gradient(90deg, #ff7e5f 0%, #e74c3c 100%);
+    /* 新增：紅色警告漸層 */
+}
+
+/* 2. 按鈕基礎樣式 */
+.btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    /* 字體加粗更清晰 */
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: transparent;
+    /* 預設透明背景 */
+    border: 2px solid;
+    /* 設定邊框寬度 */
+}
+
+.btn:hover {
+    transform: scale(1.05);
+}
+
+/* 3. 主要按鈕 (儲存) - 套用藍紫色漸層 */
+.btn-primary {
+    border-image-source: var(--aurora-gradient);
+    border-image-slice: 1;
+
+    /* 漸層文字 */
+    background: var(--aurora-gradient);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 15px rgba(190, 0, 255, 0.3), 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+/* 4. 危險按鈕 (刪除) - 套用橘紅色漸層 */
+.btn-danger {
+    border-image-source: var(--aurora-danger-gradient);
+    border-image-slice: 1;
+
+    /* 漸層文字 */
+    background: var(--aurora-danger-gradient);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.btn-danger:hover {
+    box-shadow: 0 0 15px rgba(255, 126, 95, 0.4);
+}
+
+.leader-tag span {
+    color: #212529;
+    /* 明確指定文字顏色為深灰色 */
+    font-weight: 500;
+    /* 讓字體稍微清晰一點 */
+}

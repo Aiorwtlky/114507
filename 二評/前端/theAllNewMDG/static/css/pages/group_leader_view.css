@@ -66,13 +66,7 @@
     position: relative;
 }
 
-.group-header-card .action-icon {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 1.2rem;
-    color: #888;
-}
+
 
 .group-header-card .group-title {
     font-size: 2.2rem;
@@ -234,13 +228,15 @@
 
 .custom-btn.primary-btn {
     display: block;
-    margin: 40px auto 60px auto; /* 自動置中 */
+    margin: 40px auto 60px auto;
+    /* 自動置中 */
     font-size: 24px;
     padding: 6px 12px;
     border-radius: 6px;
     text-decoration: none;
     text-align: center;
-    width: fit-content; /* 寬度剛好包文字 */
+    width: fit-content;
+    /* 寬度剛好包文字 */
 
     /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
     background-color: #1a2a5f;
@@ -252,4 +248,26 @@
 .custom-btn.primary-btn:hover {
     background-color: #ffffff;
     color: #1a2a5f;
+}
+
+/* --- 左上角：新增設定按鈕 --- */
+.group-header-card .d-card-body {
+    position: relative;
+}
+
+/* 新的 settings-link 樣式，定位在右下角 */
+/* 新的 settings-link 樣式，定位在右下角 */
+.settings-link {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 1.5rem;
+    color: #6c757d !important;
+    /* <--- 在後面加上 !important */
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.settings-link:hover {
+    color: #1a2a5f;
+    transform: rotate(360deg);
 }
