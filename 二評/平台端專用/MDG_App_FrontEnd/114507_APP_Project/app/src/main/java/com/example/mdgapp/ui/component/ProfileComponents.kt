@@ -66,13 +66,16 @@ fun ProfileSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     }
 }
 
-// ✅ 步驟一：新增一個專為歷史頁面設計的卡片元件
+// ✅ 這是最原始版本的 HistorySection
 @Composable
-fun HistorySection(title: String, content: @Composable ColumnScope.() -> Unit) {
+fun HistorySection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = title,
-            color = Color.White, // 歷史頁的標題用白色
+            color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -81,7 +84,6 @@ fun HistorySection(title: String, content: @Composable ColumnScope.() -> Unit) {
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
             modifier = Modifier.fillMaxWidth()
         ) {
-            // 這個 Column 包含我們需要的內邊距和垂直間距
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -91,7 +93,7 @@ fun HistorySection(title: String, content: @Composable ColumnScope.() -> Unit) {
     }
 }
 
-
+// ✅ 步驟一：將 InfoRow 搬移至此，並移除 private
 @Composable
 fun InfoRow(label: String, value: String, isClickable: Boolean = false, onClick: () -> Unit = {}) {
     Row(

@@ -1,39 +1,39 @@
 package com.example.mdgapp.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+// ✅ 修正 2：新增 Brush 的 import
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mdgapp.R
-import com.example.mdgapp.ui.component.InteractiveLineChart
+import com.example.mdgapp.data.viewmodel.ManagerHomeViewModel
+import com.example.mdgapp.ui.component.InfoCard
 import com.example.mdgapp.ui.component.TopMenuBar
+import com.example.mdgapp.ui.component.TrendChart
 import kotlinx.coroutines.CoroutineScope
 
-
-// (注意：這裡的 ManagerHomeViewModel 和 InfoCard 等相關程式碼應如我之前提供的那樣存在)
-class ManagerHomeViewModel : ViewModel() {
-    // ...
-}
-
-// ✅ 修正點 1: 將 ExperimentalMaterial3.class 改為 ExperimentalMaterial3Api::class
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagerHomeScreen(
-    navController: NavController? = null,
+    navController: NavController,
+    viewModel: ManagerHomeViewModel = viewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
-    var selectedTab by remember { mutableStateOf("週") }
+    val uiState by viewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -55,24 +55,23 @@ fun ManagerHomeScreen(
         }
     ) {
         ManagerMainContent(
-            drawerState,
-            coroutineScope,
-            selectedTab,
-            onTabSelected = { selectedTab = it },
-            navController
+            drawerState = drawerState,
+            coroutineScope = coroutineScope,
+            uiState = uiState,
+            onTabSelected = { viewModel.onTabSelected(it) },
+            navController = navController
         )
     }
 }
 
-// ✅ 修正點 2: 將 ExperimentalMaterial3.class 改為 ExperimentalMaterial3Api::class
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagerMainContent(
     drawerState: DrawerState,
     coroutineScope: CoroutineScope,
-    selectedTab: String,
+    uiState: com.example.mdgapp.data.viewmodel.ManagerHomeUiState,
     onTabSelected: (String) -> Unit,
-    navController: NavController?
+    navController: NavController
 ) {
     var selectedMenu by remember { mutableStateOf("首頁") }
 
@@ -89,52 +88,60 @@ fun ManagerMainContent(
             onMenuSelected = {
                 selectedMenu = it
                 when (it) {
-                    "公告" -> navController?.navigate("announcementList")
-                    "下載" -> navController?.navigate("downloadFileList")
+                    // ✅ 修正：將導覽路徑指向管理者專用的公告列表
+                    "公告" -> navController.navigate("managerAnnouncementList")
+                    "下載" -> navController.navigate("downloadFileList")
                     else -> selectedMenu = it
                 }
             },
-            navController = navController!!
+            navController = navController
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
+        // ... 以下中間內容和底部導覽列都保持不變 ...
         if (selectedMenu == "首頁") {
-            val scrollState = rememberScrollState()
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .weight(1f)
-                    .verticalScroll(scrollState),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text("車隊總覽", fontSize = 22.sp, color = Color.White)
-                Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
-                    InfoCard(value = 15, label = "在線駕駛員", fillColor = Color.Green, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
-                    InfoCard(value = 82, label = "車隊平均分數", fillColor = Color.Cyan, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-                Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
-                    InfoCard(value = 128, label = "今日趟次", fillColor = Color.Yellow, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
-                    InfoCard(value = 3, label = "異常事件", fillColor = Color.Red, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("平均分數趨勢", fontSize = 22.sp, color = Color.White)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TabItem("月", selectedTab == "月") { onTabSelected("月") }
-                    TabItem("週", selectedTab == "週") { onTabSelected("週") }
-                    TabItem("日", selectedTab == "日") { onTabSelected("日") }
-                }
-                InteractiveLineChart(
+            } else {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(vertical = 8.dp),
-                    selectedTab = selectedTab
-                )
+                        .padding(horizontal = 16.dp)
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text("車隊總覽", fontSize = 22.sp, color = Color.White)
+                    Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
+                        InfoCard(value = uiState.onlineDrivers, label = "在線駕駛員", fillColor = Color.Green, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
+                        InfoCard(value = uiState.fleetAverageScore, label = "車隊平均分數", fillColor = Color.Cyan, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
+                    }
+                    Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
+                        InfoCard(value = uiState.tripsToday, label = "今日趟次", fillColor = Color.Yellow, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
+                        InfoCard(value = uiState.eventsToday, label = "今日異常", fillColor = Color.Red, backgroundColor = Color.DarkGray, modifier = Modifier.weight(1f))
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("平均分數趨勢", fontSize = 22.sp, color = Color.White)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TabItem("月", uiState.selectedTab == "月", onClick = { onTabSelected("月") })
+                        TabItem("週", uiState.selectedTab == "週", onClick = { onTabSelected("週") })
+                        TabItem("日", uiState.selectedTab == "日", onClick = { onTabSelected("日") })
+                    }
+
+                    TrendChart(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(vertical = 8.dp),
+                        data = uiState.chartData,
+                        labels = uiState.chartXAxisLabels
+                    )
+                }
             }
         }
 
+        // 底部導覽列
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -155,20 +162,20 @@ fun ManagerMainContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NavigationItem(R.drawable.ic_list, "駕駛列表") {
-                    // navController?.navigate("driverList")
-                }
-                NavigationItem(R.drawable.ic_group, "車隊總覽") {
-                    // navController?.navigate("fleetOverview")
+                NavigationItem(R.drawable.ic_group, "群組管理") {
+                    navController.navigate("groupManagement")
                 }
                 NavigationItem(R.drawable.ic_post, "報表") {
-                    navController?.navigate("managerReportDriverList")
+                    navController.navigate("managerReportDriverList")
+                }
+                NavigationItem(R.drawable.ic_analyze, "歷史數據") {
+                    navController.navigate("managerHistory")
                 }
                 NavigationItem(R.drawable.ic_person, "設定") {
-                    navController?.navigate("managerSettings")
+                    navController.navigate("managerProfile")
                 }
             }
         }
