@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -28,6 +29,11 @@ def loading():
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html")
+
+@app.route('/group_leader_view')
+def group_leader_view():
+    # 未來這裡會根據登入者的身分，決定要不要顯示這個頁面
+    return render_template('group_leader_view.html')
 
 @app.route("/report")
 def report():
@@ -66,6 +72,17 @@ def safety_report():
     return render_template('safety_report.html')
 
 # 在您的 app.py 中新增這個路由
+
+# ... (您其他的程式碼)
+
+# 新增一個更簡單的路由，專門用來顯示群組詳細頁面
+@app.route('/group_detail')
+def group_detail():
+    # 這裡的函式名稱 show_group_page 可以自訂
+    return render_template('group_detail.html')
+
+# ... (您原本的 /group/<group_id> 路由可以先留著或刪除)
+
 @app.route('/admin_dashboard')
 def admin_dashboard():
     # 這裡未來會從資料庫撈取真實的駕駛員資料

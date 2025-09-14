@@ -1,0 +1,246 @@
+/* 引用儀表板的基礎卡片樣式，避免重複撰寫 */
+@import url('dashboard.css');
+
+/* ===== 主容器與佈局 (全新 Grid Template Areas 寫法) ===== */
+.group-detail-container {
+    display: grid;
+    /* 定義網格佈局:
+      - 第一行: 左上角 | 中間頂部 | 右邊整欄
+      - 第二行: 左下角(佔兩格) | 右邊整欄
+    */
+    grid-template-areas:
+        "header-left header-center trips"
+        "announcements announcements trips";
+
+    grid-template-columns: 2fr 1fr 2fr;
+    grid-template-rows: auto 1fr;
+    gap: 24px;
+    padding: 24px;
+    max-width: 1600px;
+    margin: 30px auto;
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+/* --- 將各卡片分配到指定的網格區域 --- */
+.group-header-card {
+    grid-area: header-left;
+}
+
+.identity-card {
+    grid-area: header-center;
+}
+
+.announcements-card {
+    grid-area: announcements;
+}
+
+.group-trips-card {
+    grid-area: trips;
+}
+
+/* 在手機上變為單欄 */
+@media (max-width: 992px) {
+    .group-detail-container {
+        grid-template-areas:
+            "header-left"
+            "header-center"
+            "trips"
+            "announcements";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+}
+
+/* ===== 各卡片詳細樣式 (保留您所有的文字顏色設定) ===== */
+
+/* --- 卡片通用伸展設定 --- */
+.announcements-card,
+.group-trips-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.announcements-card .d-card-body,
+.group-trips-card .d-card-body {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* 左上角 - 群組資訊卡片 */
+.group-header-card .group-title {
+    font-size: 2.2rem;
+    color: #1a2a5f;
+    margin-bottom: 16px;
+}
+
+.group-header-card .group-meta {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* 左下角 - 群組公告卡片 */
+.announcements-card .d-card-body {
+    padding: 0 20px 20px;
+}
+
+.announcement-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.announcement-item {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px dashed #ccc;
+    font-size: 0.95rem;
+}
+
+.announcement-item:last-child {
+    border-bottom: none;
+}
+
+.announcement-item .subject {
+    font-weight: 500;
+}
+
+.announcement-item .poster,
+.announcement-item .date {
+    color: #555;
+    text-align: right;
+}
+
+/* 中間 - 組內身分卡片 */
+.identity-card .d-card-body {
+    padding: 10px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.member-item.self {
+    background-color: #e6edff;
+    border: 1px solid #1a2a5f;
+    height: 100%;
+    /* 讓白色內容區塊填滿卡片 */
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.member-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.member-name {
+    font-weight: bold;
+}
+
+.member-role {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+/* 右欄 - 過往行程卡片 */
+.group-trips-card .d-card-body {
+    padding: 0 20px 20px;
+}
+
+.trip-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.trip-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.trip-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.trip-date-user {
+    font-weight: 500;
+}
+
+.trip-route {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.trip-score {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-left: 16px;
+}
+
+.trip-score.score-good {
+    color: #28a745;
+}
+
+.trip-score.score-ok {
+    color: #ffc107;
+}
+
+.trip-score.score-bad {
+    color: #dc3545;
+}
+
+/* --- 顏色修正規則 (保留不動) --- */
+.group-header-card .group-meta,
+.group-header-card .group-meta strong {
+    color: #333;
+}
+
+.announcements-card .announcement-item .poster,
+.announcements-card .announcement-item .date {
+    color: #555;
+}
+
+.announcements-card .announcement-item .subject {
+    color: #000000;
+}
+
+.member-name {
+    color: #000000;
+}
+
+.custom-btn.primary-btn {
+    display: block;
+    margin: 40px auto 60px auto; /* 自動置中 */
+    font-size: 24px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    width: fit-content; /* 寬度剛好包文字 */
+
+    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
+    background-color: #1a2a5f;
+    color: white;
+    border: 1px solid #1a2a5f;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.custom-btn.primary-btn:hover {
+    background-color: #ffffff;
+    color: #1a2a5f;
+}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}
+  群組儀表板 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_detail.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <div class="group-detail-container">
+    <div class="d-card group-header-card">
+      <div class="d-card-body">
+        <h1 class="group-title">北大物流 C組</h1>
+        <p class="group-meta">
+          <strong>所屬事業:</strong> 北大物流股份有限公司
+        </p>
+        <p class="group-meta">
+          <strong>群組組長:</strong> 江澤民, 胡錦濤
+        </p>
+      </div>
+    </div>
+
+    <div class="d-card identity-card">
+      <div class="d-card-header">
+        <h3><i class="fa-solid fa-id-card"></i> 組內身分</h3>
+      </div>
+      <div class="d-card-body">
+        <div class="member-item self">
+          <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="董仁勳" class="member-avatar" />
+          <div class="member-details">
+            <span class="member-name">黃仁勳</span>
+            <span class="member-role">一般組員</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-card group-trips-card">
+      <div class="d-card-header">
+        <h3><i class="fa-solid fa-route"></i> 群組個人過往行程</h3>
+      </div>
+      <div class="d-card-body">
+        <ul class="trip-list">
+          <li>
+            <div class="trip-info">
+              <span class="trip-date-user">2025/7/23 - 黃仁勳</span>
+              <span class="trip-route">08:00 - 08:30 新莊大觀廠 ATP2</span>
+            </div>
+            <div class="trip-score score-good">87</div>
+          </li>
+          <li>
+            <div class="trip-info">
+              <span class="trip-date-user">2025/7/21 - 黃仁勳</span>
+              <span class="trip-route">10:50 - 20:45 新莊大觀廠 ATP2</span>
+            </div>
+            <div class="trip-score score-ok">83</div>
+          </li>
+          <li>
+            <div class="trip-info">
+              <span class="trip-date-user">2025/7/20 - 黃仁勳</span>
+              <span class="trip-route">11:49 - 00:30 新莊大觀廠 ATP2</span>
+            </div>
+            <div class="trip-score score-good">89</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="d-card announcements-card">
+      <div class="d-card-header">
+        <h3><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
+        <a href="#" class="action-button">+ 新增公告</a>
+      </div>
+      <div class="d-card-body">
+        <ul class="announcement-list">
+          <li class="announcement-item">
+            <span class="subject">2025年10月1日人事組織命令公告三</span>
+            <span class="poster">江澤民</span>
+            <span class="date">2025.09.29</span>
+          </li>
+          <li class="announcement-item">
+            <span class="subject">A3修配廠路線調整（9/20）</span>
+            <span class="poster">胡錦濤</span>
+            <span class="date">2025.09.21</span>
+          </li>
+          <li class="announcement-item">
+            <span class="subject">颱風假後立即回報車輛停放地點</span>
+            <span class="poster">江澤民</span>
+            <span class="date">2025.09.16</span>
+          </li>
+          <li class="announcement-item">
+            <span class="subject">共同維護行車安全</span>
+            <span class="poster">江澤民</span>
+            <span class="date">2025.08.29</span>
+          </li>
+          <li class="announcement-item">
+            <span class="subject">晨間酒精檢測務必準時送出</span>
+            <span class="poster">江澤民</span>
+            <span class="date">2025.08.19</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div> <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
+{% endblock %}

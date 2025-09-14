@@ -47,13 +47,27 @@
           <a href="#" class="action-button">+ 建立</a>
         </div>
         <ul class="group-list">
-          <li>北大物流 C 組</li>
-          <li>2024雙十一宅配臨時</li>
-          <li>北大物流職訓23A</li>
-          <li>南區配送 B 隊</li> {# 新增群組 #}
-          <li>企業客戶專送組</li> {# 新增群組 #}
-          <li>花花粉絲後援會</li>
-          <li>睿軒行物流 YI 組</li>
+          <li>
+            <a href="{{ url_for('group_detail') }}">北大物流 C 組</a>
+          </li>
+          <li>
+            <a href="{{ url_for('group_detail') }}">2024雙十一宅配臨時</a>
+          </li>
+          <li>
+            <a href="{{ url_for('group_detail') }}">北大物流職訓23A</a>
+          </li>
+          <li>
+            <a href="{{ url_for('group_detail') }}">南區配送 B 隊</a>
+          </li>
+          <li>
+            <a href="{{ url_for('group_detail') }}">企業客戶專送組</a>
+          </li>
+          <li>
+            <a href="{{ url_for('group_detail') }}">花花粉絲後援會</a>
+          </li>
+          <li>
+            <a href="{{ url_for('group_detail') }}">睿軒行物流 YI 組</a>
+          </li>
         </ul>
         <div class="card-actions-center">
           {# 用新的 div 包裝置中按鈕 #}
@@ -98,34 +112,36 @@
         <div class="d-card-body">
           <div class="trip-section">
             <div class="d-card-header" style="padding-left:0; padding-top:0;">
-              <h3><i class="fa-solid fa-route"></i>前次行程</h3>
-              <a href="#" class="header-link"></a>
+              <h3><i class="fa-solid fa-route"></i> 前次行程</h3>
+              <a href="{{ url_for('trip_report') }}" class="header-link" title="查看地圖報告"><i class="fa-solid fa-map-location-dot"></i></a>
             </div>
-            <div class="trip-details-header">
-              <div class="trip-meta-group">
-                <p class="trip-meta">2025 年 7 月 23 日 15:40 - 21:50 ‧ 北大物流 C 組</p>
-                <p class="trip-meta">07/23 北大往信義遠百 A13 例行</p>
-              </div>
-              <div class="trip-vitals">
-                <div class="vital-item">
-                  <span>總耗時</span>
-                  <strong>6 小時 10 分</strong>
+            <a href="{{ url_for('trip_report') }}" class="trip-overview-link">
+              <div class="trip-details-header">
+                <div class="trip-meta-group">
+                  <p class="trip-meta">2025 年 7 月 23 日 15:40 - 21:50 ‧ 北大物流 C 組</p>
+                  <p class="trip-meta">07/23 北大往信義遠百 A13 例行</p>
                 </div>
-                <div class="vital-item">
-                  <span>總里程</span>
-                  <strong>95 公里</strong>
+                <div class="trip-vitals">
+                  <div class="vital-item">
+                    <span>總耗時</span>
+                    <strong>6 小時 10 分</strong>
+                  </div>
+                  <div class="vital-item">
+                    <span>總里程</span>
+                    <strong>95 公里</strong>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {# ===== 新增的區塊從這裡開始 ===== #}
-            <div class="route-box">
-              <span>北大八里集貨區</span>
-              <i class="fas fa-arrow-right"></i> {# 使用 Font Awesome 箭頭圖標 #}
-              <span>臺北港</span>
-              <i class="fas fa-arrow-right"></i>
-              <span>信義遠百 A13</span>
-            </div>
+              {# ===== 新增的區塊從這裡開始 ===== #}
+              <div class="route-box">
+                <span>北大八里集貨區</span>
+                <i class="fas fa-arrow-right"></i> {# 使用 Font Awesome 箭頭圖標 #}
+                <span>臺北港</span>
+                <i class="fas fa-arrow-right"></i>
+                <span>信義遠百 A13</span>
+              </div>
+            </a>
             {# ===== 新增的區塊到這裡結束 ===== #}
 
             <div class="trip-route">

@@ -1,0 +1,255 @@
+/* 引用儀表板的基礎卡片樣式 */
+@import url('dashboard.css');
+
+/* ===== 主容器與佈局 ===== */
+.group-detail-container {
+    display: grid;
+    grid-template-areas:
+        "header-left header-center members"
+        "announcements announcements members";
+    grid-template-columns: 2fr 1fr 2fr;
+    grid-template-rows: auto 1fr;
+    gap: 24px;
+    padding: 24px;
+    max-width: 1600px;
+    margin: 30px auto;
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+/* --- 將各卡片分配到指定的網格區域 --- */
+.group-header-card {
+    grid-area: header-left;
+}
+
+.identity-card {
+    grid-area: header-center;
+    height: 100%;
+}
+
+/* 確保中間卡片填滿高度 */
+.announcements-card {
+    grid-area: announcements;
+}
+
+.group-members-card {
+    grid-area: members;
+}
+
+/* ===== RWD ===== */
+@media (max-width: 992px) {
+    .group-detail-container {
+        grid-template-areas:
+            "header-left"
+            "header-center"
+            "members"
+            "announcements";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+}
+
+/* ===== 各卡片詳細樣式 ===== */
+.announcements-card,
+.group-members-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.announcements-card .d-card-body,
+.group-members-card .d-card-body {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* --- 左上角 --- */
+.group-header-card .d-card-body {
+    position: relative;
+}
+
+.group-header-card .action-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 1.2rem;
+    color: #888;
+}
+
+.group-header-card .group-title {
+    font-size: 2.2rem;
+    color: #1a2a5f;
+    margin-bottom: 16px;
+}
+
+.group-header-card .group-meta {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* --- 左下角 --- */
+.announcements-card .d-card-body {
+    padding: 0 20px 20px;
+}
+
+.announcement-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.announcement-item {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 40px;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px dashed #ccc;
+    font-size: 0.95rem;
+    align-items: center;
+}
+
+.announcement-actions {
+    display: flex;
+    gap: 8px;
+    color: #aaa;
+}
+
+.announcement-actions i {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.announcement-actions i:hover {
+    color: #1a2a5f;
+}
+
+/* --- 中間 --- */
+.identity-card .d-card-body {
+    padding: 10px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.member-item.self {
+    background-color: #e6edff;
+    border: 1px solid #1a2a5f;
+    height: 100%;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.member-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.member-name {
+    font-weight: bold;
+}
+
+.member-role {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+/* --- 右欄 --- */
+.group-members-card .d-card-body {
+    padding: 0;
+}
+
+.member-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.member-table th,
+.member-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.member-table thead {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+}
+
+.member-table .avatar-col {
+    width: 50px;
+}
+
+.table-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+/* --- 顏色修正 --- */
+.group-header-card .group-meta,
+.group-header-card .group-meta strong {
+    color: #333;
+}
+
+.announcement-item .poster,
+.announcement-item .date {
+    color: #555;
+    text-align: right;
+}
+
+.announcement-item .subject {
+    color: #000000;
+}
+
+.member-name {
+    color: #000000;
+}
+
+.member-table th,
+.member-table td {
+    color: #000000;
+}
+
+.member-table .actions-col {
+    width: 70px;
+    text-align: center;
+    /* 讓圖示置中 */
+}
+
+.member-table .actions-col i {
+    color: #1a2a5f;
+    /* 設定圖示顏色 */
+    cursor: pointer;
+}
+
+.custom-btn.primary-btn {
+    display: block;
+    margin: 40px auto 60px auto; /* 自動置中 */
+    font-size: 24px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    width: fit-content; /* 寬度剛好包文字 */
+
+    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
+    background-color: #1a2a5f;
+    color: white;
+    border: 1px solid #1a2a5f;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.custom-btn.primary-btn:hover {
+    background-color: #ffffff;
+    color: #1a2a5f;
+}

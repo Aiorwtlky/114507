@@ -1000,3 +1000,42 @@
     color: inherit;
     cursor: pointer;
 }
+
+.my-group-card .group-list a {
+    color: #000000;
+}
+
+/* --- 新增：「前次行程」卡片連結樣式 --- */
+
+/* 讓上方行程資訊區塊的連結樣式正常化 */
+.trip-overview-link {
+    display: block;
+    /* 讓 a 標籤可以包含 div */
+    text-decoration: none;
+    /* 移除底線 */
+    color: inherit;
+    /* 繼承父層的文字顏色 (也就是黑色) */
+    transition: transform 0.2s ease-out;
+    border-radius: 8px;
+    /* 增加圓角，讓 hover 效果更好看 */
+}
+
+/* 增加滑鼠移上去的互動效果 */
+.trip-overview-link:hover {
+    transform: translateY(-4px);
+    /* 輕微向上浮動 */
+    box-shadow: 0 8px 20px rgba(26, 42, 95, 0.1);
+    /* 增加陰影 */
+}
+
+/* 標題右側地圖圖示的樣式 */
+.last-trip-card--large .header-link {
+    font-size: 1.3rem;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.last-trip-card--large .header-link:hover {
+    color: #007bff;
+    /* 滑鼠移上去時變藍色 */
+    transform: scale(1.1);
+}
