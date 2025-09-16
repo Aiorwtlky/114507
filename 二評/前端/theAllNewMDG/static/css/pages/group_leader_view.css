@@ -257,13 +257,16 @@
 
 /* 新的 settings-link 樣式，定位在右下角 */
 /* 新的 settings-link 樣式，定位在右下角 */
+
 .settings-link {
     position: absolute;
     bottom: 20px;
     right: 20px;
     font-size: 1.5rem;
-    color: #6c757d !important;
-    /* <--- 在後面加上 !important */
+    color: #6c757d;
+    /* 顏色維持深灰色 */
+    z-index: 2;
+    /* <<< 新增這一行，把圖示的圖層拉到最上面 */
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
