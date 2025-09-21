@@ -51,7 +51,20 @@
                     <span>排定日程</span>
                   </label>
                 </div>
-                <input type="datetime-local" id="scheduled_time" name="scheduled_time" class="datetime-picker hidden" />
+                <div id="scheduled_time" class="datetime-picker hidden">
+                  <div class="date-input-group">
+                    <input type="number" name="year" placeholder="YYYY" min="2025" max="2035" />
+                    <span>年</span>
+                  </div>
+                  <div class="date-input-group">
+                    <input type="number" name="month" placeholder="MM" min="1" max="12" />
+                    <span>月</span>
+                  </div>
+                  <div class="date-input-group">
+                    <input type="number" name="day" placeholder="DD" min="1" max="31" />
+                    <span>日</span>
+                  </div>
+                </div>
               </div>
             </div>
 

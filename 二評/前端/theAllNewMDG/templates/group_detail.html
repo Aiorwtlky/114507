@@ -105,3 +105,19 @@
     </div>
   </div> <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 找到所有帶有 data-href 屬性的表格列
+    const clickableRows = document.querySelectorAll('tr[data-href]');
+    
+    clickableRows.forEach(row => {
+      row.addEventListener('click', function() {
+        // 點擊後，跳轉到 data-href 中指定的網址
+        window.location.href = this.dataset.href;
+      });
+    });
+  });
+</script>
+{% endblock %}

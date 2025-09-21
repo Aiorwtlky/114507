@@ -274,3 +274,13 @@
     color: #1a2a5f;
     transform: rotate(360deg);
 }
+
+/* --- 新增：讓表格中可點擊的列有互動效果 --- */
+.member-table tbody tr[data-href] {
+    cursor: pointer; /* 顯示手形游標 */
+    transition: background-color 0.2s ease;
+}
+
+.member-table tbody tr[data-href]:hover {
+    background-color: #f0f4ff; /* 滑鼠移上去時變淺藍色 */
+}

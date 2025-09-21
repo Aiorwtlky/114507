@@ -108,6 +108,11 @@ def group_settings():
 def invite_member():
     return render_template('invite_member.html')
 
+@app.route('/member/<member_id>')
+def member_dashboard(member_id):
+    # 未來您可以根據 member_id 從資料庫查詢該成員的真實數據
+    return render_template('member_dashboard.html')
+
 @app.route('/member_videos/<member_id>')
 def member_videos(member_id):
     # 未來您可以根據 member_id 從資料庫查詢真實的姓名和影片資料

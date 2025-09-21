@@ -56,19 +56,19 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr data-href="{{ url_for('member_dashboard', member_id='B0C01') }}">
               <td class="avatar-col">
-                <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="董仁勳" class="table-avatar" />
+                <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="黃仁勳" class="table-avatar" />
               </td>
               <td>B0C01</td>
               <td>黃仁勳</td>
               <td>98</td>
               <td>2025.01.31</td>
               <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C01') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
+                <a href="{{ url_for('member_videos', member_id='B0C01') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
               </td>
             </tr>
-            <tr>
+            <tr data-href="{{ url_for('member_dashboard', member_id='B0C02') }}">
               <td class="avatar-col">
                 <img src="https://via.placeholder.com/32/ffc107" alt="陳水扁" class="table-avatar" />
               </td>
@@ -77,10 +77,10 @@
               <td>85</td>
               <td>2025.03.15</td>
               <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C02') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
+                <a href="{{ url_for('member_videos', member_id='B0C02') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
               </td>
             </tr>
-            <tr>
+            <tr data-href="{{ url_for('member_dashboard', member_id='B0C03') }}">
               <td class="avatar-col">
                 <img src="https://via.placeholder.com/32/28a745" alt="馬英九" class="table-avatar" />
               </td>
@@ -89,10 +89,10 @@
               <td>92</td>
               <td>2025.06.01</td>
               <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C03') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
+                <a href="{{ url_for('member_videos', member_id='B0C03') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
               </td>
             </tr>
-            <tr>
+            <tr data-href="{{ url_for('member_dashboard', member_id='B0C04') }}">
               <td class="avatar-col">
                 <img src="https://via.placeholder.com/32/dc3545" alt="蔡英文" class="table-avatar" />
               </td>
@@ -101,7 +101,7 @@
               <td>78</td>
               <td>2025.08.20</td>
               <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C04') }}" title="查看行車影片"><i class="fa-solid fa-truck"></i></a>
+                <a href="{{ url_for('member_videos', member_id='B0C04') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
               </td>
             </tr>
           </tbody>
@@ -184,3 +184,23 @@
     </div>
   </div> <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
 {% endblock %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 找到所有帶有 data-href 屬性的表格列
+    const clickableRows = document.querySelectorAll('tr[data-href]');
+    
+    clickableRows.forEach(row => {
+      row.addEventListener('click', function(event) {
+        // 檢查點擊的目標是不是 a 標籤或 i 標籤
+        // 如果是，就代表使用者想點的是「操作」按鈕，我們就不跳轉
+        if (event.target.tagName === 'A' || event.target.tagName === 'I') {
+          return;
+        }
+
+        // 否則，就跳轉到 data-href 中指定的網址
+        window.location.href = this.dataset.href;
+      });
+    });
+  });
+</script>
