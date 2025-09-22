@@ -71,7 +71,7 @@
     <div class="d-card announcements-card">
       <div class="d-card-header">
         <h3><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
-        <a href="#" class="action-button">+ 新增公告</a>
+        {% comment %} <a href="#" class="action-button">+ 新增公告</a> {% endcomment %}
       </div>
       <div class="d-card-body">
         <ul class="announcement-list">
@@ -104,4 +104,20 @@
       </div>
     </div>
   </div> <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 找到所有帶有 data-href 屬性的表格列
+    const clickableRows = document.querySelectorAll('tr[data-href]');
+    
+    clickableRows.forEach(row => {
+      row.addEventListener('click', function() {
+        // 點擊後，跳轉到 data-href 中指定的網址
+        window.location.href = this.dataset.href;
+      });
+    });
+  });
+</script>
 {% endblock %}
