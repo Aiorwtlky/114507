@@ -1,7 +1,6 @@
 package com.example.mdgapp.ui.component
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -16,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mdgapp.data.model.VideoFile
-import com.example.mdgapp.data.viewmodel.DownloadViewModel
+import com.example.mdgapp.data.viewmodel.ManagerDownloadViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -70,7 +69,7 @@ fun TimeSlotHeader(timeSlotIndex: Int) {
 @Composable
 fun VideoFileCard(videoFile: VideoFile) {
     val context = LocalContext.current
-    val viewModel: DownloadViewModel = viewModel()
+    val viewModel: ManagerDownloadViewModel = viewModel()
     val formattedTime = videoFile.timestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
     val fileSizeMB = "%.1f MB".format(videoFile.fileSize / 1_000_000.0)
 

@@ -7,28 +7,32 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.mdgapp.data.viewmodel.ManagerReportViewModel
-import com.example.mdgapp.data.viewmodel.ReportViewModel
-import com.example.mdgapp.data.viewmodel.RouteTrackingViewModel
-import com.example.mdgapp.data.viewmodel.ManagerAnnouncementViewModel
-import com.example.mdgapp.data.viewmodel.GroupManagementViewModel
+import com.example.mdgapp.data.viewmodel.*
 import com.example.mdgapp.ui.screen.*
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    // 建立所有需要的共享 ViewModel
     val reportViewModel: ReportViewModel = viewModel()
     val managerReportViewModel: ManagerReportViewModel = viewModel()
-    // 1. 在 NavHost 外層建立 ViewModel 實例
     val managerAnnouncementViewModel: ManagerAnnouncementViewModel = viewModel()
     val groupManagementViewModel: GroupManagementViewModel = viewModel()
+    val driverDownloadViewModel: DriverDownloadViewModel = viewModel()
+    val managerDownloadViewModel: ManagerDownloadViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = "launch") {
 
         // ==================== 基礎流程路由 ====================
         composable("register") { RegisterScreen(navController = navController) }
         composable("launch") { LaunchScreen(navController = navController) }
-        composable("home") { HomeScreen(navController = navController) }
-        composable("managerHome") { ManagerHomeScreen(navController = navController) }
+        // ✅ 將 home 路由指向 UnifiedHomeScreen，並傳入 "driver" 角色
+        composable("home") {
+            UnifiedHomeScreen(navController = navController, userRole = "driver")
+        }
+// ✅ 將 managerHome 路由指向 UnifiedHomeScreen，並傳入 "manager" 角色
+        composable("managerHome") {
+            UnifiedHomeScreen(navController = navController, userRole = "manager")
+        }
         composable("profile") { ProfileScreen(navController = navController) }
         composable("managerProfile") { ManagerProfileScreen(navController = navController) }
 
@@ -44,56 +48,67 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        // ==================== 公告與下載流程路由 ====================
+        // ==================== 駕駛員專用路由 ====================
         composable("announcementList") { AnnouncementListScreen(navController = navController) }
-        composable(
-            route = "announcementDetail/{title}",
-            arguments = listOf(navArgument("title") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val title = backStackEntry.arguments?.getString("title") ?: "公告"
-            AnnouncementDetailScreen(title = title, navController = navController)
+        composable("reportList") {
+            ReportListScreen(navController = navController, viewModel = reportViewModel)
         }
-        composable("downloadFileList") { DownloadFileListScreen(navController = navController) }
+        composable("driverHistory") {
+            DriverHistoryScreen(navController = navController)
+        }
+        // --- 駕駛員下載流程 ---
+        composable("downloadFileList") {
+            DownloadFileListScreen(navController = navController, viewModel = driverDownloadViewModel)
+        }
         composable(
             route = "videoList/{date}",
             arguments = listOf(navArgument("date") { type = NavType.StringType })
         ) { backStackEntry ->
-            VideoListScreen(navController = navController, dateString = backStackEntry.arguments?.getString("date"))
+            VideoListScreen(
+                navController = navController,
+                dateString = backStackEntry.arguments?.getString("date"),
+                viewModel = driverDownloadViewModel
+            )
         }
+
+        // ==================== 管理者專用路由 ====================
         composable("managerAnnouncementList") {
             ManagerAnnouncementListScreen(navController = navController, viewModel = managerAnnouncementViewModel)
         }
         composable("managerAddAnnouncement") {
             ManagerAddAnnouncementScreen(navController = navController, viewModel = managerAnnouncementViewModel)
         }
-
-        // ==================== 駕駛員報表與歷史數據路由 ====================
-        composable("reportList") {
-            ReportListScreen(navController = navController, viewModel = reportViewModel)
+        // --- 管理者下載流程 ---
+        composable("managerDriverSelectionForDownload") {
+            ManagerDriverSelectionScreen(navController = navController, viewModel = managerDownloadViewModel)
         }
         composable(
-            route = "reportDetail/{date}",
-            arguments = listOf(navArgument("date") { type = NavType.StringType })
+            route = "managerDownloadFileList/{driverId}",
+            arguments = listOf(navArgument("driverId") { type = NavType.StringType })
         ) { backStackEntry ->
-            ReportDetailScreen(
+            ManagerDownloadFileListScreen(
+                navController = navController,
+                driverId = backStackEntry.arguments?.getString("driverId"),
+                viewModel = managerDownloadViewModel
+            )
+        }
+        composable(
+            route = "managerVideoList/{driverId}/{date}",
+            arguments = listOf(
+                navArgument("driverId") { type = NavType.StringType },
+                navArgument("date") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            ManagerVideoListScreen(
                 navController = navController,
                 dateString = backStackEntry.arguments?.getString("date"),
-                viewModel = reportViewModel
+                viewModel = managerDownloadViewModel
             )
         }
-        composable("driverHistory") {
-            DriverHistoryScreen(navController = navController)
-        }
-
-        // ==================== 管理者報表與歷史數據路由 ====================
+        // --- 其他管理者路由 ---
         composable("managerReportDriverList") {
-            ManagerReportDriverListScreen(
-                navController = navController,
-                viewModel = managerReportViewModel
-            )
+            ManagerReportDriverListScreen(navController = navController, viewModel = managerReportViewModel)
         }
-
-        // ✅ 新增：管理者選擇駕駛後，顯示其報表日期的路由
         composable(
             route = "managerReportDateList/{driverId}",
             arguments = listOf(navArgument("driverId") { type = NavType.StringType })
@@ -104,23 +119,10 @@ fun AppNavGraph(navController: NavHostController) {
                 viewModel = managerReportViewModel
             )
         }
-
-        // ✅ 新增：管理者選擇日期後，顯示報表詳情的路由
-        composable(
-            route = "managerReportDetail/{date}",
-            arguments = listOf(navArgument("date") { type = NavType.StringType })
-        ) { backStackEntry ->
-            ManagerReportDetailScreen(
-                navController = navController,
-                dateString = backStackEntry.arguments?.getString("date"),
-                viewModel = managerReportViewModel
-            )
-        }
-
+        composable("managerReportDetail/{date}") { /* ... */ }
         composable("managerHistory") {
             ManagerHistoryScreen(navController = navController)
         }
-
         composable("groupManagement") {
             GroupManagementScreen(navController = navController, viewModel = groupManagementViewModel)
         }

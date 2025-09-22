@@ -72,4 +72,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.androidx.compose.material.icons.extended)
+    // 加入 Retrofit 和 Coroutines 的 bundle
+    implementation(libs.bundles.retrofit)
+    implementation(libs.bundles.coroutines)
 }

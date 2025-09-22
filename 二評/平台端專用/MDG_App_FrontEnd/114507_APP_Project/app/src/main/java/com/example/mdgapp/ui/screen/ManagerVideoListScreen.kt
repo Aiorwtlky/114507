@@ -13,37 +13,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mdgapp.data.viewmodel.DriverDownloadViewModel
-import com.example.mdgapp.ui.component.DateListItemCard
+import com.example.mdgapp.data.viewmodel.ManagerDownloadViewModel
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DownloadFileListScreen(
+fun ManagerVideoListScreen(
     navController: NavController,
-    // 改用駕駛員專屬的 ViewModel
-    viewModel: DriverDownloadViewModel = viewModel()
+    dateString: String?,
+    viewModel: ManagerDownloadViewModel = viewModel()
 ) {
+    // 這裡我們直接使用 ViewModel 中的 dailyLogs，因為它已經被上一個畫面篩選過了
     val dailyLogs by viewModel.dailyLogs.collectAsState()
+    val selectedDate = remember(dateString) { dateString?.let { LocalDate.parse(it) } }
+    val videosForDate = dailyLogs.find { it.date == selectedDate }?.videos ?: emptyList()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("行車影像日期") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
-            )
-        },
+        topBar = { /* ... TopAppBar 內容與 VideoListScreen 類似 ... */ },
         containerColor = Color.Black
     ) { paddingValues ->
-        if (dailyLogs.isEmpty()) {
+        if (videosForDate.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Color.White)
             }
@@ -53,14 +42,8 @@ fun DownloadFileListScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(dailyLogs, key = { it.date }) { log ->
-                    DateListItemCard(
-                        date = log.date,
-                        videoCount = log.videos.size,
-                        onClick = {
-                            navController.navigate("videoList/${log.date}")
-                        }
-                    )
+                items(videosForDate, key = { it.id }) { video ->
+                    VideoListItem(videoFile = video)
                 }
             }
         }

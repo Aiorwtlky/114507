@@ -13,22 +13,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mdgapp.data.viewmodel.DriverDownloadViewModel
+import com.example.mdgapp.data.viewmodel.ManagerDownloadViewModel
 import com.example.mdgapp.ui.component.DateListItemCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DownloadFileListScreen(
+fun ManagerDownloadFileListScreen(
     navController: NavController,
-    // 改用駕駛員專屬的 ViewModel
-    viewModel: DriverDownloadViewModel = viewModel()
+    driverId: String?,
+    viewModel: ManagerDownloadViewModel = viewModel()
 ) {
+    LaunchedEffect(driverId) {
+        driverId?.let { viewModel.loadDailyLogsForDriver(it) }
+    }
+
     val dailyLogs by viewModel.dailyLogs.collectAsState()
+    val drivers by viewModel.drivers.collectAsState()
+    val driverName = drivers.find { it.driverId == driverId }?.driverName ?: ""
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("行車影像日期") },
+                title = { Text("$driverName 的行車影像日期") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
@@ -45,7 +51,7 @@ fun DownloadFileListScreen(
     ) { paddingValues ->
         if (dailyLogs.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color.White)
+                if (!driverId.isNullOrEmpty()) CircularProgressIndicator(color = Color.White)
             }
         } else {
             LazyColumn(
@@ -58,7 +64,8 @@ fun DownloadFileListScreen(
                         date = log.date,
                         videoCount = log.videos.size,
                         onClick = {
-                            navController.navigate("videoList/${log.date}")
+                            // 導航到管理者專屬的影片列表，並傳遞 driverId 和 date
+                            navController.navigate("managerVideoList/${driverId}/${log.date}")
                         }
                     )
                 }

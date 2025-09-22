@@ -10,7 +10,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
-
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.compose.runtime.SideEffect
 
 private val DarkColors = darkColorScheme(
     background = md_theme_dark_background,
@@ -40,8 +41,8 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = true, // ✅ 強制黑底白字
-    dynamicColor: Boolean = false, // ✅ 關閉 dynamic color（避免誤用淺色）
+    darkTheme: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -49,9 +50,17 @@ fun MyApplicationTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColors // ✅ 這裡修正變數名！
+        darkTheme -> DarkColors
         else -> LightColorScheme
+    }
+
+    // ✅ 將狀態列控制器放在這裡
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setSystemBarsColor(
+            color = colorScheme.background, // 讓狀態列顏色跟隨主題的背景色
+            darkIcons = !darkTheme         // 深色主題用淺色圖示，淺色主題用深色圖示
+        )
     }
 
     MaterialTheme(
