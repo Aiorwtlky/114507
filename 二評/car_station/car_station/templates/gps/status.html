@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}GPS 狀態 - MDG 車機系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gps-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .gps-title {
+        font-size: 2.5rem;
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .gps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .gps-card {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .gps-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #00ffff, transparent);
+        animation: scan 3s linear infinite;
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+        color: #00ffff;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+
+    .status-good {
+        background-color: #00ff00;
+    }
+
+    .status-poor {
+        background-color: #ffff00;
+    }
+
+    .status-bad {
+        background-color: #ff0000;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.8rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    }
+
+    .info-label {
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .info-value {
+        color: #ffffff;
+        text-align: right;
+        flex: 1;
+        margin-left: 1rem;
+    }
+
+    .coordinates {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin-top: 0.5rem;
+    }
+
+    .satellite-display {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .satellite-bar {
+        height: 30px;
+        background: linear-gradient(to top, #ff0000, #ffff00, #00ff00);
+        border-radius: 3px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .satellite-fill {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.3);
+        transition: height 0.3s ease;
+    }
+
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .control-button {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3));
+        border: 2px solid #00ffff;
+        color: #00ffff;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .control-button:hover {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.4));
+        box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    }
+
+    .loading {
+        text-align: center;
+        color: #00ffff;
+        font-style: italic;
+    }
+
+    @keyframes scan {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="gps-container">
+        <h1 class="gps-title">📡 GPS 狀態</h1>
+        
+        <div class="gps-grid">
+            <!-- GPS 基本資訊 -->
+            <div class="gps-card">
+                <div class="card-title">🛰️ 定位狀態</div>
+                <div id="gpsStatus">
+                    <div class="loading">取得 GPS 狀態中...</div>
+                </div>
+            </div>
+
+            <!-- 位置資訊 -->
+            <div class="gps-card">
+                <div class="card-title">📍 位置資訊</div>
+                <div id="locationInfo">
+                    <div class="loading">讀取位置中...</div>
+                </div>
+            </div>
+
+            <!-- 衛星資訊 -->
+            <div class="gps-card">
+                <div class="card-title">🛰️ 衛星訊號</div>
+                <div id="satelliteInfo">
+                    <div class="loading">檢測衛星中...</div>
+                </div>
+            </div>
+
+            <!-- 連線狀態 -->
+            <div class="gps-card">
+                <div class="card-title">🔗 連線狀態</div>
+                <div id="connectionInfo">
+                    <div class="loading">檢查連線中...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" onclick="refreshGPS()">重新整理</button>
+            <button class="control-button" onclick="testConnection()">測試連線</button>
+            <button class="control-button" onclick="useMockData()">使用模擬資料</button>
+            <a href="{{ url_for('device_info.device_info') }}" class="control-button">本機資訊</a>
+            <a href="{{ url_for('main.index') }}" class="control-button">返回首頁</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let gpsUpdateInterval;
+
+    function formatCoordinate(value, type) {
+        if (!value) return 'N/A';
+        const direction = type === 'lat' ? (value >= 0 ? 'N' : 'S') : (value >= 0 ? 'E' : 'W');
+        return `${Math.abs(value).toFixed(6)}° ${direction}`;
+    }
+
+    function updateGPSStatus() {
+        fetch('/gps/api/gps_status')
+            .then(response => response.json())
+            .then(data => {
+                updateStatusCard(data);
+                updateLocationCard(data);
+                updateSatelliteCard(data);
+                updateConnectionCard(data);
+            })
+            .catch(error => {
+                console.error('GPS 狀態更新失敗:', error);
+                document.getElementById('gpsStatus').innerHTML = 
+                    '<div style="color: #ff0000;">無法取得 GPS 狀態</div>';
+            });
+    }
+
+    function updateStatusCard(data) {
+        const container = document.getElementById('gpsStatus');
+        
+        if (data.status === 'success') {
+            const statusClass = data.fix_status === '有定位' ? 'status-good' : 'status-bad';
+            container.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">定位狀態:</span>
+                    <span class="info-value">
+                        <span class="status-indicator ${statusClass}"></span>
+                        ${data.fix_status || '無定位'}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">信號強度:</span>
+                    <span class="info-value">${((data.signal_strength || 0) * 100).toFixed(1)}%</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">更新時間:</span>
+                    <span class="info-value">${new Date(data.timestamp).toLocaleTimeString()}</span>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">狀態:</span>
+                    <span class="info-value">
+                        <span class="status-indicator status-bad"></span>
+                        錯誤
+                    </span>
+                </div>
+                <div style="color: #ff0000; margin-top: 1rem;">${data.message}</div>
+            `;
+        }
+    }
+
+    function updateLocationCard(data) {
+        const container = document.getElementById('locationInfo');
+        
+        if (data.status === 'success' && data.latitude && data.longitude) {
+            container.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">緯度:</span>
+                    <span class="info-value">${formatCoordinate(data.latitude, 'lat')}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">經度:</span>
+                    <span class="info-value">${formatCoordinate(data.longitude, 'lng')}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">高度:</span>
+                    <span class="info-value">${data.altitude ? data.altitude.toFixed(1) + ' m' : 'N/A'}</span>
+                </div>
+                <div class="coordinates">
+                    ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)}
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">緯度:</span>
+                    <span class="info-value">無資料</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">經度:</span>
+                    <span class="info-value">無資料</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">高度:</span>
+                    <span class="info-value">無資料</span>
+                </div>
+                <div style="color: #ffff00; margin-top: 1rem;">等待 GPS 定位中...</div>
+            `;
+        }
+    }
+
+    function updateSatelliteCard(data) {
+        const container = document.getElementById('satelliteInfo');
+        const satellites = data.satellites || 0;
+        
+        container.innerHTML = `
+            <div class="info-row">
+                <span class="info-label">可見衛星:</span>
+                <span class="info-value">${satellites} 顆</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">定位品質:</span>
+                <span class="info-value">${satellites >= 4 ? '良好' : satellites >= 1 ? '普通' : '差'}</span>
+            </div>
+            <div class="satellite-display">
+                ${Array.from({length: Math.min(satellites, 12)}, (_, i) => 
+                    `<div class="satellite-bar">
+                        <div class="satellite-fill" style="height: ${Math.random() * 80 + 20}%"></div>
+                    </div>`
+                ).join('')}
+            </div>
+        `;
+    }
+
+    function updateConnectionCard(data) {
+        const container = document.getElementById('connectionInfo');
+        
+        if (data.status === 'success') {
+            container.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">連線狀態:</span>
+                    <span class="info-value">
+                        <span class="status-indicator status-good"></span>
+                        已連線
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">序列埠:</span>
+                    <span class="info-value">${data.port}</span>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">連線狀態:</span>
+                    <span class="info-value">
+                        <span class="status-indicator status-bad"></span>
+                        未連線
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">序列埠:</span>
+                    <span class="info-value">${data.port || 'N/A'}</span>
+                </div>
+                <div style="color: #ff0000; margin-top: 1rem;">${data.message}</div>
+            `;
+        }
+    }
+
+    function refreshGPS() {
+        updateGPSStatus();
+    }
+
+    function testConnection() {
+        fetch('/gps/api/gps_test')
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || '測試完成');
+            })
+            .catch(error => {
+                alert('連線測試失敗: ' + error.message);
+            });
+    }
+
+    function useMockData() {
+        fetch('/gps/api/gps_mock')
+            .then(response => response.json())
+            .then(data => {
+                updateStatusCard(data);
+                updateLocationCard(data);
+                updateSatelliteCard(data);
+                updateConnectionCard(data);
+                alert('已載入模擬 GPS 資料（台北車站）');
+            })
+            .catch(error => {
+                alert('載入模擬資料失敗: ' + error.message);
+            });
+    }
+
+    function startGPSUpdates() {
+        updateGPSStatus(); // 立即更新一次
+        gpsUpdateInterval = setInterval(updateGPSStatus, 3000); // 每3秒更新
+    }
+
+    function stopGPSUpdates() {
+        if (gpsUpdateInterval) {
+            clearInterval(gpsUpdateInterval);
+        }
+    }
+
+    // 頁面載入時開始更新
+    document.addEventListener('DOMContentLoaded', startGPSUpdates);
+    
+    // 頁面卸載時停止更新
+    window.addEventListener('beforeunload', stopGPSUpdates);
+</script>
+{% endblock %}

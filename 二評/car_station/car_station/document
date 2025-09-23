@@ -1,0 +1,63 @@
+# MDG 車機介面專案結構
+
+```
+mdg_car_interface/
+│
+├── app.py                          # 主程式入口 (Port: 5003)
+├── config.py                       # 統一設定檔
+├── requirements.txt                # 專案依賴
+│
+├── blueprints/                     # 藍圖模組目錄
+│   ├── __init__.py                 # 空檔案，讓 Python 識別為套件
+│   ├── main.py                     # 主頁面藍圖
+│   ├── trip.py                     # 行程功能藍圖
+│   └── gpio.py                     # GPIO 硬體輸入藍圖
+│
+├── templates/                      # 模板目錄
+│   ├── base.html                   # 基礎模板（統一科技感風格）
+│   ├── index.html                  # 首頁模板
+│   └── trip/                       # 行程相關模板
+│       ├── start.html              # 開始行程頁面
+│       ├── history.html            # 過往行程頁面（預留）
+│       └── info.html               # 本機資訊頁面（預留）
+│
+└── static/                         # 靜態檔案目錄（目前使用內嵌CSS）
+    ├── css/
+    ├── js/
+    └── images/
+```
+
+## 已完成功能
+
+✅ **基礎架構**
+- Flask 藍圖架構設置 (Port: 5003)
+- 統一設定檔管理
+- 科技感 UI 設計
+- 響應式佈局
+
+✅ **首頁**
+- MDG 標題
+- 三個按鈕：開始行程、過往行程、本機資訊
+- 開始行程按鈕可點擊，其他兩個預留
+
+✅ **硬體輸入**
+- GPIO 狀態讀取 (方向燈、倒車檔)
+- Mac/Raspberry Pi 自動平台檢測
+- API 端點：/api/gpio_status, /api/test_connection
+
+✅ **伺服器設定**
+- 伺服器 URL: http://172.20.10.3:307
+- HTTPS 遷移預留設定
+
+## 預留功能
+🔄 過往行程
+🔄 本機資訊
+🔄 開始行程的具體功能
+🔄 伺服器 API 對接
+
+## API 端點
+- `GET /api/gpio_status` - 取得硬體狀態
+- `GET /api/test_connection` - 測試硬體連線
+
+## 下一步開發建議
+準備好後，可以開始開發伺服器對接或開始行程的具體功能！

@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block title %}行程監控 - MDG 車機系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .monitor-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .monitor-header {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .trip-title {
+        font-size: 1.8rem;
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        margin-bottom: 0.5rem;
+    }
+
+    .trip-timer {
+        font-size: 1.3rem;
+        color: #00ff00;
+        font-weight: bold;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .camera-section {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .camera-container {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+    }
+
+    .camera-title {
+        position: absolute;
+        top: 10px;
+        left: 15px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #00ffff;
+        padding: 0.3rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        z-index: 10;
+    }
+
+    .camera-feed {
+        width: 100%;
+        height: 200px;
+        border-radius: 10px;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #00ffff;
+        font-size: 1rem;
+        position: relative;
+    }
+
+    .camera-placeholder {
+        text-align: center;
+    }
+
+    .status-section {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 1rem;
+    }
+
+    .monitor-card {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .card-title {
+        font-size: 1rem;
+        color: #00ffff;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .gpio-indicators {
+        display: flex;
+        justify-content: space-around;
+        margin: 0.5rem 0;
+    }
+
+    .gpio-indicator {
+        text-align: center;
+        padding: 0.8rem;
+        border: 1px solid rgba(0, 255, 255, 0.3);
+        border-radius: 8px;
+        min-width: 60px;
+        transition: all 0.3s ease;
+    }
+
+    .gpio-indicator.active {
+        border-color: #00ffff;
+        background: rgba(0, 255, 255, 0.3);
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        animation: gpio-blink 0.5s ease-in-out infinite alternate;
+    }
+
+    .gpio-icon {
+        font-size: 1.2rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .gpio-label {
+        font-size: 0.7rem;
+        color: #00ffff;
+    }
+
+    .gps-map {
+        width: 100%;
+        height: 150px;
+        border-radius: 10px;
+        background: #1a1a3e;
+        border: 1px solid #00ffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #00ffff;
+        margin-bottom: 1rem;
+    }
+
+    .gps-info {
+        font-size: 0.8rem;
+        color: #ffffff;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.3rem;
+        padding: 0.2rem 0;
+    }
+
+    .bottom-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .event-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.3rem;
+        margin: 0.5rem 0;
+    }
+
+    .event-button {
+        background: linear-gradient(45deg, rgba(255, 100, 100, 0.1), rgba(255, 100, 100, 0.3));
+        border: 1px solid #ff6464;
+        color: #ff6464;
+        padding: 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .event-button:hover {
+        background: linear-gradient(45deg, rgba(255, 100, 100, 0.2), rgba(255, 100, 100, 0.4));
+        transform: scale(1.05);
+    }
+
+    .events-log {
+        max-height: 120px;
+        overflow-y: auto;
+        margin: 0.5rem 0;
+        font-size: 0.8rem;
+    }
+
+    .event-item {
+        background: rgba(255, 0, 0, 0.1);
+        border: 1px solid #ff0000;
+        border-radius: 3px;
+        padding: 0.3rem;
+        margin-bottom: 0.3rem;
+        font-size: 0.7rem;
+    }
+
+    .score-display {
+        font-size: 1.5rem;
+        color: #00ff00;
+        font-weight: bold;
+        text-align: center;
+        margin: 0.5rem 0;
+    }
+
+    .end-button {
+        background: linear-gradient(45deg, rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.3));
+        border: 2px solid #ff0000;
+        color: #ff0000;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .end-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+    }
+
+    .recording-indicator {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #ff0000;
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        animation: record-blink 1s ease-in-out infinite;
+    }
+
+    @keyframes gpio-blink {
+        0% { opacity: 0.7; transform: scale(1); }
+        100% { opacity: 1; transform: scale(1.1); }
+    }
+
+    @keyframes record-blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+
+    @media (max-width: 1200px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .bottom-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="monitor-container">
+        <div class="monitor-header">
+            <h1 class="trip-title">行程監控 - {{ trip.personnel.name }}</h1>
+            <div class="trip-timer" id="tripTimer">00:00:00</div>
+            <div style="color: #00ffff; font-size: 0.9rem;">{{ trip.trip_number }}</div>
+        </div>
+
+        <!-- 主要顯示區域 -->
+        <div class="main-grid">
+            <!-- 攝影機畫面 -->
+            <div class="camera-section">
+                <!-- 車外鏡頭 -->
+                <div class="camera-container">
+                    <div class="camera-title">車外鏡頭</div>
+                    <div class="recording-indicator">REC</div>
+                    <div class="camera-feed" id="outsideCamera">
+                        <img src="/camera/outside/stream" alt="車外鏡頭" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="camera-placeholder" style="display: none;">
+                            📹<br>車外鏡頭<br>連接中...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 車內鏡頭 -->
+                <div class="camera-container">
+                    <div class="camera-title">車內鏡頭</div>
+                    <div class="recording-indicator">REC</div>
+                    <div class="camera-feed" id="insideCamera">
+                        <img src="/camera/inside/stream" alt="車內鏡頭" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="camera-placeholder" style="display: none;">
+                            📹<br>車內鏡頭<br>連接中...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 狀態資訊 -->
+            <div class="status-section">
+                <!-- GPIO 狀態 -->
+                <div class="monitor-card">
+                    <div class="card-title">車輛狀態</div>
+                    <div class="gpio-indicators">
+                        <div class="gpio-indicator" id="leftGpio">
+                            <div class="gpio-icon">⬅️</div>
+                            <div class="gpio-label">左燈</div>
+                        </div>
+                        <div class="gpio-indicator" id="rightGpio">
+                            <div class="gpio-icon">➡️</div>
+                            <div class="gpio-label">右燈</div>
+                        </div>
+                        <div class="gpio-indicator" id="rearGpio">
+                            <div class="gpio-icon">🔄</div>
+                            <div class="gpio-label">倒車</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GPS 地圖 -->
+                <div class="monitor-card">
+                    <div class="card-title">GPS 定位</div>
+                    <div class="gps-map" id="gpsMap">
+                        🗺️ 地圖載入中...
+                    </div>
+                    <div class="gps-info" id="gpsInfo">
+                        <div class="info-row">
+                            <span>狀態:</span>
+                            <span id="gpsStatus">檢查中...</span>
+                        </div>
+                        <div class="info-row">
+                            <span>衛星:</span>
+                            <span id="gpsSatellites">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下方控制區域 -->
+        <div class="bottom-grid">
+            <!-- 評分事件 -->
+            <div class="monitor-card">
+                <div class="card-title">評分事件</div>
+                <div class="event-buttons">
+                    <button class="event-button" onclick="addEvent('A01')">重度疲勞<br>(-25分)</button>
+                    <button class="event-button" onclick="addEvent('A02')">中度疲勞<br>(-15分)</button>
+                    <button class="event-button" onclick="addEvent('A03')">長時間分心<br>(-20分)</button>
+                    <button class="event-button" onclick="addEvent('A04')">使用手機<br>(-20分)</button>
+                    <button class="event-button" onclick="addEvent('B01')">車道偏離<br>(-5分)</button>
+                    <button class="event-button" onclick="addEvent('B02')">前車過近<br>(-15分)</button>
+                </div>
+            </div>
+
+            <!-- 事件記錄 -->
+            <div class="monitor-card">
+                <div class="card-title">當前分數</div>
+                <div class="score-display" id="currentScore">100 分</div>
+                <div class="events-log" id="eventsLog">
+                    <div style="text-align: center; color: #00ffff; font-style: italic; font-size: 0.8rem;">
+                        暫無違規事件
+                    </div>
+                </div>
+            </div>
+
+            <!-- 行程控制 -->
+            <div class="monitor-card">
+                <div class="card-title">行程控制</div>
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 0.8rem; color: #00ffff; margin-bottom: 0.5rem;">錄影狀態: 進行中</div>
+                    <div style="font-size: 0.8rem; color: #00ffff; margin-bottom: 0.5rem;">GPS記錄: 啟用</div>
+                    <div style="font-size: 0.8rem; color: #00ffff;">資料儲存: 本地</div>
+                </div>
+                <button class="end-button" onclick="endTrip()">
+                    結束行程
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let startTime = new Date('{{ trip.start_time }}');
+    let updateInterval;
+    let currentScore = 100;
+
+    function updateTimer() {
+        const now = new Date();
+        const elapsed = Math.floor((now - startTime) / 1000);
+        
+        const hours = Math.floor(elapsed / 3600);
+        const minutes = Math.floor((elapsed % 3600) / 60);
+        const seconds = elapsed % 60;
+        
+        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('tripTimer').textContent = timeString;
+    }
+
+    function updateGPIOStatus() {
+        fetch('/api/gpio_realtime')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const leftGpio = document.getElementById('leftGpio');
+                    const rightGpio = document.getElementById('rightGpio');
+                    const rearGpio = document.getElementById('rearGpio');
+                    
+                    // 清除所有 active 類別
+                    leftGpio.classList.remove('active');
+                    rightGpio.classList.remove('active');
+                    rearGpio.classList.remove('active');
+                    
+                    // 根據狀態添加 active 類別
+                    if (data.left === 1) leftGpio.classList.add('active');
+                    if (data.right === 1) rightGpio.classList.add('active');
+                    if (data.rear === 1) rearGpio.classList.add('active');
+                }
+            })
+            .catch(error => {
+                console.error('GPIO 更新失敗:', error);
+            });
+    }
+
+    function updateGPSStatus() {
+        fetch('/gps/api/gps_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('gpsStatus').textContent = data.fix_status || '無定位';
+                    document.getElementById('gpsSatellites').textContent = data.satellites || 0;
+                    
+                    // 如果有定位，更新地圖顯示
+                    if (data.latitude && data.longitude) {
+                        const mapDiv = document.getElementById('gpsMap');
+                        mapDiv.innerHTML = `📍 位置: ${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`;
+                    }
+                } else {
+                    document.getElementById('gpsStatus').textContent = '錯誤';
+                    document.getElementById('gpsSatellites').textContent = '0';
+                }
+            })
+            .catch(error => {
+                console.error('GPS 更新失敗:', error);
+            });
+    }
+
+    function addEvent(eventCode) {
+        fetch('/trip/api/add_event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                event_code: eventCode
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // 更新分數
+                currentScore = Math.max(0, currentScore - data.event.points);
+                document.getElementById('currentScore').textContent = currentScore + ' 分';
+                
+                // 更新事件記錄
+                const eventsLog = document.getElementById('eventsLog');
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event-item';
+                eventDiv.innerHTML = `
+                    <div style="font-weight: bold; color: #ff0000;">${data.event.code}</div>
+                    <div style="font-size: 0.6rem; color: #ffffff;">${data.event.description}</div>
+                    <div style="text-align: right; color: #ff0000;">-${data.event.points}分</div>
+                `;
+                
+                // 如果是第一個事件，清除提示文字
+                if (eventsLog.children.length === 1 && eventsLog.children[0].style.fontStyle === 'italic') {
+                    eventsLog.innerHTML = '';
+                }
+                
+                eventsLog.appendChild(eventDiv);
+                eventsLog.scrollTop = eventsLog.scrollHeight;
+                
+            } else {
+                alert(`錯誤: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('新增事件失敗:', error);
+            alert('新增事件失敗');
+        });
+    }
+
+    function endTrip() {
+        if (!confirm('確定要結束行程嗎？這將停止錄影並儲存所有資料。')) {
+            return;
+        }
+
+        fetch('/trip/api/end_trip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(`行程已結束！\n最終分數: ${currentScore}分\n行程時長: ${Math.floor(data.duration_seconds / 60)} 分鐘`);
+                
+                clearInterval(updateInterval);
+                window.location.href = '/';
+            } else {
+                alert(`錯誤: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('結束行程失敗:', error);
+            alert('結束行程失敗');
+        });
+    }
+
+    // 啟動所有更新
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTimer();
+        updateGPIOStatus();
+        updateGPSStatus();
+        
+        // 設定定期更新 - GPIO 更頻繁，GPS 較慢
+        updateInterval = setInterval(function() {
+            updateTimer();
+            updateGPIOStatus();
+        }, 500); // GPIO 每 0.5 秒更新
+        
+        // GPS 每 3 秒更新一次
+        setInterval(updateGPSStatus, 3000);
+    });
+
+    window.addEventListener('beforeunload', function() {
+        if (updateInterval) {
+            clearInterval(updateInterval);
+        }
+    });
+</script>
+{% endblock %}
