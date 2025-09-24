@@ -121,6 +121,28 @@ def my_groups_standalone():
 def past_average_standalone():
     return render_template('past_average_standalone.html')
 
+@app.route('/print-report')
+def print_report():
+    # 未來您可以從資料庫查詢特定報表的資料，並傳給模板
+    # report_data = Report.query.get(report_id)
+    # return render_template('print_report.html', report=report_data)
+    return render_template('print_report.html')
+
+@app.route('/edit-profile', methods=['GET', 'POST'])
+def edit_profile():
+    if request.method == 'POST':
+        # 這裡未來會是處理表單送出、更新資料庫的邏輯
+        # 例如：user.name = request.form.get('name') ...
+        # db.session.commit()
+        return redirect(url_for('dashboard')) # 儲存後跳轉回儀表板
+
+    # 在 GET 請求時，顯示編輯頁面
+    # 未來您可以從資料庫查詢使用者資料，並傳給模板
+    # user_data = User.query.get(current_user.id)
+    # return render_template('edit_profile.html', user=user_data)
+    
+    return render_template('edit_profile.html')
+
 @app.route('/member_videos/<member_id>')
 def member_videos(member_id):
     # 未來您可以根據 member_id 從資料庫查詢真實的姓名和影片資料

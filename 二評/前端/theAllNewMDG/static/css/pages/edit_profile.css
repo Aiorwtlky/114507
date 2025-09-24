@@ -1,0 +1,258 @@
+:root {
+  --header-h: 80px;
+  --bg-grad: radial-gradient(circle at 25% 25%,#03142A 0%,#000428 45%),
+             linear-gradient(120deg,#000428 10%,#002f7a 45%,#001B4E 100%);
+  --primary:#26F8FF;
+  --accent:#FF2D95;
+  --text:#ffffff;
+}
+
+
+/* ===== Layout ===== */
+.register-page {
+  padding: 160px 2rem 5rem; /* ✅ 增加上方空間，防止字被 header 吃掉 */
+  display: flex;
+  justify-content: center;
+  background: transparent; /* ✅ 保持原本背景圖不變 */
+}
+
+.register-form {
+  width: 100%;
+  max-width: 960px;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 20px;
+  padding: 3rem;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  animation: fadeUp 0.9s ease-out;
+}
+
+/* ===== Animation ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(80px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Title ===== */
+.register-form h2 {
+  font-size: clamp(3.2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* ===== Grid 2-column layout ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.8rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full {
+  grid-column: span 2;
+}
+
+/* ===== Label & Input ===== */
+.form-group label {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: var(--text);
+}
+
+.form-group input,
+.form-group select {
+  font-size: 1.3rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+  transition: all 0.3s ease;
+  font-family: "Oxanium", sans-serif;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  box-shadow: 0 0 10px var(--primary);
+  background: rgba(255,255,255,0.12);
+  transform: scale(1.015);
+  outline: none;
+}
+
+/* ===== 條款區塊 ===== */
+.scroll-box {
+  height: 140px;
+  overflow-y: auto;
+  background: rgba(255,255,255,.05);
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+  color: #ccc;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ===== 勾選區塊 ===== */
+.agree {
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin: 1rem 0 2rem;
+}
+
+.agree input[type="checkbox"] {
+  transform: scale(1.4);
+  accent-color: var(--accent);
+}
+
+/* ===== 按鈕區塊 ===== */
+.form-footer {
+  text-align: center;
+}
+
+.btn {
+  font-size: 1.5rem;
+  padding: 1.2rem 3rem;
+  font-weight: bold;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(90deg,var(--primary),var(--accent));
+  color: white;
+  background-size: 200% auto;
+  animation: shift 6s ease-in-out infinite;
+  font-family: "Oxanium", sans-serif;
+  cursor: pointer;
+  width: 100%;
+  max-width: 400px;
+  transition: transform 0.25s ease;
+}
+
+.btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 14px var(--accent);
+}
+
+/* ===== 響應式調整 ===== */
+@media(max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full {
+    grid-column: span 1;
+  }
+
+  .btn {
+    font-size: 1.4rem;
+    width: 100%;
+  }
+
+  .register-form {
+    padding: 2rem 1.4rem;
+  }
+}
+
+/* ===== 頭像上傳區塊 ===== */
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.06);
+  border: 2px dashed var(--primary);
+  padding: 1rem;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  text-align: center;
+  font-size: 1rem;
+  color: #fff;
+  width: 140px;
+  height: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-upload:hover {
+  border-color: var(--accent);
+}
+
+.photo-upload input[type="file"] {
+  display: none;
+}
+
+.photo-upload i {
+  font-size: 3.5rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.photo-upload::before {
+  content: "點擊更換";
+  font-size: 0.8rem;
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.6);
+}
+
+@media(max-width: 768px) {
+  .form-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .photo-upload {
+    width: 120px;
+    height: 120px;
+    font-size: 0.9rem;
+  }
+}
+.photo-upload label {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#photoPreview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  display: none;
+  z-index: 0;
+}
+
+.photo-upload.has-image i {
+  display: none;
+}

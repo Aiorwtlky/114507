@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  報表預覽 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  {# Font Awesome 是 base.html 裡就有的，我們可以直接用 #}
+  <style>
+    /* 頁面整體佈局 */
+    .placeholder-container {
+      padding: 3rem 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: transparent;
+    }
+    
+    /* 頁面標題樣式 (保留) */
+    .report-page-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .report-page-header h1 {
+      font-size: 1.8rem;
+      margin: 0 0 0.5rem 0;
+      color: #fff;
+    }
+    .report-page-header p {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin: 0;
+    }
+    
+    /* PDF 預覽框的「外框」樣式 */
+    .pdf-viewer-placeholder {
+      width: 100%;
+      max-width: 900px;
+      height: 185vh;
+      background-color: #fff; /* 白色背景，看起來像一張紙 */
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+    
+      /* 新增：使用 Flexbox 來讓裡面的提示文字置中 */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #adb5bd; /* 提示文字用淺灰色 */
+    }
+    
+    /* 提示圖示的樣式 */
+    .pdf-viewer-placeholder i {
+      font-size: 6rem; /* 一個大大的圖示 */
+    }
+    
+    /* 提示文字的樣式 */
+    .pdf-viewer-placeholder p {
+      margin-top: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+    
+    /* 按鈕容器 */
+    .button-container {
+      margin-top: 2rem;
+    }
+    
+    /* 按鈕樣式 (沿用您 dashboard 的樣式) */
+    .custom-btn.primary-btn {
+      margin: 0;
+      font-size: 24px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      text-align: center;
+      width: fit-content;
+      background-color: #1a2a5f;
+      color: white;
+      border: 1px solid #1a2a5f;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .last {
+      display: flex;
+      justify-content: center; /* 新增：讓整組按鈕水平置中 */
+      gap: 1.5rem; /* 新增：在按鈕之間增加 1.5rem (約 24px) 的間距 */
+      margin-top: 2rem; /* 新增：與上方 PDF 預覽框的距離 */
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="placeholder-container">
+    <div class="report-page-header">
+      <h1>吾駕仙智慧交通系統 駕駛行為評分報表</h1>
+      <p>My Driving God Intelligent Transportation System - Driver Behavior Scoring Report</p>
+    </div>
+
+    <div class="pdf-viewer-placeholder">
+      <i class="fa-solid fa-file-pdf"></i>
+      <p>PDF 報表將會顯示於此</p>
+    </div>
+
+    <div class="last">
+        <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">列印報表</a>
+      <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {# 這個頁面現在完全不需要 JavaScript #}
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}編輯個人資料 · 吾駕仙 My Driving God{% endblock %}
+
+{% block extra_css %}
+{# 我們直接沿用註冊頁面的 CSS，確保外觀完全相同 #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/edit_profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="register-page">
+    {# 注意：action 已改為指向新的 'edit_profile' 路由 #}
+    <form class="register-form" method="post" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
+        <div class="form-header">
+            {# 標題已修改 #}
+            <h2 class="mega-title gradient-text">編輯個人資料</h2>
+            <div class="photo-upload">
+                <label for="photo" class="upload-label">
+                    {# 未來可以從後端傳入使用者現有的照片路徑 #}
+                    <img id="photoPreview" src="{{ url_for('static', filename='images/1.jpg') }}" alt="預覽">
+                    <span>更換照片</span>
+                </label>
+                <input type="file" id="photo" name="photo" accept="image/*" hidden>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="name">姓名</label>
+                {# 未來可以從後端傳入 user.name 預先填入 #}
+                <input type="text" id="name" name="name" placeholder="請輸入真實姓名" required value="黃仁勳">
+            </div>
+            <div class="form-group">
+                <label for="username">使用者名稱</label>
+                <input type="text" id="username" name="username" placeholder="例如 driver123" required value="jensen_huang">
+            </div>
+            <div class="form-group">
+                <label for="email">電子郵件</label>
+                <input type="email" id="email" name="email" placeholder="example@email.com" required value="j.huang@example.com">
+            </div>
+            <div class="form-group">
+                <label for="phone">聯絡電話</label>
+                <input type="tel" id="phone" name="phone" placeholder="09xxxxxxxx" required pattern="^09\d{8}$" value="0912345678">
+            </div>
+            <div class="form-group">
+                <label for="license">駕照等級</label>
+                <select id="license" name="license" required>
+                    <option value="">請選擇</option>
+                    <option value="A" selected>普通小型車</option> {# 假設使用者目前是這個等級 #}
+                    <option value="B">大客車</option>
+                    <option value="C">大貨車</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="experience">駕駛年資</label>
+                <input type="number" id="experience" name="experience" placeholder="以年為單位" required min="0" value="20">
+            </div>
+            <div class="form-group full">
+                <label for="password">更新密碼 (留白則不變更)</label>
+                <input type="password" id="password" name="password" placeholder="至少 6 碼英數混合" minlength="6">
+            </div>
+        </div>
+
+        {# 編輯頁面不需要同意條款，所以已移除 #}
+
+        <div class="form-footer">
+            {# 按鈕文字已修改 #}
+            <button class="btn" id="submitBtn">儲存變更</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{# 同樣沿用註冊頁面的 JS，主要用於照片預覽功能 #}
+<script src="{{ url_for('static', filename='js/pages/register.js') }}" defer></script>
+{% endblock %}
