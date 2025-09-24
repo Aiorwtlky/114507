@@ -11,16 +11,23 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import environ
+
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pv*@398khq6ah39vou9^9g(2z#^i!0-sdqeqq8gfx#my@k95=u'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -83,14 +90,7 @@ WSGI_APPLICATION = 'mdgBN.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'my_driving_god',      
-        'USER': 'root',                 
-        'PASSWORD': 'admin1234', 
-        'HOST': 'localhost',      
-        'PORT': '3306',              
-    }
+    'default': env.db()
 }
 
 
@@ -124,11 +124,14 @@ USE_I18N = True
 
 USE_TZ = True
 
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
