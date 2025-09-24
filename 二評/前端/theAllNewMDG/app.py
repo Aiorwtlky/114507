@@ -113,6 +113,14 @@ def member_dashboard(member_id):
     # 未來您可以根據 member_id 從資料庫查詢該成員的真實數據
     return render_template('member_dashboard.html')
 
+@app.route('/my-groups-standalone')
+def my_groups_standalone():
+    return render_template('my_groups_standalone.html')
+
+@app.route('/past-average-standalone')
+def past_average_standalone():
+    return render_template('past_average_standalone.html')
+
 @app.route('/member_videos/<member_id>')
 def member_videos(member_id):
     # 未來您可以根據 member_id 從資料庫查詢真實的姓名和影片資料

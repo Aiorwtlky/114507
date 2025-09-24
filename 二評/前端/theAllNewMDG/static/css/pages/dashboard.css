@@ -437,9 +437,13 @@
 }
 
 .nnc_30 {
+    /* 關鍵修改：讓這個區塊的寬度，自動縮到跟內容一樣寬 */
+    width: fit-content;
+    
     border-right: 2px solid #1a2a5f;
-    /* 新增：線與文字的間距 (您可以調整這個數值) */
-    margin-right: 450px;
+    
+    /* 我們之前加的 padding-right 依然需要，用來隔開文字和線 */
+    padding-right: 1.5rem; 
 }
 
 .nnc_30>p {
@@ -1039,3 +1043,32 @@
     /* 滑鼠移上去時變藍色 */
     transform: scale(1.1);
 }
+
+/* ===== 修正儀表板卡片底部對齊問題 ===== */
+.trends-card {
+  flex-grow: 1;
+}
+
+.ai-suggestion-body {
+        /* 1. 啟用 Flexbox 佈局，讓子元素可以並排 */
+        display: flex;
+        
+        /* 2. 讓子元素垂直置中對齊 */
+        align-items: center;
+        
+        /* 3. 讓子元素分散對齊 (一個靠左，一個靠右) */
+        justify-content: space-between;
+        
+        /* (可選) 增加一點間距 */
+        gap: 1rem;
+      }
+      
+      .ai-suggestion-body .ai-suggestion-content {
+        /* 讓文字區塊自動佔滿剩餘空間 */
+        flex-grow: 1;
+      }
+      
+      .ai-suggestion-body .nnc_30 p {
+        /* 確保文字本身不換行，符合您的手繪圖 */
+        white-space: nowrap; 
+      }

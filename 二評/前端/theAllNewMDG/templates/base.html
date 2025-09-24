@@ -102,12 +102,15 @@
           </div>
         </div>
         <nav class="sidebar-nav sidebar-nav-main">
-          <a href="#">我的數位儀表板</a>
+          <a href="{{ url_for('group_detail') }}">我的數位儀表板</a>
           <a href="#">個人資料設定</a>
-          <a href="#">我的群組</a>
-          <a href="#">行程數據</a>
-          <a href="#">過往行程</a>
-          <a href="#">行車影片</a>
+
+          <a href="{{ url_for('my_groups_standalone') }}">我的群組</a>
+
+          <a href="{{ url_for('past_average_standalone') }}">行程數據</a>
+
+          <a href="{{ url_for('all_reports') }}">過往行程</a>
+          <a href="{{ url_for('member_videos', member_id='B0C01') }}">行車影片</a>
           <a href="#">設定</a>
           <a href="#">關於 MDG</a>
         </nav>

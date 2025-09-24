@@ -25,7 +25,7 @@
             </div>
           </div>
           <div class="profile-footer-layout">
-            <a href="#" class="btn-trip-data">行車數據</a>
+            <a href="{{ url_for('past_average_standalone') }}" class="btn-trip-data">行車數據</a>
 
             <div class="profile-stats">
               <div class="stat-item">
@@ -70,8 +70,7 @@
           </li>
         </ul>
         <div class="card-actions-center">
-          {# 用新的 div 包裝置中按鈕 #}
-          <a href="#" class="btn-view-more">查看更多</a> {# 新增按鈕 class #}
+          <a href="{{ url_for('my_groups_standalone') }}" class="btn-view-more">查看更多</a>
         </div>
       </div>
       <div class="d-card trends-card">
