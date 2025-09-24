@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MDG 車機系統{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;  /* 允許垂直滾動 */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* 科技感背景動畫 */
+        .container::before {
+            content: '';
+            position: fixed;  /* 改為 fixed，避免影響滾動 */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite alternate;
+            pointer-events: none;  /* 避免影響點擊 */
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 3rem;
+            text-shadow: 
+                0 0 20px #00ffff,
+                0 0 40px #00ffff,
+                0 0 60px #00ffff;
+            letter-spacing: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-button {
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3));
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 1.5rem 3rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-width: 300px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 10px 30px rgba(0, 255, 255, 0.4),
+                0 0 50px rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.4));
+        }
+
+        .nav-button:hover::before {
+            left: 100%;
+        }
+
+        .nav-button:active {
+            transform: translateY(-2px);
+        }
+
+        /* 預留按鈕樣式 */
+        .nav-button.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: linear-gradient(45deg, rgba(100, 100, 100, 0.1), rgba(100, 100, 100, 0.2));
+            border-color: #666;
+            color: #999;
+        }
+
+        .nav-button.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 科技感裝飾線條 */
+        .tech-lines {
+            position: fixed;  /* 改為 fixed */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .tech-lines::before,
+        .tech-lines::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            height: 1px;
+            width: 100%;
+            animation: scan 3s linear infinite;
+        }
+
+        .tech-lines::before {
+            top: 20%;
+            animation-delay: 0s;
+        }
+
+        .tech-lines::after {
+            bottom: 30%;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* 響應式設計 */
+        @media (max-height: 600px) {
+            .container {
+                min-height: auto;
+                padding: 10px;
+            }
+            
+            .title {
+                font-size: 2.5rem;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="tech-lines"></div>
+    
+    {% block content %}{% endblock %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

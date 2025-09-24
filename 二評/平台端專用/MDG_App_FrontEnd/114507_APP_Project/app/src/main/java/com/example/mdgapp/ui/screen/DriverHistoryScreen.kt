@@ -25,6 +25,7 @@ import androidx.navigation.NavController
 import com.example.mdgapp.data.viewmodel.DriverHistoryUiState
 import com.example.mdgapp.data.viewmodel.DriverHistoryViewModel
 import com.example.mdgapp.ui.component.HistorySection
+import com.example.mdgapp.ui.component.ChartFilterMenus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,9 +83,13 @@ fun DriverHistoryScreen(
                 }
 
                 // 分數趨勢分析
+                // ✅ 同樣改為呼叫新的通用 ChartFilterMenus
                 HistorySection(title = "分數趨勢分析") {
                     ChartFilterMenus(
-                        uiState = uiState,
+                        timeUnitOptions = uiState.timeUnitOptions,
+                        selectedTimeUnit = uiState.selectedTimeUnit,
+                        valueOptions = uiState.valueOptions,
+                        selectedValue = uiState.selectedValue,
                         onTimeUnitSelected = { viewModel.onTimeUnitSelected(it) },
                         onValueSelected = { viewModel.onValueSelected(it) }
                     )

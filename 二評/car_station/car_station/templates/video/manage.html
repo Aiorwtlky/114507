@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}影片管理 - MDG 車機系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .video-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .video-title {
+        font-size: 2.5rem;
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .video-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        color: #00ffff;
+        font-weight: bold;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #ffffff;
+        margin-top: 0.5rem;
+    }
+
+    .trips-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .trip-video-card {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .trip-video-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 255, 255, 0.3);
+    }
+
+    .trip-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .trip-name {
+        font-size: 1.3rem;
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .video-count {
+        background: rgba(0, 255, 255, 0.2);
+        color: #00ffff;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        border: 1px solid #00ffff;
+    }
+
+    .video-previews {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .video-preview {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(0, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .video-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .camera-label {
+        font-weight: bold;
+        color: #00ffff;
+        text-transform: uppercase;
+    }
+
+    .video-duration {
+        color: #ffffff;
+        font-size: 0.9rem;
+    }
+
+    .video-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .action-btn {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3));
+        border: 1px solid #00ffff;
+        color: #00ffff;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-align: center;
+        flex: 1;
+    }
+
+    .action-btn:hover {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.4));
+        transform: scale(1.05);
+    }
+
+    .action-btn.play {
+        border-color: #00ff00;
+        color: #00ff00;
+    }
+
+    .action-btn.download {
+        border-color: #ffff00;
+        color: #ffff00;
+    }
+
+    .action-btn.delete {
+        border-color: #ff0000;
+        color: #ff0000;
+    }
+
+    .file-size {
+        color: #999;
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+    }
+
+    .file-status {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-left: 0.5rem;
+    }
+
+    .status-completed {
+        background: rgba(0, 255, 0, 0.2);
+        color: #00ff00;
+        border: 1px solid #00ff00;
+    }
+
+    .status-recording {
+        background: rgba(255, 255, 0, 0.2);
+        color: #ffff00;
+        border: 1px solid #ffff00;
+    }
+
+    .status-failed {
+        background: rgba(255, 0, 0, 0.2);
+        color: #ff0000;
+        border: 1px solid #ff0000;
+    }
+
+    .no-videos {
+        text-align: center;
+        color: #00ffff;
+        font-size: 1.2rem;
+        margin: 3rem 0;
+        padding: 2rem;
+        border: 2px dashed #00ffff;
+        border-radius: 15px;
+    }
+
+    .controls {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .control-button {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3));
+        border: 2px solid #00ffff;
+        color: #00ffff;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 0.5rem;
+    }
+
+    .control-button:hover {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.4));
+        box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="video-container">
+        <h1 class="video-title">影片管理中心</h1>
+        
+        <!-- 統計資訊 -->
+        <div class="video-stats">
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.total_trips }}</span>
+                <div class="stat-label">有影片的行程</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.total_videos }}</span>
+                <div class="stat-label">影片總數</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ (stats.total_size / 1024 / 1024 / 1024) | round(2) }}</span>
+                <div class="stat-label">總容量 (GB)</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.completed_videos }}</span>
+                <div class="stat-label">完整錄影</div>
+            </div>
+        </div>
+
+        {% if trips %}
+            <div class="trips-grid">
+                {% for trip in trips %}
+                <div class="trip-video-card">
+                    <div class="trip-header">
+                        <div class="trip-name">{{ trip.name }}</div>
+                        <div class="video-count">{{ trip.video_records | length }} 個影片</div>
+                    </div>
+                    
+                    <div class="trip-meta">
+                        <span>行程編號: {{ trip.trip_number }}</span>
+                        <span>駕駛員: {{ trip.personnel.name if trip.personnel else '未知' }}</span>
+                        <span>{{ trip.start_time.strftime('%Y-%m-%d %H:%M') if trip.start_time else '時間未知' }}</span>
+                    </div>
+                    
+                    <div class="video-previews">
+                        {% for video in trip.video_records %}
+                        <div class="video-preview">
+                            <div class="video-info">
+                                <span class="camera-label">
+                                    {{ '車內鏡頭' if video.camera_position == 'inside' else '車外鏡頭' }}
+                                </span>
+                                <span class="video-duration">
+                                    {% if video.start_time and video.end_time %}
+                                        {{ ((video.end_time - video.start_time).total_seconds() / 60) | round(1) }} 分鐘
+                                    {% else %}
+                                        時長未知
+                                    {% endif %}
+                                </span>
+                                <span class="file-status status-{{ video.recording_status or 'unknown' }}">
+                                    {{ 
+                                        '已完成' if video.recording_status == 'completed' 
+                                        else '錄製中' if video.recording_status == 'recording'
+                                        else '失敗' if video.recording_status == 'failed'
+                                        else '未知狀態'
+                                    }}
+                                </span>
+                            </div>
+                            
+                            <div class="file-size">
+                                檔案大小: {{ (video.file_size / 1024 / 1024) | round(2) if video.file_size else 0 }} MB
+                                <br>
+                                {% if video.file_path %}
+                                    路徑: {{ video.file_path | truncate(50) }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="video-actions">
+                                <button class="action-btn play" onclick="playVideo({{ video.id }}, '{{ video.video_number }}')">
+                                    🎬 播放
+                                </button>
+                                <a href="/video/download/{{ video.id }}" class="action-btn download">
+                                    📥 下載
+                                </a>
+                                <button class="action-btn delete" onclick="deleteVideo({{ video.id }}, '{{ video.video_number }}')">
+                                    🗑️ 刪除
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-videos">
+                目前沒有影片記錄<br>
+                開始您的第一趟行程並錄影吧！
+            </div>
+        {% endif %}
+
+        <div class="controls">
+            <a href="{{ url_for('trip.start_trip') }}" class="control-button">開始新行程</a>
+            <a href="{{ url_for('trip.trip_history') }}" class="control-button">過往行程</a>
+            <button class="control-button" onclick="cleanupVideos()">清理空檔案</button>
+            <a href="{{ url_for('main.index') }}" class="control-button">返回首頁</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function playVideo(videoId, videoNumber) {
+        // 檢查影片狀態
+        fetch(`/video/api/video_info/${videoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'recording') {
+                    alert(`影片 ${videoNumber} 仍在錄製中，無法播放`);
+                    return;
+                }
+                
+                if (data.status === 'failed' || !data.file_exists) {
+                    alert(`影片 ${videoNumber} 檔案不存在或已損壞`);
+                    return;
+                }
+                
+                // 開啟新視窗播放影片
+                const videoUrl = `/video/stream/${videoId}`;
+                const videoWindow = window.open('', '_blank', 'width=800,height=600');
+                
+                videoWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>播放影片 - ${videoNumber}</title>
+                        <style>
+                            body { 
+                                background: #000; 
+                                margin: 0; 
+                                padding: 20px;
+                                font-family: Arial, sans-serif;
+                            }
+                            .video-container {
+                                text-align: center;
+                            }
+                            video {
+                                max-width: 100%;
+                                max-height: 80vh;
+                            }
+                            .info {
+                                color: #fff;
+                                margin-bottom: 20px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="video-container">
+                            <div class="info">
+                                <h2>${videoNumber}</h2>
+                                <p>攝影機位置: ${data.camera_position === 'inside' ? '車內' : '車外'}</p>
+                                <p>時長: ${Math.floor(data.duration / 60)} 分鐘</p>
+                            </div>
+                            <video controls autoplay>
+                                <source src="${videoUrl}" type="video/mp4">
+                                您的瀏覽器不支援影片播放
+                            </video>
+                        </div>
+                    </body>
+                    </html>
+                `);
+            })
+            .catch(error => {
+                console.error('取得影片資訊失敗:', error);
+                alert('無法取得影片資訊');
+            });
+    }
+    
+    function deleteVideo(videoId, videoNumber) {
+        if (!confirm(`確定要刪除影片 ${videoNumber} 嗎？\n此操作無法復原！`)) {
+            return;
+        }
+        
+        fetch(`/video/api/delete_video/${videoId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(`刪除失敗: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('刪除影片失敗:', error);
+            alert('刪除影片失敗');
+        });
+    }
+    
+    function cleanupVideos() {
+        if (!confirm('確定要清理所有空的或損壞的影片檔案嗎？')) {
+            return;
+        }
+        
+        fetch('/video/api/refresh_video_status')
+            .then(response => response.json())
+            .then(data => {
+                alert(`狀態更新完成\n${data.message}`);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('更新狀態失敗:', error);
+                alert('更新狀態失敗');
+            });
+    }
+    
+    // 自動重新整理頁面（如果有錄製中的影片）
+    const hasRecordingVideos = document.querySelector('.status-recording');
+    if (hasRecordingVideos) {
+        setTimeout(() => {
+            location.reload();
+        }, 30000); // 30秒後重新整理
+    }
+</script>
+{% endblock %}

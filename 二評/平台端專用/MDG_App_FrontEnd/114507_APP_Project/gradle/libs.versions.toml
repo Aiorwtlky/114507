@@ -12,6 +12,9 @@ navigation-compose = "2.9.2"
 lifecycle-compose = "2.6.1"
 coroutines = "1.7.3"
 accompanist = "0.34.0"
+retrofit = "2.9.0"
+kotlinx-coroutines = "1.7.1"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,13 +41,24 @@ mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning"
 mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version = "v3.1.0" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version = "18.2.0" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle-compose" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version = "2.0.4" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version = "1.6.8" }
+# --- Retrofit & Gson (用於網路請求和 JSON 解析) ---
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+# --- Kotlin Coroutines (用於非同步任務) ---
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+
+[bundles]
+# 建立一個 bundle 可以讓您在 build.gradle.kts 中一次性引入，更方便
+retrofit = ["retrofit", "retrofit-converter-gson"]
+coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
 

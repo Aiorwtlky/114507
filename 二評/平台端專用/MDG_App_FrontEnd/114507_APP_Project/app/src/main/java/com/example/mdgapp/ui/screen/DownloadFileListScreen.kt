@@ -6,23 +6,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mdgapp.data.viewmodel.DownloadViewModel
+import com.example.mdgapp.data.viewmodel.DriverDownloadViewModel
 import com.example.mdgapp.ui.component.DateListItemCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadFileListScreen(
     navController: NavController,
-    viewModel: DownloadViewModel = viewModel()
+    // 改用駕駛員專屬的 ViewModel
+    viewModel: DriverDownloadViewModel = viewModel()
 ) {
     val dailyLogs by viewModel.dailyLogs.collectAsState()
 
@@ -59,7 +58,6 @@ fun DownloadFileListScreen(
                         date = log.date,
                         videoCount = log.videos.size,
                         onClick = {
-                            // 導航到影片列表畫面，並將日期作為參數傳遞
                             navController.navigate("videoList/${log.date}")
                         }
                     )

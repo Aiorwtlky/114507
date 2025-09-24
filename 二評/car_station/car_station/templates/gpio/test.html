@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}GPIO 測試 - MDG 車機系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gpio-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .gpio-title {
+        font-size: 2.5rem;
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        margin-bottom: 3rem;
+    }
+
+    .indicators-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 4rem;
+        margin: 4rem 0;
+        flex-wrap: wrap;
+    }
+
+    .indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem;
+        border: 2px solid rgba(0, 255, 255, 0.3);
+        border-radius: 20px;
+        background: rgba(0, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        min-width: 120px;
+        transition: all 0.3s ease;
+    }
+
+    .indicator.active {
+        border-color: #00ffff;
+        background: rgba(0, 255, 255, 0.2);
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        animation: pulse-glow 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse-glow {
+        0% { 
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            transform: scale(1);
+        }
+        100% { 
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+            transform: scale(1.05);
+        }
+    }
+
+    .indicator-icon {
+        font-size: 4rem;
+        color: #666;
+        transition: all 0.3s ease;
+    }
+
+    .indicator.active .indicator-icon {
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        animation: blink 0.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes blink {
+        0% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+
+    .indicator-label {
+        font-size: 1.2rem;
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .indicator-status {
+        font-size: 0.9rem;
+        color: #999;
+    }
+
+    .indicator.active .indicator-status {
+        color: #00ffff;
+        text-shadow: 0 0 10px #00ffff;
+    }
+
+    .status-info {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        backdrop-filter: blur(10px);
+    }
+
+    .status-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding: 0.3rem 0;
+    }
+
+    .status-label {
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .status-value {
+        color: #ffffff;
+    }
+
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .control-button {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3));
+        border: 2px solid #00ffff;
+        color: #00ffff;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .control-button:hover {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.4));
+        box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    }
+
+    .connection-status {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: bold;
+        margin-top: 1rem;
+    }
+
+    .status-connected {
+        background: rgba(0, 255, 0, 0.2);
+        color: #00ff00;
+        border: 1px solid #00ff00;
+    }
+
+    .status-disconnected {
+        background: rgba(255, 0, 0, 0.2);
+        color: #ff0000;
+        border: 1px solid #ff0000;
+    }
+
+    .instructions {
+        margin: 2rem 0;
+        padding: 1rem;
+        background: rgba(0, 255, 255, 0.1);
+        border-radius: 10px;
+        color: #00ffff;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="gpio-container">
+        <h1 class="gpio-title">🔧 GPIO 測試</h1>
+        
+        <div class="instructions">
+            請測試車輛的方向燈和倒車檔，對應的指示燈會即時閃爍顯示！
+        </div>
+        
+        <div class="indicators-container">
+            <!-- 左方向燈 -->
+            <div class="indicator" id="leftIndicator">
+                <div class="indicator-icon">⬅️</div>
+                <div class="indicator-label">左方向燈</div>
+                <div class="indicator-status" id="leftStatus">未啟動</div>
+            </div>
+
+            <!-- 右方向燈 -->
+            <div class="indicator" id="rightIndicator">
+                <div class="indicator-icon">➡️</div>
+                <div class="indicator-label">右方向燈</div>
+                <div class="indicator-status" id="rightStatus">未啟動</div>
+            </div>
+
+            <!-- 倒車檔 -->
+            <div class="indicator" id="rearIndicator">
+                <div class="indicator-icon">🔄</div>
+                <div class="indicator-label">倒車檔</div>
+                <div class="indicator-status" id="rearStatus">未啟動</div>
+            </div>
+        </div>
+
+        <div class="status-info">
+            <div class="status-row">
+                <span class="status-label">連線狀態:</span>
+                <span class="status-value" id="connectionStatus">檢查中...</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">序列埠:</span>
+                <span class="status-value" id="portInfo">-</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">最後更新:</span>
+                <span class="status-value" id="lastUpdate">-</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" onclick="toggleAutoUpdate()">
+                <span id="autoUpdateBtn">停止自動更新</span>
+            </button>
+            <button class="control-button" onclick="refreshNow()">立即重新整理</button>
+            <a href="{{ url_for('device_info.device_info') }}" class="control-button">本機資訊</a>
+            <a href="{{ url_for('main.index') }}" class="control-button">返回首頁</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let updateInterval;
+    let isAutoUpdating = true;
+
+    function updateGPIOStatus() {
+        fetch('/api/gpio_realtime')
+            .then(response => response.json())
+            .then(data => {
+                updateIndicators(data);
+                updateStatusInfo(data);
+            })
+            .catch(error => {
+                console.error('GPIO 狀態更新失敗:', error);
+                updateConnectionStatus('error', '連線錯誤');
+            });
+    }
+
+    function updateIndicators(data) {
+        // 更新左方向燈
+        const leftIndicator = document.getElementById('leftIndicator');
+        const leftStatus = document.getElementById('leftStatus');
+        if (data.left_active) {
+            leftIndicator.classList.add('active');
+            leftStatus.textContent = '啟動中';
+        } else {
+            leftIndicator.classList.remove('active');
+            leftStatus.textContent = '未啟動';
+        }
+
+        // 更新右方向燈
+        const rightIndicator = document.getElementById('rightIndicator');
+        const rightStatus = document.getElementById('rightStatus');
+        if (data.right_active) {
+            rightIndicator.classList.add('active');
+            rightStatus.textContent = '啟動中';
+        } else {
+            rightIndicator.classList.remove('active');
+            rightStatus.textContent = '未啟動';
+        }
+
+        // 更新倒車檔
+        const rearIndicator = document.getElementById('rearIndicator');
+        const rearStatus = document.getElementById('rearStatus');
+        if (data.rear_active) {
+            rearIndicator.classList.add('active');
+            rearStatus.textContent = '倒車中';
+        } else {
+            rearIndicator.classList.remove('active');
+            rearStatus.textContent = '未啟動';
+        }
+    }
+
+    function updateStatusInfo(data) {
+        if (data.status === 'success') {
+            updateConnectionStatus('connected', '已連線');
+            document.getElementById('portInfo').textContent = data.port || '-';
+        } else {
+            updateConnectionStatus('disconnected', data.message || '連線失敗');
+            document.getElementById('portInfo').textContent = '-';
+        }
+        
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+    }
+
+    function updateConnectionStatus(status, message) {
+        const statusElement = document.getElementById('connectionStatus');
+        statusElement.textContent = message;
+        
+        // 移除舊的 class
+        statusElement.className = statusElement.className.replace(/status-(connected|disconnected)/g, '');
+        // 加入新的 class
+        statusElement.classList.add(`status-${status}`);
+    }
+
+    function toggleAutoUpdate() {
+        const btn = document.getElementById('autoUpdateBtn');
+        
+        if (isAutoUpdating) {
+            clearInterval(updateInterval);
+            isAutoUpdating = false;
+            btn.textContent = '開始自動更新';
+        } else {
+            startAutoUpdate();
+            isAutoUpdating = true;
+            btn.textContent = '停止自動更新';
+        }
+    }
+
+    function refreshNow() {
+        updateGPIOStatus();
+    }
+
+    function startAutoUpdate() {
+        updateGPIOStatus(); // 立即更新一次
+        updateInterval = setInterval(updateGPIOStatus, 500); // 每 0.5 秒更新
+    }
+
+    function stopAutoUpdate() {
+        if (updateInterval) {
+            clearInterval(updateInterval);
+        }
+    }
+
+    // 頁面載入時開始自動更新
+    document.addEventListener('DOMContentLoaded', startAutoUpdate);
+    
+    // 頁面卸載時停止更新
+    window.addEventListener('beforeunload', stopAutoUpdate);
+</script>
+{% endblock %}
