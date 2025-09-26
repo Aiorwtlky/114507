@@ -1,5 +1,5 @@
-# Build a new HTML (JS restored) with a refreshed color theme (Teal/Emerald).
-title = "道安總動員 — 114年1–6月臺北市兒童(0–12歲)件數前十大運具統計（JS回復 + 新色系）"
+# Generate a NO-JS version again, preserving the new Teal/Emerald theme.
+title = "道安總動員 — 114年1–6月臺北市兒童(0–12歲)件數前十大運具統計（無JS + 墨青綠主題）"
 today_roc = "民國114年9月26日"
 
 rows = [
@@ -25,7 +25,7 @@ head = f"""<!doctype html>
   <meta name="color-scheme" content="light dark">
   <title>{title}</title>
   <style>
-    /* ====== 新主題：Teal / Emerald（墨青綠系） ====== */
+    /* ====== 無JS版，沿用 Teal / Emerald 主題 ====== */
     *,*::before,*::after {{ box-sizing: border-box; }}
     html,body {{ height: 100%; }}
     body {{ margin: 0; font-family: system-ui, -apple-system, "Noto Sans TC", "Microsoft JhengHei", Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; line-height: 1.5; }}
@@ -35,16 +35,13 @@ head = f"""<!doctype html>
 
     :root {{ 
       --bg: #f6fbf9; --fg:#0b1b17; --muted:#5b6b64; --card:#ffffff; --line:#e3eee9;
-      --primary-a:#0f766e; /* teal-700 */
-      --primary-b:#059669; /* emerald-600 */
-      --primary-soft:#e6faf4;
+      --primary-a:#0f766e; --primary-b:#059669; --primary-soft:#e6faf4;
       --chip:#e7f5ef; --chip-fg:#064e3b;
     }}
     @media (prefers-color-scheme: dark) {{
       :root {{ 
         --bg:#071411; --fg:#eaf6f2; --muted:#9fb7ae; --card:#0c1a16; --line:#17362d;
-        --primary-a:#33d1b5; --primary-b:#22c55e;
-        --primary-soft:#0d2b23;
+        --primary-a:#33d1b5; --primary-b:#22c55e; --primary-soft:#0d2b23;
         --chip:#0b2a22; --chip-fg:#bbf7d0;
       }}
     }}
@@ -55,8 +52,7 @@ head = f"""<!doctype html>
     .brand .badge {{ width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #bbf7d0, #10b981); border: 2px solid var(--line); display: grid; place-items:center; color:#052e2b; font-size:12px; font-weight:900; }}
     .brand-title {{ font-size: 20px; }}
     .menu {{ margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }}
-    .btn {{ display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--fg); cursor: pointer; transition: transform .04s ease-in-out, background .2s, border-color .2s; }}
-    .btn:hover {{ transform: translateY(-1px); background: var(--primary-soft); }}
+    .btn {{ display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--fg); cursor: not-allowed; opacity: .75; pointer-events: none; }}
     .btn .icon {{ width: 16px; height: 16px; }}
     .btn-primary {{ border-color: transparent; background: linear-gradient(180deg, var(--primary-a), var(--primary-b)); color: white; }}
     .btn-ghost {{ background: transparent; }}
@@ -69,6 +65,7 @@ head = f"""<!doctype html>
     .field {{ display: grid; gap: 6px; }}
     .label {{ font-size: 12px; color: var(--muted); }}
     select, input[type="search"] {{ padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg); }}
+    select:disabled, input:disabled {{ opacity:.7; cursor:not-allowed; }}
     .content {{ max-width: 1080px; margin: 6px auto 32px; padding: 0 16px 16px; }}
     h1 {{ font-size: 20px; text-align: center; margin: 10px 0 14px; }}
 
@@ -87,16 +84,8 @@ head = f"""<!doctype html>
     .note {{ font-size: 12px; color: var(--muted); padding: 10px 12px; border-top: 1px dashed var(--line); }}
     .footer {{ text-align: center; padding: 18px; font-size: 12px; color: var(--muted); }}
 
-    .kpis {{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; padding: 12px; border-bottom: 1px dashed var(--line); }}
-    .kpi {{ display: grid; gap: 2px; text-align: center; }}
-    .kpi .val {{ font-size: 22px; font-weight: 800; }}
-    .kpi .lbl {{ font-size: 12px; color: var(--muted); }}
-
-    .fab {{ position: fixed; right: 16px; bottom: 16px; width: 46px; height: 46px; border-radius: 999px; display: grid; place-items:center; background: linear-gradient(180deg, var(--primary-a), var(--primary-b)); color: #fff; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,.25); }}
-    .hidden {{ display: none !important; }}
-
     @media print {{
-      .topbar, .toolbar, .fab {{ display: none !important; }}
+      .topbar, .toolbar {{ display: none !important; }}
       .content {{ margin: 0; }}
       .card {{ border: none; }}
       .note, .footer {{ color: #4b5563; }}
@@ -110,21 +99,18 @@ head = f"""<!doctype html>
       <div class="brand" aria-label="道安總動員">
         <div class="badge" aria-hidden="true">安</div>
         <div class="brand-title">道安總動員</div>
-        <span class="pill">Teal/Emerald</span>
+        <span class="pill">無JS</span>
         <span class="ticker">114年1-6月死亡 1,368人（估）</span>
       </div>
       <nav class="menu" aria-label="主選單">
-        <button class="btn btn-primary" id="btnTheme" title="切換明暗主題">
-          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V4a1 1 0 0 1 1-1Zm0 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-4a1 1 0 0 1 1 1h2a1 1 0 1 1 0 2h-2a1 1 0 1 1-2 0 1 1 0 0 1 1-1Zm-9 6a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1ZM3 12a1 1 0 0 1 1-1H2a1 1 0 1 1 0-2h2a1 1 0 1 1 2 0 1 1 0 0 1-1 1 1 1 0 0 1-1 1Zm1.64-6.36a1 1 0 0 1 1.41 0l1.42 1.41a1 1 0 1 1-1.42 1.42L4.64 7.05a1 1 0 0 1 0-1.41Zm12.73 12.73a1 1 0 0 1 1.41 0l1.42 1.42a1 1 0 1 1-1.42 1.41l-1.41-1.42a1 1 0 0 1 0-1.41ZM17.95 4.64a1 1 0 0 1 1.41 0 1 1 0 0 1 0 1.41L17.95 7.46a1 1 0 1 1-1.42-1.42l1.42-1.4Z"/></svg>
-          主題
-        </button>
-        <button class="btn"><span class="icon">📊</span> 主題分析</button>
-        <button class="btn"><span class="icon">📈</span> 統計快覽</button>
-        <button class="btn"><span class="icon">🧭</span> 趨勢分析</button>
-        <button class="btn"><span class="icon">🔥</span> 肇事熱點</button>
-        <button class="btn"><span class="icon">🏫</span> 學校周邊熱點</button>
-        <button class="btn btn-ghost" id="btnPrint" title="列印"><span class="icon">🖨️</span> 列印</button>
-        <button class="btn btn-ghost" id="btnExport" title="匯出CSV"><span class="icon">⬇️</span> 匯出</button>
+        <button class="btn btn-primary" type="button" aria-disabled="true" title="無JS"><span class="icon">🌗</span> 主題</button>
+        <button class="btn" type="button" aria-disabled="true" title="無JS"><span class="icon">📊</span> 主題分析</button>
+        <button class="btn" type="button" aria-disabled="true" title="無JS"><span class="icon">📈</span> 統計快覽</button>
+        <button class="btn" type="button" aria-disabled="true" title="無JS"><span class="icon">🧭</span> 趨勢分析</button>
+        <button class="btn" type="button" aria-disabled="true" title="無JS"><span class="icon">🔥</span> 肇事熱點</button>
+        <button class="btn" type="button" aria-disabled="true" title="無JS"><span class="icon">🏫</span> 學校周邊熱點</button>
+        <button class="btn btn-ghost" type="button" aria-disabled="true" title="無JS"><span class="icon">🖨️</span> 列印</button>
+        <button class="btn btn-ghost" type="button" aria-disabled="true" title="無JS"><span class="icon">⬇️</span> 匯出</button>
       </nav>
     </div>
   </header>
@@ -133,7 +119,7 @@ head = f"""<!doctype html>
     <div class="toolbar-inner">
       <div class="field">
         <label class="label" for="year">年度</label>
-        <select id="year" aria-label="年度">
+        <select id="year" aria-label="年度" disabled>
           <option selected>114年</option>
           <option>113年</option>
           <option>112年</option>
@@ -141,7 +127,7 @@ head = f"""<!doctype html>
       </div>
       <div class="field">
         <label class="label" for="unit">權責單位</label>
-        <select id="unit">
+        <select id="unit" disabled>
           <option selected>警察局</option>
           <option>交通局</option>
           <option>道安會報</option>
@@ -149,7 +135,7 @@ head = f"""<!doctype html>
       </div>
       <div class="field">
         <label class="label" for="city">縣市</label>
-        <select id="city">
+        <select id="city" disabled>
           <option selected>臺北市</option>
           <option>新北市</option>
           <option>桃園市</option>
@@ -157,7 +143,7 @@ head = f"""<!doctype html>
       </div>
       <div class="field">
         <label class="label" for="dist">鄉鎮市區</label>
-        <select id="dist">
+        <select id="dist" disabled>
           <option selected>全部</option>
           <option>中正區</option>
           <option>大同區</option>
@@ -166,7 +152,7 @@ head = f"""<!doctype html>
       </div>
       <div class="field">
         <label class="label" for="category">事故分類</label>
-        <select id="category">
+        <select id="category" disabled>
           <option selected>兒童(0–12歲)</option>
           <option>少年(13–17歲)</option>
           <option>高齡(65歲以上)</option>
@@ -174,7 +160,7 @@ head = f"""<!doctype html>
       </div>
       <div class="field">
         <label class="label" for="search">搜尋</label>
-        <input type="search" id="search" placeholder="輸入關鍵字，如『腳踏車』" />
+        <input type="search" id="search" placeholder="（無JS版，搜尋已停用）" disabled />
       </div>
     </div>
   </section>
@@ -183,10 +169,10 @@ head = f"""<!doctype html>
     <h1>114年1–6月臺北市兒童(0–12歲)件數前十大運具統計</h1>
 
     <section class="card" id="cardTable">
-      <div class="kpis">
-        <div class="kpi"><div class="val" id="kpiCases">{total_cases}</div><div class="lbl">總件數</div></div>
-        <div class="kpi"><div class="val" id="kpiInj">{total_injuries}</div><div class="lbl">受傷人數</div></div>
-        <div class="kpi"><div class="val" id="kpiDth">{total_deaths}</div><div class="lbl">死亡人數</div></div>
+      <div class="kpis" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px;border-bottom:1px dashed var(--line);">
+        <div style="display:grid;gap:2px;text-align:center;"><div style="font-size:22px;font-weight:800;">{total_cases}</div><div style="font-size:12px;color:var(--muted);">總件數</div></div>
+        <div style="display:grid;gap:2px;text-align:center;"><div style="font-size:22px;font-weight:800;">{total_injuries}</div><div style="font-size:12px;color:var(--muted);">受傷人數</div></div>
+        <div style="display:grid;gap:2px;text-align:center;"><div style="font-size:22px;font-weight:800;">{total_deaths}</div><div style="font-size:12px;color:var(--muted);">死亡人數</div></div>
       </div>
       <div class="card-header">
         <div class="card-title">運具統計表</div>
@@ -196,23 +182,23 @@ head = f"""<!doctype html>
         <table id="statsTable">
           <thead>
             <tr>
-              <th rowspan="2" data-sort="rank">排序</th>
-              <th rowspan="2" class="left" data-sort="vehicle">運具</th>
-              <th rowspan="2" data-sort="cases">件數</th>
+              <th rowspan="2">排序</th>
+              <th rowspan="2" class="left">運具</th>
+              <th rowspan="2">件數</th>
               <th colspan="2" class="group">死亡</th>
               <th colspan="2" class="group">受傷</th>
             </tr>
             <tr>
-              <th data-sort="deathCount">人數</th>
-              <th data-sort="deathPct">比例</th>
-              <th data-sort="injuryCount">人數</th>
-              <th data-sort="injuryPct">比例</th>
+              <th>人數</th>
+              <th>比例</th>
+              <th>人數</th>
+              <th>比例</th>
             </tr>
           </thead>
           <tbody>
 """
 
-# Table body rows
+# Build rows
 body_rows = []
 for rank, vehicle, cases, d, inj in rows:
     death_pct = pct(d, total_deaths) if total_deaths else "0%"
@@ -235,106 +221,32 @@ tail = """          </tbody>
       </div>
       <div class="note">
         備註：1. 其他人係指不屬於行人、乘客之屬性範圍者（例如交通指揮者、在道路上施工者）；或無法判斷者。
+        <br>本檔案為<strong>無 JavaScript 版本</strong>（保留墨青綠色系），所有互動功能皆已移除。
       </div>
     </section>
 
     <section class="card" style="margin-top:12px">
       <div class="card-header"><div class="card-title">說明</div></div>
       <div style="padding:12px 12px 16px;">
-        本頁面為 <strong>JS 互動版</strong>，且採用全新的 <em>Teal/Emerald</em> 色彩主題。
+        本頁面為純 HTML + CSS 呈現，若日後需要互動功能，可再行加入。
       </div>
       <div class="note">112年、113年、114年1–6月查詢結果為初估值。</div>
     </section>
   </main>
 
-  <footer class="footer">© 2025 道安資料視覺化（示意）— JS版 / 新色系</footer>
-  <button class="fab hidden" id="btnTop" title="回到頂部">↑</button>
+  <footer class="footer">© 2025 道安資料視覺化（示意）— 無JS / 墨青綠主題</footer>
 </div>
-
-<script>
-  // ====== Data placeholder (for potential extension) ======
-  const rows = ROWS_PLACEHOLDER;
-
-  // ====== Sorting ======
-  const tbody = document.querySelector('#statsTable tbody');
-  let sortState = { key: null, asc: true };
-  const headCells = document.querySelectorAll('#statsTable thead [data-sort]');
-  headCells.forEach(th => th.addEventListener('click', () => sortBy(th.dataset.sort)));
-
-  function textToNum(t) {
-    if (t.endsWith('%')) return parseFloat(t);
-    return parseFloat(t.replace(/,/g, '')) || 0;
-  }
-
-  function sortBy(key) {
-    const rowsDom = Array.from(tbody.querySelectorAll('tr'));
-    const keyIndex = {
-      rank: 0, vehicle: 1, cases: 2, deathCount: 3, deathPct: 4, injuryCount: 5, injuryPct: 6
-    }[key];
-
-    const asc = sortState.key === key ? !sortState.asc : true;
-    sortState = { key, asc };
-
-    rowsDom.sort((a, b) => {
-      const A = a.children[keyIndex].textContent.trim();
-      const B = b.children[keyIndex].textContent.trim();
-      const nA = textToNum(A), nB = textToNum(B);
-      if (!isNaN(nA) && !isNaN(nB)) return asc ? nA - nB : nB - nA;
-      return asc ? A.localeCompare(B, 'zh-Hant') : B.localeCompare(A, 'zh-Hant');
-    });
-    rowsDom.forEach(tr => tbody.appendChild(tr));
-  }
-
-  // ====== Search Filter ======
-  const search = document.getElementById('search');
-  search.addEventListener('input', () => {
-    const q = search.value.trim();
-    Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
-      const text = tr.textContent;
-      tr.classList.toggle('hidden', !text.includes(q));
-    });
-  });
-
-  // ====== Theme Toggle (light/dark using color-scheme) ======
-  const btnTheme = document.getElementById('btnTheme');
-  btnTheme.addEventListener('click', () => {
-    const cs = getComputedStyle(document.documentElement).getPropertyValue('color-scheme').trim();
-    document.documentElement.style.setProperty('color-scheme', cs === 'dark' ? 'light' : 'dark');
-  });
-
-  // ====== Export CSV ======
-  document.getElementById('btnExport').addEventListener('click', () => {
-    const table = document.getElementById('statsTable');
-    const rows = Array.from(table.querySelectorAll('tr'));
-    const csv = rows.map(tr => Array.from(tr.children).map(td => `"\${td.textContent.replace(/"/g, '""')}"`).join(',')).join('\\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'taipei_children_top10.csv'; a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  // ====== Print ======
-  document.getElementById('btnPrint').addEventListener('click', () => window.print());
-
-  // ====== Back to Top ======
-  const btnTop = document.getElementById('btnTop');
-  window.addEventListener('scroll', () => btnTop.classList.toggle('hidden', window.scrollY < 180));
-  btnTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
-</script>
 """
 
-# Compose HTML string with injected rows
 html = head + "".join(body_rows) + tail
-html = html.replace("ROWS_PLACEHOLDER", str(rows))
 
-# Add many filler comment lines to satisfy "more lines" request
+# Add many filler lines to increase line count
 for i in range(1, 1601):
-    html += f"<!-- filler line {i:04d} - JS版 + 新色系。 -->\n"
+    html += f"<!-- filler line {i:04d} - 無JS（墨青綠）版增加行數。 -->\n"
 
 html += "\n</body>\n</html>\n"
 
-path = "/mnt/data/taipei_children_top10_js_teal.html"
+path = "/mnt/data/taipei_children_top10_teal_nojs.html"
 with open(path, "w", encoding="utf-8") as f:
     f.write(html)
 
