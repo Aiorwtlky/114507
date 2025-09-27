@@ -1,15 +1,12 @@
-# Create an updated HTML (HTML + CSS + JS) with a new purple/fuchsia color scheme.
-from pathlib import Path
-
-html = r"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>道安總動員｜大型車事故統計（JS + 新色系）</title>
+  <title>道安總動員｜大型車事故統計（純 HTML+CSS 版｜紫色系）</title>
   <style>
     /* ================================
-       新色系（紫 / 洋紅）
+       色系：紫 / 洋紅（無 JS）
        ================================ */
     :root{
       --bg:#f7f5ff;
@@ -17,39 +14,48 @@ html = r"""<!DOCTYPE html>
       --text:#1d1633;
       --muted:#6b647a;
       --primary:#a855f7;      /* violet-500 */
-      --primary-600:#9333ea;  /* violet-600 */
-      --accent:#e879f9;       /* fuchsia-400 */
-      --chip:#f5f3ff;         /* violet-50 */
       --line:#e9e5f5;
-      --ok:#10b981;
-      --warn:#f59e0b;
-      --danger:#ef4444;
+      --chip:#f5f3ff;         /* violet-50 */
+      --accent:#e879f9;       /* fuchsia-400 */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Noto Sans TC",Arial,"Microsoft JhengHei",sans-serif;
+    body{margin:0}
+    .page{
+      min-height:100%;
       color:var(--text);
       background:linear-gradient(180deg,#fbfaff 0%, #efe9ff 120%);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Noto Sans TC",Arial,"Microsoft JhengHei",sans-serif;
     }
+
+    /* CSS-only 深色模式（checkbox hack） */
+    .theme-toggle:checked ~ .page{
+      --bg:#0b0716;
+      --panel:#120e22;
+      --text:#ede9fe;
+      --muted:#b3a9d3;
+      --primary:#c084fc;
+      --line:#2b2340;
+      --chip:#1a1336;
+      --accent:#f0abfc;
+      background:linear-gradient(180deg,#0d0820 0%, #0a0716 120%);
+    }
+
     a{color:var(--primary);text-decoration:none}
     a:hover{text-decoration:underline}
 
     /* 頂部導覽列 */
     .topbar{
-      position:sticky;top:0;z-index:50;
+      position:sticky;top:0;z-index:40;
       background:rgba(255,255,255,.86);
       backdrop-filter:saturate(180%) blur(8px);
       border-bottom:1px solid var(--line);
     }
-    .topbar-inner{
-      display:flex;align-items:center;gap:14px;
-      max-width:1200px;padding:10px 20px;margin:0 auto;
-    }
+    .theme-toggle:checked ~ .page .topbar{background:rgba(18,14,34,.86)}
+    .topbar-inner{display:flex;align-items:center;gap:14px;max-width:1200px;padding:10px 20px;margin:0 auto}
     .logo{
       width:36px;height:36px;border-radius:50%;
-      display:grid;place-items:center;color:white;
+      display:grid;place-items:center;color:#fff;
       background:conic-gradient(from 180deg,var(--accent),#c084fc,var(--primary));
       box-shadow:0 4px 12px rgba(0,0,0,.12) inset, 0 1px 0 rgba(255,255,255,.9);
       font-weight:700;letter-spacing:1px;
@@ -60,10 +66,10 @@ html = r"""<!DOCTYPE html>
       padding:8px 12px;border:1px solid var(--line);
       border-radius:999px;background:#fff;color:#1f133a;
       display:inline-flex;align-items:center;gap:6px;
-      cursor:pointer;user-select:none;
     }
+    .theme-toggle:checked ~ .page .tab{background:#0f0a22;color:#ede9fe;border-color:#2b2340}
     .tab.active{background:var(--chip);border-color:#ddd6fe;color:#6d28d9}
-    .tab:hover{box-shadow:0 1px 0 rgba(0,0,0,.05),0 2px 12px rgba(168,85,247,.10)}
+    .theme-toggle:checked ~ .page .tab.active{background:#1a1336;border-color:#372a63;color:#c4b5fd}
 
     /* 容器與控制列 */
     .container{max-width:1200px;margin:18px auto;padding:0 20px}
@@ -72,414 +78,208 @@ html = r"""<!DOCTYPE html>
       border-radius:14px;padding:12px 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
       box-shadow:0 8px 24px rgba(0,0,0,.04);
     }
-    .chip{
-      padding:6px 10px;border-radius:10px;background:#faf5ff;color:#4b3b73;border:1px solid var(--line);
-    }
-    .select, .input{
-      appearance:none;
-      padding:8px 10px;border-radius:10px;border:1px solid var(--line);
+    .chip{padding:6px 10px;border-radius:10px;background:#faf5ff;color:#4b3b73;border:1px solid var(--line)}
+    .select,.input{
+      appearance:none;padding:8px 10px;border-radius:10px;border:1px solid var(--line);
       background:#fff;min-width:120px;color:#1f133a;
     }
-    .btn{
-      padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;
-    }
-    .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary-600)}
-    .btn:hover{filter:brightness(.98)}
-    .spacer{flex:1}
+    .theme-toggle:checked ~ .page .control,
+    .theme-toggle:checked ~ .page .panel{background:#120e22;border-color:#2b2340}
+    .theme-toggle:checked ~ .page .select,.theme-toggle:checked ~ .page .input{background:#0f0a22;color:#ede9fe;border-color:#2b2340}
     .note{font-size:12px;color:var(--muted)}
 
-    /* 卡片與表格樣式 */
+    /* 面板與表格 */
     .panel{
       background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-top:14px;
       overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.04);
     }
     .panel .hd{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:#fbfaff}
+    .theme-toggle:checked ~ .page .panel .hd{background:#130e25}
     .panel .hd h2{font-size:16px;margin:0}
     .tag{padding:3px 8px;border-radius:999px;background:#f3e8ff;color:#6b21a8;border:1px solid #e9d5ff;font-size:12px}
     .panel .bd{padding:10px;overflow:auto}
     .table{border-collapse:separate;border-spacing:0;width:100%;min-width:880px}
-    .table th, .table td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 8px;font-size:14px;white-space:nowrap}
+    .table th,.table td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 8px;font-size:14px;white-space:nowrap}
     .table th{position:sticky;top:0;background:#faf5ff;color:#1f133a;z-index:1}
-    .table th:first-child, .table td:first-child{border-left:1px solid var(--line)}
+    .theme-toggle:checked ~ .page .table th{background:#130e25;color:#ede9fe}
+    .table th:first-child,.table td:first-child{border-left:1px solid var(--line)}
     .table tr:first-child th{border-top:1px solid var(--line)}
-    .table td{background:white}
+    .table td{background:#fff}
     .table tr:nth-child(even) td{background:#fdfaff}
+    .theme-toggle:checked ~ .page .table td{background:#0f0a22;color:#ede9fe}
+    .theme-toggle:checked ~ .page .table tr:nth-child(even) td{background:#100c24}
     .table .num{text-align:right;font-variant-numeric:tabular-nums}
     .table .left{text-align:left}
-    .kpi-up{color:var(--ok);font-weight:700}
-    .kpi-down{color:var(--danger);font-weight:700}
     .pin-left{position:sticky;left:0;background:linear-gradient(90deg, #ffffff 80%, rgba(255,255,255,0));z-index:2}
+    .theme-toggle:checked ~ .page .pin-left{background:linear-gradient(90deg, #0f0a22 80%, rgba(15,10,34,0))}
 
     .foot{
       display:flex;justify-content:space-between;align-items:center;gap:10px;
       padding:10px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;background:#faf7ff;
     }
-
-    /* 深色模式 */
-    body.dark{
-      --bg:#0b0716;
-      --panel:#120e22;
-      --text:#ede9fe;
-      --muted:#b3a9d3;
-      --primary:#c084fc;
-      --primary-600:#a78bfa;
-      --accent:#f0abfc;
-      --chip:#1c1730;
-      --line:#2b2340;
-    }
-    body.dark{background:linear-gradient(180deg,#0d0820 0%, #0a0716 120%)}
-    body.dark .tab{background:#0f0a22;color:#ede9fe;border-color:#2b2340}
-    body.dark .tab.active{background:#1a1336;border-color:#372a63;color:#c4b5fd}
-    body.dark .table th{background:#130e25}
-    body.dark .table td{background:#0f0a22}
-    body.dark .table tr:nth-child(even) td{background:#100c24}
-    body.dark .control, body.dark .panel{background:#120e22;border-color:#2b2340}
-    body.dark .foot{background:#0f0a22;color:#b3a9d3}
-    body.dark .btn{background:#0f0a22;color:#ede9fe;border-color:#2b2340}
-    body.dark .select, body.dark .input{background:#0f0a22;color:#ede9fe;border-color:#2b2340}
+    .theme-toggle:checked ~ .page .foot{background:#0f0a22;color:#b3a9d3}
 
     /* 響應式 */
-    @media (max-width:960px){
-      .tabs{width:100%}
-      .table{min-width:720px}
-    }
-    @media (max-width:640px){
-      .topbar-inner{gap:10px}
-      .title{font-size:18px}
-      .select{min-width:100px}
-      .table{min-width:640px}
+    @media (max-width:960px){ .table{min-width:720px} }
+    @media (max-width:640px){ .table{min-width:640px} }
+
+    /* 列印 */
+    @media print{
+      .topbar,.theme-switch,.note-print{display:none !important}
+      .container{margin:0;padding:0}
+      .panel{box-shadow:none;border-color:#bbb}
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="logo" aria-label="logo">安</div>
-      <div class="title">道安總動員（新色系＋互動）</div>
-      <nav class="tabs" role="tablist" aria-label="主導航">
-        <button class="tab active" data-tab="topic">主題分析</button>
-        <button class="tab" data-tab="quick">統計快搜</button>
-        <button class="tab" data-tab="geo">縣市鄉鎮與國道</button>
-        <button class="tab" data-tab="trend">趨勢分析</button>
-        <button class="tab" data-tab="danger">危險據點</button>
-        <button class="tab" data-tab="school">學校周邊熱點</button>
-      </nav>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="control" aria-label="篩選器">
-      <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <span class="chip">年 度</span>
-        <select id="year" class="select" aria-label="年度">
-          <option value="114" selected>114年</option>
-          <option value="113">113年</option>
-          <option value="112">112年</option>
-        </select>
-        <span class="chip">轄別</span>
-        <select id="region" class="select" aria-label="轄別">
-          <option value="臺北市" selected>臺北市</option>
-          <option>新北市</option><option>桃園市</option><option>臺中市</option><option>高雄市</option>
-        </select>
-        <span class="chip">區域</span>
-        <select id="district" class="select" aria-label="行政區">
-          <option value="全部" selected>全部</option>
-          <option>中正區</option><option>大同區</option><option>中山區</option>
-          <option>松山區</option><option>大安區</option><option>萬華區</option>
-        </select>
-        <span class="chip">事故類型</span>
-        <select id="type" class="select" aria-label="事故類型">
-          <option value="大型車事故" selected>大型車事故</option>
-          <option value="大型車與自行車">大型車與自行車</option>
-        </select>
-        <input id="search" class="input" placeholder="快速搜尋（如：大貨車）" />
+  <!-- CSS-only 深色模式切換器（無 JS） -->
+  <input type="checkbox" id="theme" class="theme-toggle" hidden />
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="logo" aria-label="logo">安</div>
+        <div class="title">道安總動員（純前端示範｜紫色系）</div>
+        <nav class="tabs" role="tablist" aria-label="主導航">
+          <span class="tab active">主題分析</span>
+          <span class="tab">統計快搜</span>
+          <span class="tab">縣市鄉鎮與國道</span>
+          <span class="tab">趨勢分析</span>
+          <span class="tab">危險據點</span>
+          <span class="tab">學校周邊熱點</span>
+        </nav>
       </div>
-      <div class="row" style="margin-left:auto;display:flex;gap:10px;align-items:center">
-        <button id="exportCsv" class="btn">匯出 CSV</button>
-        <button id="toggleDark" class="btn">深色模式</button>
-        <button id="reset" class="btn">重設</button>
-        <button id="printBtn" class="btn">列印</button>
-        <span class="note">資料期間：114年1月～6月　統計日：民國114年9月27日</span>
-      </div>
-    </section>
+    </header>
 
-    <section class="panel" id="panel-main">
-      <div class="hd">
-        <h2>114年1～6月臺北市大型車左轉等事故統計</h2>
-        <span class="tag">示範資料</span>
-      </div>
-      <div class="bd">
-        <table class="table" id="mainTable" aria-describedby="大型車事故統計表">
-          <thead>
-            <tr>
-              <th rowspan="2" class="left pin-left" data-sort="rank">排序</th>
-              <th rowspan="2" class="left">當事者區分</th>
-              <th colspan="3">件數</th>
-              <th colspan="3">案件死亡人數</th>
-              <th colspan="3">案件受傷人數</th>
-            </tr>
-            <tr>
-              <th data-sort="lCount">左轉彎</th>
-              <th data-sort="rCount">右轉彎</th>
-              <th data-sort="sumCount">小計</th>
-              <th data-sort="lDeath">左轉彎</th>
-              <th data-sort="rDeath">右轉彎</th>
-              <th data-sort="sumDeath">小計</th>
-              <th data-sort="lInj">左轉彎</th>
-              <th data-sort="rInj">右轉彎</th>
-              <th data-sort="sumInj">小計</th>
-            </tr>
-          </thead>
-          <tbody id="mainTbody"></tbody>
-        </table>
-      </div>
-      <div class="foot">
-        <div>說明：表格可點欄位排序、可關鍵字搜尋；本頁為離線範例，並非正式統計。</div>
-        <div id="summaryKpi">總計：-- 件；死亡 -- 人；受傷 -- 人</div>
-      </div>
-    </section>
+    <main class="container">
+      <!-- 控制列（展示用，無 JS 事件） -->
+      <section class="control" aria-label="篩選器">
+        <div class="chip">年 度</div>
+        <select class="select" aria-label="年度"><option selected>114年</option><option>113年</option><option>112年</option></select>
+        <div class="chip">轄別</div>
+        <select class="select" aria-label="轄別"><option selected>臺北市</option><option>新北市</option><option>桃園市</option><option>臺中市</option><option>高雄市</option></select>
+        <div class="chip">區域</div>
+        <select class="select" aria-label="行政區"><option selected>全部</option><option>中正區</option><option>大同區</option><option>中山區</option><option>松山區</option><option>大安區</option><option>萬華區</option></select>
+        <div class="chip">事故類型</div>
+        <select class="select" aria-label="事故類型"><option selected>大型車事故</option><option>大型車與自行車</option></select>
 
-    <section class="panel">
-      <div class="hd">
-        <h2>大型車與自行車事故統計（114年1～6月）</h2>
-        <span class="tag">示範資料</span>
-      </div>
-      <div class="bd">
-        <table class="table" id="bikeTable" aria-describedby="大型車與自行車事故統計">
-          <thead>
-            <tr>
-              <th class="left pin-left">排序</th>
-              <th class="left">當事者區分</th>
-              <th>件數</th>
-              <th>死亡人數</th>
-              <th>受傷人數</th>
-            </tr>
-          </thead>
-          <tbody id="bikeTbody"></tbody>
-        </table>
-      </div>
-      <div class="foot">
-        <div>資料來源：示範合成資料；僅供版面與互動展示。</div>
-        <div id="bikeKpi">總計：-- 件；死亡 -- 人；受傷 -- 人</div>
-      </div>
-    </section>
+        <label class="theme-switch" for="theme" style="margin-left:auto;display:flex;align-items:center;gap:8px;cursor:pointer">
+          <span class="note">切換深色模式</span>
+          <span style="width:42px;height:26px;border-radius:999px;border:1px solid var(--line);background:#fff;position:relative;display:inline-block">
+            <span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:linear-gradient(180deg,#e9d5ff,#c4b5fd)"></span>
+          </span>
+        </label>
+      </section>
 
-    <section class="panel">
-      <div class="hd">
-        <h2>可視化：各車種小計（件數）</h2>
-        <span class="tag">Canvas</span>
-      </div>
-      <div class="bd">
-        <canvas id="miniChart" height="200" aria-label="長條圖" role="img"></canvas>
-      </div>
-      <div class="foot">
-        <div class="note">此圖以原生 Canvas 繪製，不依賴外部套件。</div>
-        <div class="note">單位：件</div>
-      </div>
-    </section>
+      <!-- 面板 1：大型車事故 -->
+      <section class="panel">
+        <div class="hd">
+          <h2>114年1～6月臺北市大型車左／右轉事故統計</h2>
+          <span class="tag">靜態資料</span>
+        </div>
+        <div class="bd">
+          <table class="table" aria-describedby="大型車事故統計表">
+            <thead>
+              <tr>
+                <th rowspan="2" class="left pin-left">排序</th>
+                <th rowspan="2" class="left">當事者區分</th>
+                <th colspan="3">件數</th>
+                <th colspan="3">案件死亡人數</th>
+                <th colspan="3">案件受傷人數</th>
+              </tr>
+              <tr>
+                <th>左轉彎</th><th>右轉彎</th><th>小計</th>
+                <th>左轉彎</th><th>右轉彎</th><th>小計</th>
+                <th>左轉彎</th><th>右轉彎</th><th>小計</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="num pin-left">1</td>
+                <td class="left">大貨車</td>
+                <td class="num">4</td><td class="num">10</td><td class="num"><strong>14</strong></td>
+                <td class="num">0</td><td class="num">2</td><td class="num"><strong>2</strong></td>
+                <td class="num">6</td><td class="num">8</td><td class="num"><strong>14</strong></td>
+              </tr>
+              <tr>
+                <td class="num pin-left">2</td>
+                <td class="left">大客車</td>
+                <td class="num">8</td><td class="num">6</td><td class="num"><strong>14</strong></td>
+                <td class="num">0</td><td class="num">1</td><td class="num"><strong>1</strong></td>
+                <td class="num">6</td><td class="num">14</td><td class="num"><strong>20</strong></td>
+              </tr>
+              <tr>
+                <td class="num pin-left">3</td>
+                <td class="left">曳引車</td>
+                <td class="num">1</td><td class="num">2</td><td class="num"><strong>3</strong></td>
+                <td class="num">0</td><td class="num">0</td><td class="num"><strong>0</strong></td>
+                <td class="num">2</td><td class="num">3</td><td class="num"><strong>5</strong></td>
+              </tr>
+              <tr>
+                <td class="num pin-left">4</td>
+                <td class="left">半聯結車</td>
+                <td class="num">0</td><td class="num">2</td><td class="num"><strong>2</strong></td>
+                <td class="num">0</td><td class="num">0</td><td class="num"><strong>0</strong></td>
+                <td class="num">0</td><td class="num">1</td><td class="num"><strong>1</strong></td>
+              </tr>
+              <tr>
+                <td class="num pin-left">5</td>
+                <td class="left">全聯結車</td>
+                <td class="num">0</td><td class="num">1</td><td class="num"><strong>1</strong></td>
+                <td class="num">0</td><td class="num">0</td><td class="num"><strong>0</strong></td>
+                <td class="num">0</td><td class="num">1</td><td class="num"><strong>1</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="foot">
+          <div>說明：本頁為純 HTML + CSS 示範，無任何 JavaScript。</div>
+          <div>總計：34 件；死亡 3 人；受傷 41 人</div>
+        </div>
+      </section>
 
-  </main>
+      <!-- 面板 2：大型車與自行車 -->
+      <section class="panel">
+        <div class="hd">
+          <h2>大型車與自行車事故統計（114年1～6月）</h2>
+          <span class="tag">靜態資料</span>
+        </div>
+        <div class="bd">
+          <table class="table" aria-describedby="大型車與自行車事故統計">
+            <thead>
+              <tr>
+                <th class="left pin-left">排序</th>
+                <th class="left">當事者區分</th>
+                <th>件數</th>
+                <th>死亡人數</th>
+                <th>受傷人數</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="num pin-left">1</td><td class="left">大客車</td><td class="num">2</td><td class="num">1</td><td class="num">3</td></tr>
+              <tr><td class="num pin-left">2</td><td class="left">半聯結車</td><td class="num">2</td><td class="num">0</td><td class="num">1</td></tr>
+              <tr><td class="num pin-left">3</td><td class="left">大貨車</td><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+              <tr><td class="num pin-left">4</td><td class="left">全聯結車</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+              <tr><td class="num pin-left">5</td><td class="left">曳引車</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="foot">
+          <div>資料來源：示範合成資料；僅供版面展示。</div>
+          <div>總計：5 件；死亡 1 人；受傷 5 人</div>
+        </div>
+      </section>
 
-  <footer class="foot" style="border-top:none;margin-top:18px">
-    <div>© 2025 交通資料視覺化離線範例（ChatGPT 產生）。</div>
-    <div>版本 v2.0（紫色系） ｜
-      <a href="#" id="scrollTop">回到頂端</a> ｜
-      <a href="#" id="mockRefresh">重新整理</a>
-    </div>
-  </footer>
+      <!-- 面板 3：列印提示 -->
+      <section class="panel">
+        <div class="hd"><h2>列印提示</h2><span class="tag">CSS</span></div>
+        <div class="bd"><p class="note">若需列印，請直接使用瀏覽器「列印」功能（Windows：Ctrl+P／macOS：⌘+P）。本頁已提供 @media print 樣式。</p></div>
+      </section>
+    </main>
 
-  <script>
-    // 假資料
-    const demoRows = [
-      { rank:1, cat:"大貨車", lCount:4, rCount:10, lDeath:0, rDeath:2, lInj:6, rInj:8 },
-      { rank:2, cat:"大客車", lCount:8, rCount:6,  lDeath:0, rDeath:1, lInj:6, rInj:14 },
-      { rank:3, cat:"曳引車", lCount:1, rCount:2,  lDeath:0, rDeath:0, lInj:2, rInj:3 },
-      { rank:4, cat:"半聯結車", lCount:0, rCount:2,  lDeath:0, rDeath:0, lInj:0, rInj:1 },
-      { rank:5, cat:"全聯結車", lCount:0, rCount:1,  lDeath:0, rDeath:0, lInj:0, rInj:1 },
-    ];
-    const bikeRows = [
-      { rank:1, cat:"大客車", lCount:1, rCount:1, lDeath:0, rDeath:1, lInj:1, rInj:2 },
-      { rank:2, cat:"半聯結車", lCount:0, rCount:2, lDeath:0, rDeath:0, lInj:0, rInj:1 },
-      { rank:3, cat:"大貨車", lCount:0, rCount:1, lDeath:0, rDeath:0, lInj:0, rInj:1 },
-      { rank:4, cat:"全聯結車", lCount:0, rCount:0, lDeath:0, rDeath:0, lInj:0, rInj:0 },
-      { rank:5, cat:"曳引車", lCount:0, rCount:0, lDeath:0, rDeath:0, lInj:0, rInj:0 },
-    ];
-
-    // 計算小計
-    const enrich = (rows)=> rows.map(r=>({
-      ...r,
-      sumCount:(r.lCount||0)+(r.rCount||0),
-      sumDeath:(r.lDeath||0)+(r.rDeath||0),
-      sumInj:(r.lInj||0)+(r.rInj||0),
-    }));
-    let mainData = enrich(demoRows);
-    let bikeData = enrich(bikeRows);
-
-    // DOM utils
-    const $ = (s,el=document)=>el.querySelector(s);
-    const $$ = (s,el=document)=>Array.from(el.querySelectorAll(s));
-
-    // 渲染表格
-    function renderMainTable(rows){
-      const tbody = $("#mainTbody");
-      tbody.innerHTML = "";
-      rows.forEach(r=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="num pin-left">\${r.rank}</td>
-          <td class="left">\${r.cat}</td>
-          <td class="num">\${r.lCount}</td>
-          <td class="num">\${r.rCount}</td>
-          <td class="num"><strong>\${r.sumCount}</strong></td>
-          <td class="num \${r.lDeath>0?"kpi-down":""}">\${r.lDeath}</td>
-          <td class="num \${r.rDeath>0?"kpi-down":""}">\${r.rDeath}</td>
-          <td class="num"><strong>\${r.sumDeath}</strong></td>
-          <td class="num \${r.lInj>0?"kpi-up":""}">\${r.lInj}</td>
-          <td class="num \${r.rInj>0?"kpi-up":""}">\${r.rInj}</td>
-          <td class="num"><strong>\${r.sumInj}</strong></td>
-        `;
-        tbody.appendChild(tr);
-      });
-      const sum = rows.reduce((a,b)=>({
-        sumCount:a.sumCount+b.sumCount,
-        sumDeath:a.sumDeath+b.sumDeath,
-        sumInj:a.sumInj+b.sumInj
-      }),{sumCount:0,sumDeath:0,sumInj:0});
-      $("#summaryKpi").textContent = `總計：\${sum.sumCount} 件；死亡 \${sum.sumDeath} 人；受傷 \${sum.sumInj} 人`;
-    }
-    function renderBikeTable(rows){
-      const tbody = $("#bikeTbody");
-      tbody.innerHTML = "";
-      rows.forEach(r=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="num pin-left">\${r.rank}</td>
-          <td class="left">\${r.cat}</td>
-          <td class="num">\${r.sumCount}</td>
-          <td class="num">\${r.sumDeath}</td>
-          <td class="num">\${r.sumInj}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-      const sum = rows.reduce((a,b)=>({
-        sumCount:a.sumCount+b.sumCount,
-        sumDeath:a.sumDeath+b.sumDeath,
-        sumInj:a.sumInj+b.sumInj
-      }),{sumCount:0,sumDeath:0,sumInj:0});
-      $("#bikeKpi").textContent = `總計：\${sum.sumCount} 件；死亡 \${sum.sumDeath} 人；受傷 \${sum.sumInj} 人`;
-    }
-
-    // 排序
-    let sortKey = null;
-    let sortAsc = true;
-    function sortBy(key){
-      sortAsc = (sortKey===key) ? !sortAsc : true;
-      sortKey = key;
-      const dir = sortAsc ? 1 : -1;
-      mainData.sort((a,b)=> (a[key]-b[key]) * dir );
-      renderMainTable(mainData);
-      drawMiniChart(mainData);
-    }
-    $$("#mainTable thead [data-sort]").forEach(th=>{
-      th.style.cursor = "pointer";
-      th.title = "點擊排序";
-      th.addEventListener("click", ()=> sortBy(th.dataset.sort));
-    });
-
-    // 搜尋
-    $("#search").addEventListener("input", e=>{
-      const kw = e.target.value.trim();
-      const filtered = mainData.filter(r=>!kw || r.cat.includes(kw));
-      renderMainTable(filtered);
-    });
-
-    // 控制列按鈕
-    const columns = [
-      {key:"rank", title:"排序"},
-      {key:"cat", title:"當事者區分"},
-      {key:"lCount", title:"件數-左轉彎"},
-      {key:"rCount", title:"件數-右轉彎"},
-      {key:"sumCount", title:"件數-小計"},
-      {key:"lDeath", title:"死亡-左轉彎"},
-      {key:"rDeath", title:"死亡-右轉彎"},
-      {key:"sumDeath", title:"死亡-小計"},
-      {key:"lInj", title:"受傷-左轉彎"},
-      {key:"rInj", title:"受傷-右轉彎"},
-      {key:"sumInj", title:"受傷-小計"},
-    ];
-    function toCSV(rows, columns){
-      const header = columns.map(c=>c.title).join(",");
-      const body = rows.map(r=>columns.map(c=>String(r[c.key]).replace(/,/g,"")).join(",")).join("\n");
-      return header + "\n" + body;
-    }
-    function download(filename, text){
-      const blob = new Blob([text], {type:"text/csv;charset=utf-8"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = filename; a.click();
-      setTimeout(()=>URL.revokeObjectURL(url), 1000);
-    }
-    $("#exportCsv").addEventListener("click", ()=> download("大型車事故統計.csv", toCSV(mainData, columns)) );
-    $("#printBtn").addEventListener("click", ()=> window.print());
-    $("#toggleDark").addEventListener("click", ()=>{ document.body.classList.toggle("dark"); drawMiniChart(mainData); });
-    $("#reset").addEventListener("click", ()=>{
-      $("#year").value="114"; $("#region").value="臺北市"; $("#district").value="全部"; $("#type").value="大型車事故"; $("#search").value="";
-      sortKey=null; sortAsc=true; mainData = enrich(demoRows); bikeData = enrich(bikeRows);
-      renderMainTable(mainData); renderBikeTable(bikeData); drawMiniChart(mainData);
-      window.scrollTo({top:0, behavior:"smooth"});
-    });
-    $("#scrollTop").addEventListener("click", (e)=>{ e.preventDefault(); window.scrollTo({top:0, behavior:"smooth"}); });
-    $("#mockRefresh").addEventListener("click", (e)=>{
-      e.preventDefault();
-      const btn = e.target; const txt = btn.textContent; btn.textContent = "更新中…";
-      setTimeout(()=>{ btn.textContent = txt; mainData[0].lCount += 1; mainData = enrich(mainData); renderMainTable(mainData); drawMiniChart(mainData); }, 700);
-    });
-
-    // Canvas 長條圖
-    function drawMiniChart(rows){
-      const c = $("#miniChart");
-      const ctx = c.getContext("2d");
-      const DPR = window.devicePixelRatio || 1;
-      const W = c.clientWidth || c.parentElement.clientWidth - 20;
-      const H = c.getAttribute("height");
-      c.width = W * DPR; c.height = H * DPR; ctx.scale(DPR, DPR);
-      const dark = document.body.classList.contains("dark");
-      ctx.clearRect(0,0,W,H);
-      ctx.fillStyle = dark ? "#120e22" : "#ffffff";
-      ctx.fillRect(0,0,W,H);
-      ctx.strokeStyle = dark ? "#2b2340" : "#e9e5f5";
-      ctx.lineWidth = 1;
-      for(let i=0;i<=5;i++){ const y = 20 + i*((H-40)/5); ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(W-10,y); ctx.stroke(); }
-      const labels = rows.map(r=>r.cat);
-      const values = rows.map(r=>r.sumCount);
-      const max = Math.max(1, ...values);
-      const barW = Math.max(20, (W-80)/values.length - 20);
-      const baseY = H-30;
-      values.forEach((v,i)=>{
-        const x = 60 + i*(barW+20);
-        const h = Math.max(1, (v/max)*(H-80));
-        ctx.fillStyle = dark ? "#c084fc" : "#a855f7";
-        ctx.fillRect(x, baseY - h, barW, h);
-        ctx.fillStyle = dark ? "#e9d5ff" : "#1f133a";
-        ctx.font = "12px system-ui, -apple-system";
-        ctx.fillText(labels[i], x-4, baseY+14);
-        ctx.fillText(String(v), x+barW/2-6, baseY - h - 6);
-      });
-      ctx.fillStyle = dark ? "#e9d5ff" : "#1f133a";
-      ctx.font = "bold 14px system-ui, -apple-system";
-      ctx.fillText("件數小計", 6, 16);
-    }
-
-    // 初始化
-    function init(){ renderMainTable(mainData); renderBikeTable(bikeData); drawMiniChart(mainData); }
-    window.addEventListener("resize", ()=> drawMiniChart(mainData));
-    init();
-  </script>
+    <footer class="foot" style="border-top:none;margin-top:18px">
+      <div>© 2025 交通資料視覺化離線範例（ChatGPT 產生）。</div>
+      <div class="note-print">版本 v2.0（無 JS｜紫色系）</div>
+    </footer>
+  </div>
 </body>
 </html>
-"""
-
-out = Path("/mnt/data/road_safety_dashboard_purple.html")
-out.write_text(html, encoding="utf-8")
-
-print("已產生：/mnt/data/road_safety_dashboard_purple.html")
