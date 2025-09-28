@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}MDG 車機系統 - 首頁{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="title">MDG</h1>
+    <div class="button-container">
+        <a href="{{ url_for('trip.start_trip') }}" class="nav-button">
+            🚗 開始行程
+        </a>
+        <a href="{{ url_for('trip.trip_history') }}" class="nav-button">
+            📋 過往行程
+        </a>
+        <a href="{{ url_for('video.video_management') }}" class="nav-button">
+            🎬 影片管理
+        </a>
+        <a href="{{ url_for('device_info.device_info') }}" class="nav-button">
+            💻 本機資訊
+        </a>
+        <a href="{{ url_for('gps.gps_view') }}" class="nav-button">
+            📡 GPS 狀態
+        </a>
+        <a href="{{ url_for('gpio.gpio_test') }}" class="nav-button">
+            🔧 GPIO 測試
+        </a>
+    </div>
+</div>
+{% endblock %}

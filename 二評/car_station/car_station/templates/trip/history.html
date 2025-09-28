@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}過往行程 - MDG 車機系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .history-title {
+        font-size: 2.5rem;
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .trip-grid {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .trip-card {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .trip-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+    }
+
+    .trip-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .trip-name {
+        font-size: 1.3rem;
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .trip-score {
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+    }
+
+    .score-excellent {
+        color: #00ff00;
+        background: rgba(0, 255, 0, 0.2);
+        border: 1px solid #00ff00;
+    }
+
+    .score-good {
+        color: #ffff00;
+        background: rgba(255, 255, 0, 0.2);
+        border: 1px solid #ffff00;
+    }
+
+    .score-poor {
+        color: #ff6600;
+        background: rgba(255, 102, 0, 0.2);
+        border: 1px solid #ff6600;
+    }
+
+    .score-bad {
+        color: #ff0000;
+        background: rgba(255, 0, 0, 0.2);
+        border: 1px solid #ff0000;
+    }
+
+    .trip-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        text-align: center;
+        padding: 0.5rem;
+        border: 1px solid rgba(0, 255, 255, 0.3);
+        border-radius: 8px;
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+        color: #00ffff;
+        margin-bottom: 0.3rem;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: #ffffff;
+        font-weight: bold;
+    }
+
+    .trip-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #999;
+        margin-top: 1rem;
+    }
+
+    .no-trips {
+        text-align: center;
+        color: #00ffff;
+        font-size: 1.2rem;
+        margin: 3rem 0;
+        padding: 2rem;
+        border: 2px dashed #00ffff;
+        border-radius: 15px;
+    }
+
+    .controls {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .control-button {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3));
+        border: 2px solid #00ffff;
+        color: #00ffff;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 0.5rem;
+    }
+
+    .control-button:hover {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.4));
+        box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    }
+
+    .sync-status {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .sync-completed {
+        background: rgba(0, 255, 0, 0.2);
+        color: #00ff00;
+        border: 1px solid #00ff00;
+    }
+
+    .sync-pending {
+        background: rgba(255, 255, 0, 0.2);
+        color: #ffff00;
+        border: 1px solid #ffff00;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="history-container">
+        <h1 class="history-title">過往行程</h1>
+        
+        {% if trips %}
+            <div class="trip-grid">
+                {% for trip in trips %}
+                <div class="trip-card" onclick="viewTripDetails({{ trip.id }})">
+                    <div class="trip-header">
+                        <div class="trip-name">{{ trip.name }}</div>
+                        <div class="trip-score {{ 'score-excellent' if (trip.score or 0) >= 90 else 'score-good' if (trip.score or 0) >= 70 else 'score-poor' if (trip.score or 0) >= 50 else 'score-bad' }}">
+                            {{ trip.score or 0 }} 分
+                        </div>
+                    </div>
+                    
+                    <div class="trip-details">
+                        <div class="detail-item">
+                            <div class="detail-label">駕駛員</div>
+                            <div class="detail-value">{{ trip.personnel.name if trip.personnel else '未知' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">開始時間</div>
+                            <div class="detail-value">
+                                {% if trip.start_time %}
+                                    {{ trip.start_time.strftime('%m/%d %H:%M') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">行程時長</div>
+                            <div class="detail-value">
+                                {% if trip.start_time and trip.end_time %}
+                                    {{ ((trip.end_time - trip.start_time).total_seconds() / 60) | round | int }} 分鐘
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">狀態</div>
+                            <div class="detail-value">
+                                <span class="sync-status {{ 'sync-completed' if trip.synced_to_server else 'sync-pending' }}">
+                                    {{ '已上傳' if trip.synced_to_server else '待上傳' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="trip-meta">
+                        <span>行程編號: {{ trip.trip_number }}</span>
+                        <span>{{ trip.created_at.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-trips">
+                目前沒有完成的行程記錄<br>
+                開始您的第一趟行程吧！
+            </div>
+        {% endif %}
+        
+        <div class="controls">
+            <a href="{{ url_for('trip.start_trip') }}" class="control-button">開始新行程</a>
+            <button class="control-button" onclick="syncAllTrips()">同步所有資料</button>
+            <button class="control-button" onclick="viewVideos()">查看影片</button>
+            <a href="{{ url_for('main.index') }}" class="control-button">返回首頁</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function viewTripDetails(tripId) {
+        fetch(`/trip/api/trip_summary/${tripId}`)
+            .then(response => response.json())
+            .then(data => {
+                let eventList = '';
+                if (data.events && data.events.length > 0) {
+                    eventList = data.events.map(event => 
+                        `• ${event.description} (-${event.points}分) [${event.code}]`
+                    ).join('\n');
+                } else {
+                    eventList = '無違規事件';
+                }
+                
+                const duration = Math.floor(data.duration_seconds / 60);
+                
+                // 影片資訊
+                let videoInfo = '';
+                if (data.videos && data.videos.length > 0) {
+                    videoInfo = data.videos.map(video => 
+                        `• ${video.camera === 'inside' ? '車內' : '車外'}鏡頭: ${video.duration}秒 (${video.size_mb}MB)`
+                    ).join('\n');
+                } else {
+                    videoInfo = '無影片記錄';
+                }
+                
+                alert(`行程詳細資訊：
+
+行程名稱：${data.trip.name}
+駕駛員：${data.trip.personnel_name}
+最終分數：${data.score} 分
+總扣分：${data.total_deduction} 分
+行程時長：${duration} 分鐘
+
+違規事件：
+${eventList}
+
+影片記錄：
+${videoInfo}
+
+GPS 記錄點：${data.route_points || 0} 個
+方向燈使用：左 ${data.gpio_stats?.left_turn_count || 0} 次，右 ${data.gpio_stats?.right_turn_count || 0} 次
+倒車次數：${data.gpio_stats?.reverse_count || 0} 次
+
+同步狀態：${data.trip.synced_to_server ? '已上傳至伺服器' : '待上傳'}
+`);
+            })
+            .catch(error => {
+                console.error('取得行程詳情失敗:', error);
+                alert('無法取得行程詳細資訊');
+            });
+    }
+
+    function syncAllTrips() {
+        if (!confirm('確定要同步所有未上傳的行程資料到伺服器嗎？')) {
+            return;
+        }
+        
+        // 這裡之後會實作實際的同步邏輯
+        alert('同步功能開發中...\n將來會自動上傳：\n• 行程記錄\n• 影片檔案\n• GPS 軌跡\n• 評分事件');
+    }
+
+    function viewVideos() {
+        // 跳轉到影片管理頁面
+        window.location.href = '/video/manage';
+    }
+</script>
+{% endblock %}

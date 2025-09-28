@@ -1,16 +1,10 @@
 <!DOCTYPE html>
-<html class="{% block html_class %}
-
-  {% endblock %}"
-  lang="zh-Hant">
+<!-- 根據登入狀態動態添加 'logged-in' class，以便 JS 控制側邊欄顯示 -->
+<html class="{% block html_class %}{% endblock %}" lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>
-      {% block title %}
-        My Driving God 吾駕仙
-      {% endblock %}
-    </title>
+    <title>{% block title %}My Driving God 吾駕仙{% endblock %}</title>
 
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -18,26 +12,21 @@
 
     <!-- 全站樣式 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-    {% block extra_css %}
-
-    {% endblock %}
+    {% block extra_css %}{% endblock %}
 
     <!-- GSAP -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/ScrollTrigger.min.js"></script>
   </head>
-  <body>
+  <!-- 同樣根據 session 狀態添加 class -->
+  <body class="{% if session['access_token'] %}logged-in{% endif %}">
     <!-- ===== Header ===== -->
     <header id="topbar">
       <nav class="wrap">
         <a href="{{ url_for('home') }}" class="brand" id="brand-hover">My&nbsp;Driving&nbsp;God&nbsp;吾駕仙</a>
-
-        <!-- 新增介紹區塊 -->
         <div class="brand-info-popup" id="brand-info">
           <div class="brand-info-layout">
-            <div class="brand-info-visual">
-              <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="My Driving God Logo" />
-            </div>
+            <div class="brand-info-visual"><img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="My Driving God Logo" /></div>
             <div class="brand-info-content">
               <h4>品牌故事 MyDrivingGod</h4>
               <p>我們是來自國立臺北商業大學資訊管理系的畢業專題團隊，成立於 2024 年冬季 。身處常被稱為「交通地獄」的台灣，我們深刻感受到現行的駕駛輔助系統，多半僅針對車外風險，卻忽略了駕駛者因疲勞、分心等「人因風險」所帶來的潛在威脅 。 為此，我們投入開發「吾駕仙」這套專注於駕駛行為的智慧分析系統，期望補足現行技術的不足 。我們的目標是建立一套能「理解並回應」駕駛狀態的智慧防線 ，集監控、分析與 AI 教練於一體，透過數據回饋與改善建議，實踐真正以人為本的主動式安全防護，為每一趟旅程守望 。</p>
@@ -45,26 +34,30 @@
             </div>
           </div>
         </div>
-
         <ul class="nav-links" id="navLinks">
-          <li>
-            <a href="{{ url_for('home') }}" aria-label="回到首頁"><i class="fa-solid fa-house"></i></a>
-          </li>
-          <li>
-            <a href="#" class="hamburger-btn" id="hamburgerBtn" aria-label="開啟或關閉導覽列" role="button"><i class="fa-solid fa-bars"></i></a>
-          </li>
+          <li><a href="{{ url_for('home') }}" aria-label="回到首頁"><i class="fa-solid fa-house"></i></a></li>
+          <li><a href="#" class="hamburger-btn" id="hamburgerBtn" aria-label="開啟或關閉導覽列" role="button"><i class="fa-solid fa-bars"></i></a></li>
         </ul>
       </nav>
     </header>
 
-    <!-- ✦ 浮動背景圖容器 -->
     <div id="bg-icons"></div>
 
     <!-- ===== Main ===== -->
     <main>
-      {% block content %}
+      {# ===== 新增：提示訊息顯示區塊 ===== #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages-container">
+            {% for category, message in messages %}
+              <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {# ================================= #}
 
-      {% endblock %}
+      {% block content %}{% endblock %}
     </main>
 
     <!-- ===== Footer ===== -->
@@ -72,6 +65,7 @@
       <p>© 2025 My Driving God 吾駕仙智慧交通系統 — All Rights Reserved.</p>
     </footer>
 
+    <!-- 未登入側邊欄 -->
     <aside class="sidebar" id="sidebar-logged-out">
       <div class="sidebar-header">
         <h3>功能概覽</h3>
@@ -82,12 +76,11 @@
           <a href="{{ url_for('register') }}" class="btn-sidebar">註冊</a>
           <a href="{{ url_for('login') }}" class="btn-sidebar">登入</a>
         </div>
-        <nav class="sidebar-nav">
-          <a href="#">關於 MyDrivingGod</a>
-        </nav>
+        <nav class="sidebar-nav"><a href="#">關於 MyDrivingGod</a></nav>
       </div>
     </aside>
 
+    <!-- 已登入側邊欄 -->
     <aside class="sidebar" id="sidebar-logged-in">
       <div class="sidebar-header">
         <h3>功能概覽</h3>
@@ -95,104 +88,89 @@
       </div>
       <div class="sidebar-content">
         <div class="user-profile">
-          <img src="https://i.pravatar.cc/100" alt="使用者頭像" class="user-avatar" />
+          <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="使用者頭像" class="user-avatar" />
           <div class="user-details">
-            <span class="user-name">黃仁勳</span>
-            <span class="user-group">北大物理 C 組</span>
+            <!-- 未來這裡的姓名和群組可以從 session 或 API 獲取 -->
+            <span class="user-name">駕駛員</span>
+            <span class="user-group">我的群組</span>
           </div>
         </div>
         <nav class="sidebar-nav sidebar-nav-main">
-          <a href="#">我的數位儀表板</a>
-          <a href="#">個人資料設定</a>
-          <a href="#">我的群組</a>
-          <a href="#">行程數據</a>
-          <a href="#">過往行程</a>
-          <a href="#">行車影片</a>
+          <a href="{{ url_for('dashboard') }}">我的數位儀表板</a>
+          <a href="{{ url_for('edit_profile') }}">個人資料設定</a>
+          <a href="{{ url_for('my_groups_standalone') }}">我的群組</a>
+          <a href="{{ url_for('all_reports') }}">過往行程</a>
           <a href="#">設定</a>
-          <a href="#">關於 MDG</a>
+          <!-- 新增登出按鈕 -->
+          <a href="{{ url_for('logout') }}" class="sidebar-logout-btn">登出 <i class="fa-solid fa-right-from-bracket"></i></a>
         </nav>
       </div>
     </aside>
 
     <div class="overlay" id="overlay"></div>
 
-    <div class="overlay" id="overlay"></div>
-
     <!-- 共用 JS -->
     <script src="{{ url_for('static', filename='js/scroll.js') }}" defer></script>
-    <!-- 背景圖 JS -->
     <script src="{{ url_for('static', filename='js/bg-icons.js') }}" defer></script>
 
     {% block extra_js %}
       <script>
-        const brand = document.getElementById('brand-hover')
-        const infoBox = document.getElementById('brand-info')
-        let hoverTimer
-        
+        // 品牌 Logo 懸停效果
+        const brand = document.getElementById('brand-hover');
+        const infoBox = document.getElementById('brand-info');
+        let hoverTimer;
+
         brand.addEventListener('mouseenter', () => {
-          clearTimeout(hoverTimer)
-          infoBox.classList.add('show')
-        })
-        
+          clearTimeout(hoverTimer);
+          infoBox.classList.add('show');
+        });
+
         brand.addEventListener('mouseleave', () => {
           hoverTimer = setTimeout(() => {
-            infoBox.classList.remove('show')
-          }, 300)
-        })
-        
+            infoBox.classList.remove('show');
+          }, 300);
+        });
+
         infoBox.addEventListener('mouseenter', () => {
-          clearTimeout(hoverTimer)
-        })
-        
+          clearTimeout(hoverTimer);
+        });
+
         infoBox.addEventListener('mouseleave', () => {
-          infoBox.classList.remove('show')
-        })
-        document.addEventListener('DOMContentLoaded', () => {
-          const hamburgerBtn = document.getElementById('hamburgerBtn')
-          const navLinks = document.querySelector('.nav-links')
+          infoBox.classList.remove('show');
+        });
         
-          if (hamburgerBtn && navLinks) {
-            hamburgerBtn.addEventListener('click', () => {
-              navLinks.classList.toggle('is-active')
-            })
-          }
-        })
-        
-        // --- 用這段新的 JS 取代舊的漢堡選單邏輯 ---
-        
-        // 獲取我們需要操作的元素
-        // --- 用這段新的 JS 取代舊的漢堡選單邏輯 ---
-        
-        // 獲取我們需要操作的元素
-        const hamburgerBtn = document.getElementById('hamburgerBtn')
-        const sidebars = document.querySelectorAll('.sidebar') // 獲取所有側邊欄
-        const closeBtns = document.querySelectorAll('[data-action="close-sidebar"]') // 獲取所有關閉按鈕
-        const overlay = document.getElementById('overlay')
-        
+        // 側邊欄開關邏輯
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebars = document.querySelectorAll('.sidebar');
+        const closeBtns = document.querySelectorAll('[data-action="close-sidebar"]');
+        const overlay = document.getElementById('overlay');
+
         // 函數：開啟側邊欄
         function openSidebar() {
-          const activeSidebar = document.querySelector(document.body.classList.contains('logged-in') ? '#sidebar-logged-in' : '#sidebar-logged-out')
+          // 根據 body 的 class 來決定要開啟哪個側邊欄
+          const activeSidebar = document.querySelector(document.body.classList.contains('logged-in') ? '#sidebar-logged-in' : '#sidebar-logged-out');
           if (activeSidebar) {
-            activeSidebar.classList.add('is-active')
+            activeSidebar.classList.add('is-active');
           }
-          overlay.classList.add('is-active')
+          overlay.classList.add('is-active');
         }
-        
+
         // 函數：關閉側邊欄
         function closeSidebar() {
-          sidebars.forEach((bar) => bar.classList.remove('is-active')) // 關閉所有側邊欄
-          overlay.classList.remove('is-active')
+          sidebars.forEach((bar) => bar.classList.remove('is-active'));
+          overlay.classList.remove('is-active');
         }
-        
+
         // 事件監聽
         hamburgerBtn.addEventListener('click', (event) => {
-          event.preventDefault()
-          openSidebar()
-        })
-        
-        closeBtns.forEach((btn) => btn.addEventListener('click', closeSidebar))
-        overlay.addEventListener('click', closeSidebar)
+          event.preventDefault(); // 防止點擊連結時頁面跳動
+          openSidebar();
+        });
+
+        closeBtns.forEach((btn) => btn.addEventListener('click', closeSidebar));
+        overlay.addEventListener('click', closeSidebar);
       </script>
     {% endblock %}
   </body>
 </html>
+

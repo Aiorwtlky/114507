@@ -185,22 +185,22 @@
   </div> <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
 {% endblock %}
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // 找到所有帶有 data-href 屬性的表格列
-    const clickableRows = document.querySelectorAll('tr[data-href]');
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 找到所有帶有 data-href 屬性的表格列
+      const clickableRows = document.querySelectorAll('tr[data-href]')
+      clickableRows.forEach((row) => {
+        row.addEventListener('click', function (event) {
+          // 檢查點擊的目標是不是 a 標籤或 i 標籤
+          // 如果是，就代表使用者想點的是「操作」按鈕，我們就不跳轉
+          if (event.target.tagName === 'A' || event.target.tagName === 'I') {
+            return
+          } // 否則，就跳轉到 data-href 中指定的網址
     
-    clickableRows.forEach(row => {
-      row.addEventListener('click', function(event) {
-        // 檢查點擊的目標是不是 a 標籤或 i 標籤
-        // 如果是，就代表使用者想點的是「操作」按鈕，我們就不跳轉
-        if (event.target.tagName === 'A' || event.target.tagName === 'I') {
-          return;
-        }
-
-        // 否則，就跳轉到 data-href 中指定的網址
-        window.location.href = this.dataset.href;
-      });
-    });
-  });
-</script>
+          window.location.href = this.dataset.href
+        })
+      })
+    })
+  </script>
+{% endblock %}

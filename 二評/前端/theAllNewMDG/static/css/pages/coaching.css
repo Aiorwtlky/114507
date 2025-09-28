@@ -1,208 +1,243 @@
+/* ===== 頁面主容器 ===== */
 .coach-wrap {
-    max-width: 1280px;
-    margin: 16px auto;
-    padding: 0 18px
+    max-width: 1400px; /* 與 dashboard.html 寬度一致 */
+    margin: 30px auto;
+    padding: 0 24px;
+    font-family: 'Noto Sans TC', sans-serif;
 }
 
+/* ===== 頁面主標題 ===== */
 .coach-title {
-    font-size: 1.6rem; /* 稍微放大一點 */
-    font-weight: 900;
-    margin: 8px 2px 14px;
-    background: linear-gradient(90deg, #00f7ff, #0077ff, #00ff99);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-
-    /* 加強光暈與陰影，提升可視性 */
-
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a2a5f; /* 主要藍色 */
+    margin: 0 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a2a5f;
 }
 
+/* ===== 左右兩欄佈局 ===== */
 .coach-grid {
     display: grid;
-    grid-template-columns: 2fr 3fr;
-    gap: 18px
+    grid-template-columns: 2fr 3fr; /* 維持 2:3 比例 */
+    gap: 24px;
 }
 
-@media (max-width:991px) {
+/* 在小螢幕上變為單欄 */
+@media (max-width: 991px) {
     .coach-grid {
-        grid-template-columns: 1fr
+        grid-template-columns: 1fr;
     }
 }
 
+/* ===== 卡片基礎樣式 (完全仿照 dashboard) ===== */
 .coach-card {
-    background: rgba(10, 15, 25, 0.85); /* 比原本更深的背景 */
-    border: 1px solid rgba(255, 255, 255, .12);
-    border-radius: 18px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
-    padding: 16px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 2px solid #1a2a5f;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
+/* ===== 卡片內的通用元素 ===== */
 .coach-h3 {
-    margin: 0 0 8px;
-    font-size: 18px;
-    font-weight: 700
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a2a5f;
+    font-size: 1.4rem;
+    color: #1a2a5f;
 }
 
 .coach-h4 {
-    margin: 10px 0 6px;
-    font-size: 16px;
-    font-weight: 700
-}
-
-.coach-h3, .coach-h4 {
-    background: linear-gradient(90deg, #39ff88, #2fbb50, #a8ffea);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.65);
+    margin: 20px 0 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #333;
 }
 
 .coach-muted {
-    color: #8ea0b6;
-    font-size: 12px;
-    margin: 0 0 10px
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0 0 16px;
+}
+.coach-muted b {
+    color: #1a2a5f;
 }
 
 .coach-p {
-    margin: 6px 0
+    margin: 8px 0;
+    font-weight: 600;
 }
 
 .coach-ul {
-    margin: 6px 0 0 18px
+    margin: 8px 0 0 20px;
+    padding: 0;
+    line-height: 1.8;
 }
 
 .coach-divider {
     border: none;
     height: 1px;
-    background: rgba(255, 255, 255, .08);
-    margin: 12px 0
+    background: #e0e0e0;
+    margin: 20px 0;
 }
 
 .coach-actions {
-    margin-top: 12px
+    margin-top: auto; /* 將按鈕推到卡片底部 */
+    padding-top: 20px;
 }
 
-.coach-toolbar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px
-}
 
+/* ===== 右側每日行程列表 ===== */
 .coach-trip {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px dashed rgba(255, 255, 255, .08)
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
 }
 
 .coach-trip:last-child {
-    border-bottom: 0
+    border-bottom: none;
 }
 
 .coach-badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(92, 194, 255, .18);
-    border: 1px solid rgba(255, 255, 255, .08);
-    font-size: 12px;
-    margin-right: 8px
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #e7f0ff; /* 淡藍色背景 */
+    border: 1px solid #b3cfff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a2a5f;
+    margin-right: 8px;
 }
 
 .coach-tags {
-    margin-top: 6px
+    margin-top: 8px;
 }
 
 .coach-tag {
     display: inline-block;
     margin: 0 6px 6px 0;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, .08);
-    font-size: 12px
+    background: #f1f3f5;
+    font-size: 0.85rem;
+    color: #555;
 }
 
-.coach-attn {
-    background: rgba(255, 87, 134, .18);
-    border: 1px solid rgba(255, 87, 134, .4)
+/* 「需要注意」的特殊樣式 */
+.coach-tag.coach-attn {
+    background: #fff5f5;
+    color: #c92a2a;
+    font-weight: 600;
 }
 
 .coach-score {
-    font-weight: 800;
-    font-size: 22px
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-left: 16px;
 }
 
 .coach-score.bad {
-    color: #ff6b6b;
-    text-shadow: 0 0 6px rgba(255, 107, 107, 0.8);
+    color: #e03131; /* 紅色 */
 }
 
 .coach-score.good {
-    color: #00d38d;
-    text-shadow: 0 0 6px rgba(0, 211, 141, 0.8);
+    color: #2f9e44; /* 綠色 */
 }
 
-.custom-btn {
-    display: flex;
-    justify-content: center;
-    margin-top: 40px;
-    font-size: 30px;
-    /* 與上方的距離 */
+/* ===== 返回儀表板按鈕 (沿用 dashboard 的樣式) ===== */
+.custom-btn.primary-btn {
+    display: inline-block;
+    width: auto;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    background-color: #1a2a5f;
+    color: white;
+    border: 1px solid #1a2a5f;
+    transition: background-color 0.2s, color 0.2s;
+}
+.custom-btn.primary-btn:hover {
+    background-color: #0d1530;
 }
 
-.custom-btnn{
-    font-size: 25px;
-    color: black;
+
+/* ===== 分頁按鈕 (Segmented Toggle) 新樣式 ===== */
+.seg-toggle {
+    display: inline-flex;
+    background: #f1f3f5; /* 淺灰色背景 */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 5px;
+    gap: 5px;
 }
 
-/* Segmented toggle */
-.seg-toggle{
-  display:inline-flex;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 12px;
-  padding: 4px;
-  gap: 4px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
+.seg-option {
+    appearance: none;
+    border: 0;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #495057; /* 預設文字顏色 */
+    background: transparent;
+    cursor: pointer;
+    transition: all .2s ease;
+    outline: none;
 }
 
-.seg-option{
-  appearance:none;
-  border:0;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  color: #cfe4f8;
-  background: transparent;
-  cursor: pointer;
-  transition: all .18s ease;
-  outline: none;
+.seg-option:hover {
+    background: #e9ecef;
 }
 
-/* hover/焦點 */
-.seg-option:hover{ background: rgba(255,255,255,.06); }
-.seg-option:focus-visible{
-  box-shadow: 0 0 0 2px rgba(92,194,255,.55);
+.seg-option:focus-visible {
+    box-shadow: 0 0 0 2px #b1d3ff;
 }
 
-/* 啟用中的外觀：亮色膠囊＋淡光暈 */
-.seg-option.is-active{
-  color: #0b1220; /* 黑字你要的 */
-  background: linear-gradient(135deg,#5cc2ff,#7b5cff);
-  box-shadow: 0 6px 18px rgba(92,194,255,.28);
+/* 啟用中的外觀：白色背景 + 陰影 */
+.seg-option.is-active {
+    color: #1a2a5f; /* 啟用時的藍色文字 */
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 「只看需要注意」的警示感：啟用時改為紅系漸層 */
-#tab-attn.is-active{
-  background: linear-gradient(135deg,#ff8aa1,#ff4d6d);
-  color: #0b1220;
-  box-shadow: 0 6px 18px rgba(255,77,109,.28);
+/* 「只看需要注意」的啟用中外觀：改為淡紅色系 */
+#tab-attn.is-active {
+    background: #fff5f5;
+    color: #c92a2a;
 }
 
-/* 在很小的螢幕讓字小一點 */
-@media (max-width:560px){
-  .seg-option{ padding:7px 10px; font-size:14px; }
+ /* 修正1：讓頁面主標題更清晰 */
+  .coach-title {
+    background: none; /* 移除舊的漸層背景 */
+    -webkit-text-fill-color: #FFFFFF; /* 設定為純白色 */
+    color: #FFFFFF; /* 設定為純白色 */
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* 增加文字陰影，提升立體感 */
+    border-bottom: none; /* 移除與儀表板風格不符的底線 */
+  }
+
+  /* 修正2：讓卡片內的標題在白色背景上可見 */
+  .coach-card .coach-h3,
+  .coach-card .coach-h4 {
+    background: none; /* 移除舊的漸層背景 */
+    -webkit-background-clip: initial; /* 重設文字裁切效果 */
+    -webkit-text-fill-color: initial; /* 重設文字填滿顏色 */
+    color: #1a2a5f; /* 設定為與儀表板風格一致的深藍色 */
+    text-shadow: none; /* 移除在白底上不必要的陰影 */
+  }
+
+.coach-p{
+    color: #fff;
 }
 
+/* 修正3：強制讓卡片內的段落和列表文字變成深色 */
+.coach-card .coach-p,
+.coach-card .coach-ul li {
+    color: #343a40; /* 設定為清晰的深灰色 */
+}

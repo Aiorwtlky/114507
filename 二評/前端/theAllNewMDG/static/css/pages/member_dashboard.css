@@ -117,3 +117,22 @@
     font-weight: bold;
     color: #1a2a5f;
 }
+
+.custom-btn.primary-btn {
+    display: block;
+    margin: 40px auto 60px auto;
+    /* 自動置中 */
+    font-size: 24px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    width: fit-content;
+    /* 寬度剛好包文字 */
+
+    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
+    background-color: #1a2a5f;
+    color: white;
+    border: 1px solid #1a2a5f;
+    transition: background-color 0.2s, color 0.2s;
+}

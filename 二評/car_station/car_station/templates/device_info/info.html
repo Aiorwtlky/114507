@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}本機資訊 - MDG 車機系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .info-title {
+        font-size: 2.5rem;
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #00ffff, transparent);
+        animation: scan 3s linear infinite;
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+        color: #00ffff;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-content {
+        color: #ffffff;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.8rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    }
+
+    .info-label {
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .info-value {
+        color: #ffffff;
+        text-align: right;
+        flex: 1;
+        margin-left: 1rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .status-active {
+        background: rgba(0, 255, 0, 0.2);
+        color: #00ff00;
+        border: 1px solid #00ff00;
+    }
+
+    .status-inactive {
+        background: rgba(255, 0, 0, 0.2);
+        color: #ff0000;
+        border: 1px solid #ff0000;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(0, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00ffff, #0080ff);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .control-button {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3));
+        border: 2px solid #00ffff;
+        color: #00ffff;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .control-button:hover {
+        background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.4));
+        box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    }
+
+    @keyframes scan {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .loading {
+        text-align: center;
+        color: #00ffff;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="info-container">
+        <h1 class="info-title">本機資訊</h1>
+        
+        <div class="info-grid">
+            <!-- 車機基本資訊 -->
+            <div class="info-card">
+                <div class="card-title">🚗 車機資訊</div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <span class="info-label">車機編號:</span>
+                        <span class="info-value">{{ device.device_number }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">車輛類型:</span>
+                        <span class="info-value">{{ device.vehicle_type }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">啟用日期:</span>
+                        <span class="info-value">{{ device.activation_date }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">狀態:</span>
+                        <span class="info-value">
+                            <span class="status-badge {{ 'status-active' if device.is_active else 'status-inactive' }}">
+                                {{ '啟用中' if device.is_active else '已停用' }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">最後同步:</span>
+                        <span class="info-value">{{ device.last_sync.strftime('%Y-%m-%d %H:%M') if device.last_sync else '從未同步' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系統狀態 -->
+            <div class="info-card">
+                <div class="card-title">💻 系統狀態</div>
+                <div class="card-content" id="systemStatus">
+                    <div class="loading">載入系統狀態中...</div>
+                </div>
+            </div>
+
+            <!-- 硬體資訊 -->
+            <div class="info-card">
+                <div class="card-title">🔧 硬體資訊</div>
+                <div class="card-content" id="hardwareInfo">
+                    <div class="loading">載入硬體資訊中...</div>
+                </div>
+            </div>
+
+            <!-- 網路狀態 -->
+            <div class="info-card">
+                <div class="card-title">🌐 網路狀態</div>
+                <div class="card-content" id="networkStatus">
+                    <div class="loading">檢查網路狀態中...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" onclick="refreshStatus()">重新整理狀態</button>
+            <button class="control-button" onclick="syncServer()">同步伺服器</button>
+            <a href="{{ url_for('gps.gps_view') }}" class="control-button">GPS 狀態</a>
+            <a href="{{ url_for('main.index') }}" class="control-button">返回首頁</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let statusUpdateInterval;
+
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function formatUptime(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${days}天 ${hours}時 ${minutes}分`;
+    }
+
+    function updateSystemStatus() {
+        fetch('/device_info/api/system_status')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('systemStatus');
+                
+                if (data.error) {
+                    container.innerHTML = `<div style="color: #ff0000;">錯誤: ${data.error}</div>`;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">CPU 使用率:</span>
+                        <span class="info-value">${data.cpu.usage_percent.toFixed(1)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${data.cpu.usage_percent}%"></div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">記憶體使用率:</span>
+                        <span class="info-value">${data.memory.percent.toFixed(1)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${data.memory.percent}%"></div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">磁碟使用率:</span>
+                        <span class="info-value">${data.disk.percent.toFixed(1)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${data.disk.percent}%"></div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">系統運行時間:</span>
+                        <span class="info-value">${formatUptime(data.uptime_seconds)}</span>
+                    </div>
+                `;
+
+                // 更新硬體資訊
+                const hardwareContainer = document.getElementById('hardwareInfo');
+                hardwareContainer.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">作業系統:</span>
+                        <span class="info-value">${data.platform.system} ${data.platform.release}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">架構:</span>
+                        <span class="info-value">${data.platform.machine}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">CPU 核心數:</span>
+                        <span class="info-value">${data.cpu.count} 核心</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">總記憶體:</span>
+                        <span class="info-value">${formatBytes(data.memory.total)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">可用記憶體:</span>
+                        <span class="info-value">${formatBytes(data.memory.available)}</span>
+                    </div>
+                `;
+
+                // 更新網路狀態
+                const networkContainer = document.getElementById('networkStatus');
+                networkContainer.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">已發送:</span>
+                        <span class="info-value">${formatBytes(data.network.bytes_sent)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">已接收:</span>
+                        <span class="info-value">${formatBytes(data.network.bytes_recv)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">伺服器連線:</span>
+                        <span class="info-value">
+                            <span class="status-badge status-inactive">未連線</span>
+                        </span>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                console.error('系統狀態更新失敗:', error);
+                document.getElementById('systemStatus').innerHTML = 
+                    '<div style="color: #ff0000;">無法取得系統狀態</div>';
+            });
+    }
+
+    function refreshStatus() {
+        updateSystemStatus();
+    }
+
+    function syncServer() {
+        fetch('/device_info/api/sync_server', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || '同步完成');
+        })
+        .catch(error => {
+            alert('同步失敗: ' + error.message);
+        });
+    }
+
+    function startStatusUpdates() {
+        updateSystemStatus(); // 立即更新一次
+        statusUpdateInterval = setInterval(updateSystemStatus, 5000); // 每5秒更新
+    }
+
+    function stopStatusUpdates() {
+        if (statusUpdateInterval) {
+            clearInterval(statusUpdateInterval);
+        }
+    }
+
+    // 頁面載入時開始更新
+    document.addEventListener('DOMContentLoaded', startStatusUpdates);
+    
+    // 頁面卸載時停止更新
+    window.addEventListener('beforeunload', stopStatusUpdates);
+</script>
+{% endblock %}

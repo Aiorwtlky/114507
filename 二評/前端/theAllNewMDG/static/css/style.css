@@ -818,24 +818,31 @@ button.custom-btn.primary-btn {
 }
 
 /* 側邊欄主要容器 (預設狀態：隱藏在畫面右側) */
+/* 側邊欄主要容器 (預設狀態：隱藏在畫面右側) */
 .sidebar {
+  /* --- 這兩行是新加入的關鍵 --- */
+  display: flex;
+  flex-direction: column;
+  
+  /* --- 以下是您原有的樣式，保持不變 --- */
   position: fixed;
   top: 0;
   right: 0;
-  width: 280px;
-  /* 側邊欄寬度，可自行調整 */
+  width: 280px; /* 側邊欄寬度，可自行調整 */
   height: 100%;
-  background-color: #1a2a5f;
-  /* 一個接近設計圖的深藍色 */
+  background-color: #1a2a5f; /* 一個接近設計圖的深藍色 */
   color: white;
-  z-index: 999;
-  /* 確保在最上層 */
+  z-index: 999; /* 確保在最上層 */
   padding: 2rem;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
-
-  /* 核心動畫：將其移出畫面外 */
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
+}
+
+/* 讓側邊欄內容區可以滾動 */
+.sidebar-content {
+  flex-grow: 1;      /* 關鍵：讓內容區自動填滿頭部以外的所有剩餘空間 */
+  overflow-y: auto;  /* 關鍵：當內容高度超過這個區塊時，自動產生垂直捲動條 */
 }
 
 /* 側邊欄滑入後的狀態 */
@@ -1058,4 +1065,26 @@ body.logged-in #sidebar-logged-in {
   /* 點下去的時候稍微縮小，模擬按壓效果 */
   transform: scale(0.95);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* =================================================== */
+/* ===== SIDEBAR SCROLL FIX (請將此段貼到 CSS 最下方) ===== */
+/* =================================================== */
+
+/* 1. 強制移除 sidebar 父容器的 padding */
+.sidebar {
+  padding: 0 !important;
+}
+
+/* 2. 把 padding 加到 header 子元素上 */
+.sidebar-header {
+  padding: 2rem 2rem 1rem 2rem;
+  margin-bottom: 0; /* 取代舊的 margin-bottom */
+}
+
+/* 3. 把 padding 加到 content 子元素上，並確保滾動生效 */
+.sidebar-content {
+  padding: 1rem 2rem 2rem 2rem;
+  flex-grow: 1;
+  overflow-y: auto;
 }

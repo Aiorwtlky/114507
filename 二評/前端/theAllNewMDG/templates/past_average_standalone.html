@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  過往平均 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
+  {# 這段 CSS 和上面那個檔案完全一樣，都是用來讓卡片置中並放大的 #}
+  <style>
+    .standalone-card-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh; /* 給予足夠高度來實現垂直置中 */
+      padding: 2rem;
+    }
+    .standalone-card-container .d-card {
+      /* 放大 1.2 倍，您可以調整這個數值 */
+      transform: scale(1.2);
+      width: 100%;
+      max-width: 450px; /* 限制最大寬度，避免在寬螢幕上過大 */
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* (可選) 增加更明顯的陰影 */
+    }
+
+    .custom-btn.primary-btn {
+    display: block;
+    margin: 40px auto 60px auto;
+    /* 自動置中 */
+    font-size: 24px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    width: fit-content;
+    /* 寬度剛好包文字 */
+
+    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
+    background-color: #1a2a5f;
+    color: white;
+    border: 1px solid #1a2a5f;
+    transition: background-color 0.2s, color 0.2s;
+}
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="standalone-card-container">
+    {# --- 這是您原本的「過往平均」卡片 HTML --- #}
+    <div class="d-card commute-avg-card">
+      <div class="d-card-header">
+        <h3>過往平均</h3>
+        <a href="#" class="header-link">♡</a>
+      </div>
+      <div class="d-card-body">
+        <div class="chart-controls">
+          <div class="control-item">
+            <select name="commute-period" aria-label="選擇時間區間">
+              <option value="quarter" selected>季</option>
+              <option value="month">月</option>
+              <option value="year">年</option>
+            </select>
+          </div>
+          <div class="control-item">
+            <select name="commute-value" aria-label="選擇區間數值">
+              <option value="2025-Q2" selected>2025年第2季</option>
+              <option value="2025-Q1">2025年第1季</option>
+            </select>
+          </div>
+        </div>
+        <div class="gauge-area">
+          <div class="gauge-background"></div>
+          <div class="gauge-needle"></div>
+          <div class="gauge-center-circle"></div>
+          <div class="gauge-text">
+            平均分數 <strong>72</strong> 分
+          </div>
+        </div>
+        <p class="gauge-label">2025年第二季 (4-6月)</p>
+      </div>
+    </div>
+  </div>
+  <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
+{% endblock %}

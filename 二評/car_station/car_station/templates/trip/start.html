@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}開始行程 - MDG 車機系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .trip-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .trip-title {
+        font-size: 2.5rem;
+        color: #00ffff;
+        text-shadow: 0 0 20px #00ffff;
+        margin-bottom: 2rem;
+    }
+
+    .card-reader {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        border: 3px solid #00ffff;
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        margin: 2rem 0;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-reader::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #00ffff, transparent);
+        animation: scan 2s linear infinite;
+    }
+
+    .card-icon {
+        font-size: 4rem;
+        color: #00ffff;
+        margin-bottom: 1rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .card-instruction {
+        font-size: 1.3rem;
+        color: #00ffff;
+        margin-bottom: 2rem;
+    }
+
+    .start-button {
+        background: linear-gradient(45deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.3));
+        border: 3px solid #00ff00;
+        color: #00ff00;
+        padding: 1.5rem 3rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-width: 250px;
+    }
+
+    .start-button:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 10px 30px rgba(0, 255, 0, 0.4),
+            0 0 50px rgba(0, 255, 0, 0.2);
+        background: linear-gradient(45deg, rgba(0, 255, 0, 0.2), rgba(0, 255, 0, 0.4));
+    }
+
+    .start-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .status-message {
+        margin-top: 2rem;
+        padding: 1rem;
+        border-radius: 10px;
+        font-weight: bold;
+    }
+
+    .status-success {
+        background: rgba(0, 255, 0, 0.2);
+        color: #00ff00;
+        border: 1px solid #00ff00;
+    }
+
+    .status-error {
+        background: rgba(255, 0, 0, 0.2);
+        color: #ff0000;
+        border: 1px solid #ff0000;
+    }
+
+    .status-info {
+        background: rgba(0, 255, 255, 0.2);
+        color: #00ffff;
+        border: 1px solid #00ffff;
+    }
+
+    .trip-info {
+        background: rgba(0, 255, 255, 0.1);
+        border: 2px solid #00ffff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        text-align: left;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.8rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    }
+
+    .info-label {
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .info-value {
+        color: #ffffff;
+    }
+
+    @keyframes scan {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="trip-container">
+        <h1 class="trip-title">🚗 開始行程</h1>
+        
+        <div class="card-reader">
+            <div class="card-icon">💳</div>
+            <div class="card-instruction">請刷卡開始行程</div>
+            <button class="start-button" id="startButton" onclick="startTrip()">
+                模擬刷卡 - 開始行程
+            </button>
+        </div>
+
+        <div id="statusMessage"></div>
+        <div id="tripInfo" style="display: none;"></div>
+
+        <div style="margin-top: 3rem;">
+            <a href="{{ url_for('main.index') }}" class="control-button" style="background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.3)); border: 2px solid #00ffff; color: #00ffff; padding: 1rem 2rem; font-size: 1rem; border-radius: 8px; text-decoration: none; display: inline-block;">
+                返回首頁
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showMessage(message, type = 'info') {
+        const messageDiv = document.getElementById('statusMessage');
+        messageDiv.innerHTML = message;
+        messageDiv.className = `status-message status-${type}`;
+        messageDiv.style.display = 'block';
+    }
+
+    function startTrip() {
+        const button = document.getElementById('startButton');
+        button.disabled = true;
+        button.textContent = '啟動中...';
+        
+        showMessage('正在啟動行程...', 'info');
+        
+        fetch('/trip/api/start_trip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage(`✅ ${data.message}`, 'success');
+                
+                // 顯示行程資訊
+                const tripInfo = document.getElementById('tripInfo');
+                tripInfo.innerHTML = `
+                    <div class="trip-info">
+                        <div class="info-row">
+                            <span class="info-label">行程編號:</span>
+                            <span class="info-value">${data.trip_number}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">駕駛員:</span>
+                            <span class="info-value">${data.driver_name}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">開始時間:</span>
+                            <span class="info-value">${new Date(data.start_time).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+                tripInfo.style.display = 'block';
+                
+                // 3秒後跳轉到監控頁面
+                setTimeout(() => {
+                    window.location.href = `/trip/monitor/${data.trip_id}`;
+                }, 3000);
+                
+            } else {
+                showMessage(`❌ ${data.message}`, 'error');
+                button.disabled = false;
+                button.textContent = '模擬刷卡 - 開始行程';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('❌ 啟動失敗，請重試', 'error');
+            button.disabled = false;
+            button.textContent = '模擬刷卡 - 開始行程';
+        });
+    }
+
+    // 頁面載入時檢查是否有進行中的行程
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/trip/api/trip_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'active') {
+                    showMessage('⚠️ 已有進行中的行程', 'info');
+                    
+                    const button = document.getElementById('startButton');
+                    button.textContent = '前往監控頁面';
+                    button.onclick = function() {
+                        window.location.href = `/trip/monitor/${data.trip.id}`;
+                    };
+                }
+            })
+            .catch(error => {
+                console.error('Error checking trip status:', error);
+            });
+    });
+</script>
+{% endblock %}
