@@ -1,16 +1,13 @@
 package com.example.mdgapp.data.viewmodel
 
-// ✅ 新增 import：解決 Unresolved reference 'Log' 錯誤
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.mdgapp.R
-import com.example.mdgapp.data.model.*
-import kotlinx.coroutines.delay
+import com.example.mdgapp.data.model.LinkedAccount
+import com.example.mdgapp.data.model.NotificationSettings
+import com.example.mdgapp.data.model.UserProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 class ManagerProfileViewModel : ViewModel() {
 
@@ -18,38 +15,33 @@ class ManagerProfileViewModel : ViewModel() {
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
 
     init {
-        fetchManagerProfile()
+        // ✅ 修正：直接呼叫同步載入函式
+        loadManagerProfile()
     }
 
-    private fun fetchManagerProfile() {
-        viewModelScope.launch {
-            try {
-                delay(500)
-                _userProfile.value = UserProfile(
-                    fullName = "王大明 (管理者)",
-                    employeeId = "MGR-001",
-                    email = "manager.wang@example.com",
-                    phone = "0987-654-321",
-                    currentVehiclePlate = "N/A (管理帳號)",
-                    groupName = "總部車隊",
-                    licenseNumber = "A12345678",
-                    licenseClass = "普通小型車",
-                    avatarUrl = "",
-                    linkedAccounts = listOf(
-                        LinkedAccount("Google", "manager.wang@gmail.com", R.drawable.ic_google),
-                        LinkedAccount("Apple", "manager.wang@me.com", R.drawable.ic_apple)
-                    ),
-                    notificationSettings = NotificationSettings(
-                        receiveDangerousEvent = true,
-                        receiveSystemAnnouncements = true,
-                        downloadOnlyOnWifi = false
-                    )
-                )
-            } catch (e: Exception) {
-                // 如果 UserProfile 的結構不對，這裡會捕捉到錯誤並印出 log
-                Log.e("ManagerProfileVM", "Error fetching profile", e)
-            }
-        }
+    // ✅ 修正：將原本的非同步載入 (fetch) 改為同步載入 (load)
+    private fun loadManagerProfile() {
+        // 直接、同步地建立 UserProfile 物件，移除 viewModelScope 和 delay
+        _userProfile.value = UserProfile(
+            fullName = "王大明 (管理者)",
+            employeeId = "MGR-001",
+            email = "manager.wang@example.com",
+            phone = "0987-654-321",
+            avatarUrl = "", // 確保 avatarUrl 欄位存在
+            currentVehiclePlate = "N/A (管理帳號)",
+            groupName = "總部車隊",
+            licenseNumber = "A12345678",
+            licenseClass = "普通小型車",
+            linkedAccounts = listOf(
+                LinkedAccount("Google", "manager.wang@gmail.com", R.drawable.ic_google),
+                LinkedAccount("Apple", "manager.wang@me.com", R.drawable.ic_apple)
+            ),
+            notificationSettings = NotificationSettings(
+                receiveDangerousEvent = true,
+                receiveSystemAnnouncements = true,
+                downloadOnlyOnWifi = false
+            )
+        )
     }
 
     fun onSettingChanged(event: Boolean? = null, announcement: Boolean? = null, wifiOnly: Boolean? = null) {

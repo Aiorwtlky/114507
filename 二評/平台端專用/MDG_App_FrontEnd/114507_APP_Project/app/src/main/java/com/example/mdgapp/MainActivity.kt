@@ -1,3 +1,4 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/MainActivity.kt
 package com.example.mdgapp
 
 import android.os.Bundle
@@ -16,13 +17,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
+                // ✅ 使用 Surface 作為 App 的根容器
+                // 這能確保您的 App 有一個一致的背景色，並為 NavHost 提供穩固的繪製畫布
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // 1. 在這裡建立 NavController
                     val navController = rememberNavController()
-                    // 2. 將 NavController 傳遞給 AppNavGraph
                     AppNavGraph(navController = navController)
                 }
             }

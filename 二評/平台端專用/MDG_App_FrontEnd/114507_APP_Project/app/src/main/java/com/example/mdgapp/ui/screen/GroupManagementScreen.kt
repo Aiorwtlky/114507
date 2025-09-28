@@ -1,138 +1,181 @@
 package com.example.mdgapp.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mdgapp.data.viewmodel.GroupManagementViewModel
 import com.example.mdgapp.data.viewmodel.GroupMember
-import com.example.mdgapp.ui.component.HistorySection
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupManagementScreen(
     navController: NavController,
-    viewModel: GroupManagementViewModel = viewModel()
+    viewModel: GroupManagementViewModel = viewModel(),
+    // 新增 isManager 參數，用於區分權限
+    isManager: Boolean
 ) {
     val groupInfo by viewModel.groupInfo.collectAsState()
     val members by viewModel.members.collectAsState()
-    val currentUserIdentity by viewModel.currentUserIdentity.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("群組管理") },
-                navigationIcon = { IconButton(onClick = { navController.navigateUp() }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
-                }},
+                title = { Text(groupInfo.groupName) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
+                    }
+                },
+                actions = {
+                    // 只有管理者才能看到設定按鈕
+                    if (isManager) {
+                        IconButton(onClick = { navController.navigate("groupSettings") }) {
+                            Icon(Icons.Default.Settings, "群組設定")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Black,
                     titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 )
             )
         },
+        floatingActionButton = {
+            // 只有管理者才能看到新增成員按鈕
+            if (isManager) {
+                FloatingActionButton(
+                    onClick = { navController.navigate("addMember") },
+                    containerColor = Color.White
+                ) {
+                    Icon(Icons.Default.Add, "新增成員", tint = Color.Black)
+                }
+            }
+        },
         containerColor = Color.Black
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+        LazyColumn(
+            modifier = Modifier.padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 區塊一：群組設定
-            HistorySection(title = "群組設定") {
-                Column(modifier = Modifier.clickable { navController.navigate("groupSettings") }) {
-                    InfoRow("目前群組", groupInfo.groupName)
-                    InfoRow("所屬單位", groupInfo.unitName)
-                    InfoRow("群組組長", groupInfo.leaderName)
-                }
+            item {
+                Text("團隊成員 (${members.size})", style = MaterialTheme.typography.titleMedium, color = Color.White)
             }
-
-            // 區塊二：組內身分
-            HistorySection(title = "組內身分") {
-                Text(currentUserIdentity, color = Color.White, fontSize = 14.sp)
-            }
-
-            // ✅ 區塊三：恢復成沒有 weight 的版本
-            HistorySection(title = "群組成員") {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = { navController.navigate("addMember") }) {
-                        Icon(Icons.Default.Add, contentDescription = "新增成員")
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("新增成員")
+            items(members, key = { it.id }) { member ->
+                MemberCard(
+                    member = member,
+                    onClick = {
+                        // 所有使用者都可以查看成員詳情
+                        navController.navigate("memberDetail/${member.id}")
+                    },
+                    // 只有管理者才能看到管理員專屬的下拉選單
+                    isManager = isManager,
+                    onViewReportClick = {
+                        // 導航到管理者查看該成員報表的路由
+                        navController.navigate("managerReportDateList/${member.id}")
+                    },
+                    onViewVideoClick = {
+                        // 導航到管理者查看該成員影片的路由
+                        navController.navigate("managerDownloadFileList/${member.id}")
+                    },
+                    onRemoveMemberClick = {
+                        viewModel.removeMember(member)
+                        Toast.makeText(context, "已移除 ${member.name}", Toast.LENGTH_SHORT).show()
                     }
-                }
-                // ✅ 恢復固定高度的 LazyColumn
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 400.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(members, key = { it.id }) { member ->
-                        GroupMemberListItem(member = member, onClick = {
-                            navController.navigate("memberDetail/${member.id}")
-                        })
-                    }
-                }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun InfoRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(label, color = Color.Gray, fontSize = 14.sp)
-        Text(value, color = Color.White, fontSize = 14.sp)
-    }
-}
+fun MemberCard(
+    member: GroupMember,
+    onClick: () -> Unit,
+    isManager: Boolean,
+    onViewReportClick: () -> Unit,
+    onViewVideoClick: () -> Unit,
+    onRemoveMemberClick: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
 
-@Composable
-fun GroupMemberListItem(member: GroupMember, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Card(
+        onClick = onClick,
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Image(
-            painter = painterResource(id = member.avatarResId),
-            contentDescription = "成員頭像",
-            modifier = Modifier.size(48.dp).clip(CircleShape)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(member.name, color = Color.White, fontWeight = FontWeight.Bold)
-            Text("編號: ${member.memberId}", color = Color.Gray, fontSize = 12.sp)
-            Text("加入日期: ${member.joinDate.format(DateTimeFormatter.ISO_LOCAL_DATE)}", color = Color.Gray, fontSize = 12.sp)
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = member.avatarResId),
+                contentDescription = member.name,
+                modifier = Modifier.size(48.dp).clip(CircleShape)
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(member.name, color = Color.White, fontWeight = FontWeight.Bold)
+                Text(member.status, color = if (member.status == "在線") Color.Green else Color.Gray)
+            }
+
+            // 只有管理者才能看到更多選項的按鈕
+            if (isManager) {
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, "更多選項", tint = Color.White)
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("查看報表") },
+                            onClick = {
+                                onViewReportClick()
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("查看行車影像") },
+                            onClick = {
+                                onViewVideoClick()
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("移除成員", color = Color.Red) },
+                            onClick = {
+                                onRemoveMemberClick()
+                                showMenu = false
+                            }
+                        )
+                    }
+                }
+            }
         }
-        Text("${member.averageScore}分", color = Color.Cyan, fontSize = 16.sp)
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "查看詳情", tint = Color.Gray)
     }
 }

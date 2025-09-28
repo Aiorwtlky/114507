@@ -75,4 +75,8 @@ dependencies {
     // 加入 Retrofit 和 Coroutines 的 bundle
     implementation(libs.bundles.retrofit)
     implementation(libs.bundles.coroutines)
+    implementation(libs.maps.compose) // Google Maps for Compose
+    implementation(libs.play.services.location) // 用於獲取 GPS 位置
+
+    implementation(libs.androidx.core.ktx)
 }

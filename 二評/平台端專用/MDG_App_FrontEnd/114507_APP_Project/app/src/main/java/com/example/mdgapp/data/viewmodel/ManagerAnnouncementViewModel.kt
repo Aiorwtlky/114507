@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 // 公告的資料模型
 data class Announcement(
@@ -20,8 +19,9 @@ data class Announcement(
     val groupName: String = "總部車隊"
 )
 
-// 新增公告畫面的狀態
+// 新增/編輯公告畫面的狀態
 data class NewAnnouncementState(
+    val announcementId: Int? = null,
     val subject: String = "",
     val content: String = "",
     val isScheduled: Boolean = false,
@@ -30,12 +30,11 @@ data class NewAnnouncementState(
 
 class ManagerAnnouncementViewModel : ViewModel() {
 
-    // 用於公告列表
     private val _announcements = MutableStateFlow<List<Announcement>>(emptyList())
     val announcements: StateFlow<List<Announcement>> = _announcements.asStateFlow()
 
-    // 用於新增公告頁面
     private val _newAnnouncementState = MutableStateFlow(NewAnnouncementState())
+    // ✅ 修正：移除多餘的角括號 ">"
     val newAnnouncementState: StateFlow<NewAnnouncementState> = _newAnnouncementState.asStateFlow()
 
     init {
@@ -43,14 +42,13 @@ class ManagerAnnouncementViewModel : ViewModel() {
     }
 
     private fun loadAnnouncements() {
-        // 模擬載入現有公告
         _announcements.value = listOf(
             Announcement(1, "系統維護通知", "親愛的團隊成員，\n\n為提升系統效能，我們將於下週一 (09/22) 凌晨 02:00 至 04:00 進行系統維護，屆時 App 可能暫時無法使用，敬請見諒。", LocalDate.of(2025, 9, 14)),
             Announcement(2, "駕駛安全獎勵辦法", "為鼓勵優良駕駛，本季平均分數達95分以上同仁，將可獲得5000元獎金。", LocalDate.of(2025, 9, 1))
         )
     }
 
-    // --- 新增公告畫面的事件處理 ---
+    // --- 事件處理 ---
 
     fun onSubjectChange(subject: String) {
         _newAnnouncementState.update { it.copy(subject = subject) }
@@ -68,6 +66,38 @@ class ManagerAnnouncementViewModel : ViewModel() {
         _newAnnouncementState.update { it.copy(scheduledDate = date) }
     }
 
+    fun loadAnnouncementForEditing(id: Int) {
+        val announcement = _announcements.value.find { it.id == id }
+        announcement?.let {
+            _newAnnouncementState.value = NewAnnouncementState(
+                announcementId = it.id,
+                subject = it.subject,
+                content = it.content,
+                isScheduled = it.publishDate.isAfter(LocalDate.now()),
+                scheduledDate = it.publishDate
+            )
+        }
+    }
+
+    fun updateAnnouncement() {
+        viewModelScope.launch {
+            val updatedState = _newAnnouncementState.value
+            val idToUpdate = updatedState.announcementId ?: return@launch
+
+            val updatedAnnouncement = Announcement(
+                id = idToUpdate,
+                subject = updatedState.subject,
+                content = updatedState.content,
+                publishDate = if (updatedState.isScheduled) updatedState.scheduledDate else LocalDate.now()
+            )
+
+            _announcements.update { currentList ->
+                currentList.map { if (it.id == idToUpdate) updatedAnnouncement else it }
+            }
+            resetNewAnnouncementState()
+        }
+    }
+
     fun publishAnnouncement() {
         viewModelScope.launch {
             val newAnnouncementData = _newAnnouncementState.value
@@ -81,7 +111,11 @@ class ManagerAnnouncementViewModel : ViewModel() {
             )
 
             _announcements.update { listOf(announcementToAdd) + it }
-            _newAnnouncementState.value = NewAnnouncementState()
+            resetNewAnnouncementState()
         }
+    }
+
+    fun resetNewAnnouncementState() {
+        _newAnnouncementState.value = NewAnnouncementState()
     }
 }

@@ -20,9 +20,12 @@ import com.example.mdgapp.ui.component.DateListItemCard
 @Composable
 fun DownloadFileListScreen(
     navController: NavController,
-    // 改用駕駛員專屬的 ViewModel
     viewModel: DriverDownloadViewModel = viewModel()
 ) {
+    // ✅ 修正：移除 LaunchedEffect。
+    // ViewModel 的 init { ... } 區塊會自動載入資料，
+    // 我們不需要從 UI 手動觸發。
+
     val dailyLogs by viewModel.dailyLogs.collectAsState()
 
     Scaffold(
@@ -43,6 +46,7 @@ fun DownloadFileListScreen(
         },
         containerColor = Color.Black
     ) { paddingValues ->
+        // 為了更好的使用者體驗，在 dailyLogs 為空時，可以顯示一個載入指示器
         if (dailyLogs.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Color.White)

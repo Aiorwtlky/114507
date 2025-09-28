@@ -52,7 +52,7 @@ fun ManagerDriverSelectionScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         // 導航到該駕駛的檔案列表，並傳遞 driverId
-                        navController.navigate("downloadFileList/${driver.driverId}")
+                        navController.navigate("managerDownloadFileList/${driver.driverId}")
                     },
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E))
                 ) {

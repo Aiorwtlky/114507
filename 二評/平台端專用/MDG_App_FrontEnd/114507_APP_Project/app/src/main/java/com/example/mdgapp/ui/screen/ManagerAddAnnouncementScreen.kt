@@ -26,8 +26,19 @@ import java.time.ZoneId
 @Composable
 fun ManagerAddAnnouncementScreen(
     navController: NavController,
+    announcementId: Int? = null,
     viewModel: ManagerAnnouncementViewModel = viewModel()
 ) {
+    val isEditing = announcementId != null
+
+    LaunchedEffect(announcementId) {
+        if (isEditing) {
+            viewModel.loadAnnouncementForEditing(announcementId!!)
+        } else {
+            viewModel.resetNewAnnouncementState()
+        }
+    }
+
     val state by viewModel.newAnnouncementState.collectAsState()
     val isFormValid = state.subject.isNotBlank() && state.content.isNotBlank()
     var showDatePicker by remember { mutableStateOf(false) }
@@ -35,7 +46,7 @@ fun ManagerAddAnnouncementScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("新增公告") },
+                title = { Text(if (isEditing) "編輯公告" else "新增公告") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
@@ -44,12 +55,16 @@ fun ManagerAddAnnouncementScreen(
                 actions = {
                     TextButton(
                         onClick = {
-                            viewModel.publishAnnouncement()
+                            if (isEditing) {
+                                viewModel.updateAnnouncement()
+                            } else {
+                                viewModel.publishAnnouncement()
+                            }
                             navController.navigateUp()
                         },
                         enabled = isFormValid
                     ) {
-                        Text("發佈")
+                        Text(if (isEditing) "更新" else "發佈")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -97,7 +112,9 @@ fun ManagerAddAnnouncementScreen(
                 value = state.content,
                 onValueChange = { viewModel.onContentChange(it) },
                 label = { Text("內容") },
-                modifier = Modifier.fillMaxWidth().height(200.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
             )
         }
     }

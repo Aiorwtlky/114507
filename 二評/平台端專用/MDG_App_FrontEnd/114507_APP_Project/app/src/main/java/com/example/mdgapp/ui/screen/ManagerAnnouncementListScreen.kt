@@ -59,15 +59,21 @@ fun ManagerAnnouncementListScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(announcements, key = { it.id }) { announcement ->
-                AnnouncementListItem(announcement = announcement)
+                AnnouncementListItem(
+                    announcement = announcement,
+                    onClick = {
+                        navController.navigate("managerEditAnnouncement/${announcement.id}")
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun AnnouncementListItem(announcement: Announcement) {
+fun AnnouncementListItem(announcement: Announcement, onClick: () -> Unit = {}) {
     Card(
+        onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
         modifier = Modifier.fillMaxWidth()
     ) {

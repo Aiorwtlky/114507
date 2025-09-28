@@ -119,11 +119,6 @@ fun ProfileScreen(
                         isChecked = profile.notificationSettings.receiveSystemAnnouncements,
                         onCheckedChange = { viewModel.onSettingChanged(announcement = it) }
                     )
-                    SettingsSwitchRow(
-                        label = "僅在 Wi-Fi 環境下載",
-                        isChecked = profile.notificationSettings.downloadOnlyOnWifi,
-                        onCheckedChange = { viewModel.onSettingChanged(wifiOnly = it) }
-                    )
                 }
                 Spacer(modifier = Modifier.height(32.dp))
 

@@ -23,7 +23,9 @@ data class GroupMember(
     val memberId: String,
     val name: String,
     val averageScore: Int,
-    val joinDate: LocalDate
+    val joinDate: LocalDate,
+    // ✅ 1. 新增 status 欄位，以符合 GroupManagementScreen 的需求
+    val status: String
 )
 
 // --- ViewModel ---
@@ -50,9 +52,10 @@ class GroupManagementViewModel : ViewModel() {
 
     private fun loadGroupMembers() {
         _members.value = listOf(
-            GroupMember("MGR-001", R.drawable.jiboda1, "MGR-001", "陳廷軒", 92, LocalDate.of(2024, 1, 15)),
-            GroupMember("D-007", R.drawable.mywife, "D-007", "姜諧潾", 84, LocalDate.of(2024, 3, 22)),
-            GroupMember("D-008", R.drawable.jiboda2, "D-008", "季博達", 95, LocalDate.of(2024, 2, 10))
+            // ✅ 在建立成員時，填入 status 狀態
+            GroupMember("MGR-001", R.drawable.jiboda1, "MGR-001", "陳廷軒", 92, LocalDate.of(2024, 1, 15), status = "在線"),
+            GroupMember("D-007", R.drawable.mywife, "D-007", "姜諧潾", 84, LocalDate.of(2024, 3, 22), status = "離線"),
+            GroupMember("D-008", R.drawable.jiboda2, "D-008", "季博達", 95, LocalDate.of(2024, 2, 10), status = "在線")
         )
     }
 
@@ -67,5 +70,13 @@ class GroupManagementViewModel : ViewModel() {
 
     fun updateGroupName(newName: String) {
         _groupInfo.update { it.copy(groupName = newName) }
+    }
+
+    // ✅ 2. 新增 removeMember 函式
+    fun removeMember(memberToRemove: GroupMember) {
+        _members.update { currentMembers ->
+            currentMembers.filterNot { it.id == memberToRemove.id }
+        }
+        // TODO: 在此處呼叫後端 API 來實際從資料庫移除成員
     }
 }

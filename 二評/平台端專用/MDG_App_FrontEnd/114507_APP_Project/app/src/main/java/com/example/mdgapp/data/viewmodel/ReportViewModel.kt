@@ -8,10 +8,49 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
+// 步驟 1: 建立一個倉儲類別 (Repository) 來處理資料來源
+class ReportRepository {
+    // 模擬的 API 呼叫
+    suspend fun getReportsForCurrentUser(): List<DrivingReport> {
+        // TODO: 在此處呼叫您的後端 API
+        // 以下是模擬資料
+        val today = LocalDate.now()
+        return (0..6).map { dayIndex ->
+            val date = today.minusDays(dayIndex.toLong())
+            createMockReportForDate(date)
+        }
+    }
+
+    private fun createMockReportForDate(date: LocalDate): DrivingReport {
+        val score = Random.nextInt(55, 101)
+        val scoreRating = when {
+            score >= 90 -> "優秀"
+            score >= 80 -> "良好"
+            score >= 60 -> "警告"
+            else -> "危險"
+        }
+        return DrivingReport(date, score, scoreRating, Random.nextInt(-5, 6), "整體駕駛平穩，請繼續保持。",
+            TripInfo("08:31", "17:54", Random.nextDouble(80.0, 150.0), Random.nextInt(120, 300)),
+            PerformanceMetrics(Random.nextInt(80, 101), Random.nextInt(70, 96), Random.nextInt(90, 101), Random.nextInt(75, 99)),
+            createMockEvents()
+        )
+    }
+
+    private fun createMockEvents(): List<DangerousEventItem> {
+        val allEvents = listOf(
+            DangerousEventItem("急加速", "09:15", "中", 3, "起步時請緩慢踩下油門。"),
+            DangerousEventItem("疲勞駕駛", "14:32", "高", 8, "建議停車休息。")
+        )
+        return allEvents.shuffled().take(Random.nextInt(1, 3))
+    }
+}
+
+// 步驟 2: 修改 ViewModel，讓它從 Repository 取得資料
 class ReportViewModel : ViewModel() {
+
+    private val repository = ReportRepository() // 實際專案中，這裡會透過依賴注入 (DI) 傳入
 
     private val _reports = MutableStateFlow<List<DrivingReport>>(emptyList())
     val reports: StateFlow<List<DrivingReport>> = _reports.asStateFlow()
@@ -20,68 +59,18 @@ class ReportViewModel : ViewModel() {
     val selectedReport: StateFlow<DrivingReport?> = _selectedReport.asStateFlow()
 
     init {
-        generateMockReports()
+        fetchReports()
+    }
+
+    private fun fetchReports() {
+        viewModelScope.launch {
+            // 透過 repository 取得資料
+            _reports.value = repository.getReportsForCurrentUser()
+        }
     }
 
     fun selectReportByDate(date: LocalDate) {
+        // 這部分的邏輯是正確的
         _selectedReport.value = _reports.value.find { it.date == date }
-    }
-
-    private fun generateMockReports() {
-        viewModelScope.launch {
-            val today = LocalDate.now()
-            _reports.value = (0..6).map { dayIndex ->
-                val date = today.minusDays(dayIndex.toLong())
-                createMockReportForDate(date)
-            }
-        }
-    }
-
-    private fun createMockReportForDate(date: LocalDate): DrivingReport {
-        // 調整分數範圍以測試所有顏色
-        val score = Random.nextInt(55, 101)
-
-        // --- ✅ 修改點：根據分數決定評級文字 ---
-        val scoreRating = when {
-            score >= 90 -> "優秀"
-            score >= 80 -> "良好"
-            score >= 60 -> "警告"
-            else -> "危險"
-        }
-
-        return DrivingReport(
-            date = date,
-            totalScore = score,
-            scoreRating = scoreRating, // 使用新的評級文字
-            comparisonWithAverage = Random.nextInt(-5, 6),
-            geminiFeedback = listOf(
-                "整體駕駛平穩，請繼續保持。",
-                "偵測到數次急加速，請注意油門控制。",
-                "有輕微疲勞駕駛跡象，請確保休息充足。"
-            ).random(),
-            tripInfo = TripInfo(
-                startTime = "08:31", endTime = "17:54",
-                totalDistanceKm = Random.nextDouble(80.0, 150.0),
-                totalDurationMinutes = Random.nextInt(120, 300)
-            ),
-            performanceMetrics = PerformanceMetrics(
-                safety = Random.nextInt(80, 101),
-                behavior = Random.nextInt(70, 96),
-                compliance = Random.nextInt(90, 101),
-                efficiency = Random.nextInt(75, 99)
-            ),
-            events = createMockEvents()
-        )
-    }
-
-    private fun createMockEvents(): List<DangerousEventItem> {
-        val allEvents = listOf(
-            DangerousEventItem("急加速", "09:15", "中", 3, "起步時請緩慢踩下油門，避免車輛頓挫。"),
-            DangerousEventItem("疲勞駕駛", "14:32", "高", 8, "偵測到您眼皮閉合時間過長，建議停車休息。"),
-            DangerousEventItem("車道偏離", "11:05", "低", 1, "請將注意力集中於前方道路，確保行駛於車道中央。"),
-            DangerousEventItem("使用手機", "16:40", "高", 10, "駕駛時使用手機極度危險，請使用藍牙耳機或停車後再操作。"),
-            DangerousEventItem("急煞車", "10:55", "中", 4, "請與前車保持安全距離，預留足夠的反應時間。")
-        )
-        return allEvents.shuffled().take(Random.nextInt(1, 4))
     }
 }
