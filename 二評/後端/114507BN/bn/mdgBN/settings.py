@@ -122,6 +122,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5000",
     "http://mdgitrc.ntub.edu.tw:5000",
     "http://140.131.114.182:5000",
+    "https://140.131.114.182:5000",
     # Android 模擬器
     "http://10.0.2.2:5000",
 ]
