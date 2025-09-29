@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.15</domain>
+        <domain includeSubdomains="true">140.131.114.182</domain>
     </domain-config>
 </network-security-config>

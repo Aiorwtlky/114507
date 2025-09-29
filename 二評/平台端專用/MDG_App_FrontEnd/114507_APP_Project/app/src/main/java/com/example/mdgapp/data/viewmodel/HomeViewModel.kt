@@ -1,8 +1,13 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/data/viewmodel/HomeViewModel.kt
+
 package com.example.mdgapp.data.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import com.example.mdgapp.data.model.toLastTripInfo // 👈 【重點】匯入我們剛建立的 Mapper
+import com.example.mdgapp.data.remote.ApiService
+import com.example.mdgapp.data.remote.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,6 +16,9 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 import kotlin.random.Random
+
+// ... LastTripInfo, Violation, PastAverageData, PastTrendData, HomeUiState 這些 data class 保持不變 ...
+// (這裡省略，以節省篇幅)
 
 data class LastTripInfo(
     val startTime: LocalDateTime,
@@ -54,7 +62,14 @@ data class HomeUiState(
     val isLoading: Boolean = true
 )
 
+
+//  classe HomeViewModel(
+//     // 👈 【重點】1. 使用建構式注入 (Constructor Injection) 傳入 ApiService
+//     // 這樣可以讓 ViewModel 和網路層解耦，也方便未來進行單元測試
+//     private val apiService: ApiService
+// ) : ViewModel() {
 class HomeViewModel : ViewModel() {
+    private val apiService: ApiService = RetrofitInstance.api
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -64,38 +79,51 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun initialize() {
+        // 👈 【重點】2. 這裡是修改的核心
         viewModelScope.launch {
-            delay(1500) // 模擬網路請求
+            // 在發起請求前，先顯示讀取中狀態
+            _uiState.update { it.copy(isLoading = true) }
 
-            val now = LocalDateTime.now()
-            val mockLastTrip = LastTripInfo(
-                startTime = now.minusHours(2),
-                endTime = now.minusHours(1),
-                duration = Duration.ofHours(1),
-                startLocation = "台北市中正區",
-                endLocation = "新北市林口區",
-                mileage = 25.3,
-                totalScore = 88,
-                improvementPercentage = 5,
-                violations = listOf(
-                    Violation("急加速", -5),
-                    Violation("超速", -7)
-                ),
-                aiSuggestion = "林口交流道前請提早切換車道，避免急煞。"
-            )
+            try {
+                // TODO: Token 應該從 SharedPreferences 或 DataStore 中安全地讀取
+                // 這裡我們先用一個假 token 示範
+                val token = "Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
 
-            _uiState.update {
-                it.copy(
-                    lastTrip = mockLastTrip,
-                    isLoading = false
-                )
+                // 發起真實的 API 請求
+                val response = apiService.getTrips(token)
+
+                if (response.isSuccessful) {
+                    val trips = response.body()
+                    // 取得列表中的第一筆作為最新行程，並進行轉換
+                    val lastTrip = trips?.firstOrNull()?.toLastTripInfo()
+
+                    _uiState.update {
+                        it.copy(
+                            lastTrip = lastTrip,
+                            isLoading = false // 成功後，結束讀取狀態
+                        )
+                    }
+                } else {
+                    // API 請求失敗 (e.g., 401, 404, 500)
+                    Log.e("HomeViewModel", "取得行程列表失敗: ${response.code()}")
+                    _uiState.update { it.copy(isLoading = false) } // 失敗後，也要結束讀取狀態
+                }
+
+            } catch (e: Exception) {
+                // 網路連線錯誤或其他例外
+                Log.e("HomeViewModel", "初始化時發生錯誤", e)
+                _uiState.update { it.copy(isLoading = false) } // 發生例外，也要結束讀取狀態
             }
-            // 初始化時，直接觸發時間單位選擇事件，就會自動載入最新的值
+
+            // 這兩行保持不變，因為它們是控制「過往平均」和「過往趨勢」的 UI
+            // 且它們目前仍是使用模擬資料
             onAverageTimeUnitSelected("月")
             onTrendTimeUnitSelected("月")
         }
     }
 
+    // --- 以下的函式 (過往平均、過往趨勢) 都不需要變動 ---
+    // --- (省略，以節省篇幅) ---
     // --- 過往平均 ---
     fun onAverageTimeUnitSelected(timeUnit: String) {
         val newValueOptions = generateValueOptions(timeUnit)
