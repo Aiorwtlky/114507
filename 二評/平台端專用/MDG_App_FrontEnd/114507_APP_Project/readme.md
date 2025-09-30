@@ -208,3 +208,8 @@
 * `app/src/main/java/com/example/mdgapp/ui/screen/`: 存放各個獨立的畫面 (Screen) Composable。
 * `app/src/main/java/com/example/mdgapp/ui/component/`: 存放可在多個畫面間重用的 UI 元件。
 * `app/src/main/java/com/example/mdgapp/navigation/AppNavGraph.kt`: 定義了所有畫面的導覽路徑與流程。
+
+aksnldlasjd;lasjd;a;skkldnalksndasdk
+aklsdnlaksndlkansdqk
+alskdnlkasndkasd
+aksndlkasndjpoiuqoewj
