@@ -6,6 +6,7 @@ from blueprints.camera import camera_bp
 from blueprints.device_info import device_info_bp
 from blueprints.gps import gps_bp
 from blueprints.video import video_bp
+from blueprints.image_recognition import recognition_bp
 from models import db, init_database
 from config import APP_CONFIG
 import os
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(device_info_bp, url_prefix='/device_info')
     app.register_blueprint(gps_bp, url_prefix='/gps')
     app.register_blueprint(video_bp, url_prefix='/video')
+    app.register_blueprint(recognition_bp, url_prefix='/recognition')
     
     # 建立資料庫表格
     init_database(app)

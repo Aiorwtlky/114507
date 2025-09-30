@@ -344,3 +344,61 @@ def init_database(app):
         
         # 系統重啟時檢查異常狀態
         check_system_status_on_startup()
+
+# ========== AI 辨識系統新增的表格 ==========
+
+class EventLogLocal(db.Model):
+    """本地事件記錄 - AI 偵測到的事件暫存在這裡"""
+    __tablename__ = 'event_log_local'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), nullable=False)
+    camera_type = db.Column(db.String(10), nullable=False, comment='鏡頭類型: inside/outside')
+    event_number = db.Column(db.String(10), nullable=False, comment='事件編號: A01, B02 等')
+    event_description = db.Column(db.String(255), nullable=False, comment='事件描述')
+    timestamp = db.Column(db.DateTime, nullable=False, comment='發生時間')
+    confidence_score = db.Column(db.Float, comment='AI 信心分數')
+    deduction_points = db.Column(db.Integer, comment='扣分')
+    event_details = db.Column(db.JSON, comment='事件詳細資訊')
+    local_image_path = db.Column(db.String(500), comment='本地截圖路徑')
+    uploaded = db.Column(db.Boolean, default=False, comment='是否已上傳')
+    uploaded_at = db.Column(db.DateTime, comment='上傳時間')
+    
+    trip = db.relationship('Trip', backref='local_events')
+
+
+class UploadQueue(db.Model):
+    """上傳佇列 - 網路斷線時的任務排隊"""
+    __tablename__ = 'upload_queue'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), nullable=False)
+    task_type = db.Column(db.String(50), nullable=False, comment='任務類型')
+    task_data = db.Column(db.JSON, nullable=False, comment='任務資料')
+    priority = db.Column(db.Integer, default=5, comment='優先級 1-10')
+    status = db.Column(db.String(20), default='pending', comment='狀態')
+    retry_count = db.Column(db.Integer, default=0, comment='重試次數')
+    error_message = db.Column(db.Text, comment='錯誤訊息')
+    created_at = db.Column(db.DateTime, nullable=False, comment='建立時間')
+    last_attempt = db.Column(db.DateTime, comment='最後嘗試時間')
+    completed_at = db.Column(db.DateTime, comment='完成時間')
+    
+    trip = db.relationship('Trip', backref='upload_tasks')
+
+
+class TripLocal(db.Model):
+    """本地行程暫存 - 離線模式使用"""
+    __tablename__ = 'trip_local'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    trip_number = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(200), nullable=False)
+    device_id = db.Column(db.Integer, nullable=False)
+    personnel_id = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), default='準備中')
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
+    local_score = db.Column(db.Float, comment='本地計算的評分')
+    local_total_deduction = db.Column(db.Integer, comment='本地計算的總扣分')
+    synced_to_server = db.Column(db.Boolean, default=False)
+    server_trip_id = db.Column(db.Integer, comment='伺服器端的 Trip ID')

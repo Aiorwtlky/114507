@@ -1,5 +1,41 @@
-Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
+# Raspberry Pi 優化版依賴清單
+# 使用較輕量的版本以減少記憶體占用
+
+# Flask 核心
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Werkzeug==3.0.1
+SQLAlchemy==2.0.23
+
+# HTTP 請求
+requests==2.31.0
+
+# AI 視覺辨識 - MediaPipe (疲勞偵測)
+mediapipe==0.10.9
+
+# AI 視覺辨識 - YOLOv8 輕量版
+# 注意：Raspberry Pi 建議使用 PyTorch CPU-only 版本
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.1.2+cpu
+torchvision==0.16.2+cpu
+ultralytics==8.1.0
+
+# 影像處理 (使用 headless 版本節省空間)
+opencv-python-headless==4.9.0.80
+Pillow==10.2.0
+
+# 數值計算
+numpy==1.26.3
+scipy==1.11.4
+
+# 序列通訊
 pyserial==3.5
-opencv-python==4.8.1.78
-psutil==5.9.5
+
+# 環境變數
+python-dotenv==1.0.0
+
+# 系統監控 (推薦安裝)
+psutil==5.9.6
+
+# ONNX Runtime (強烈推薦 - 比 PyTorch 快 2-3 倍)
+onnxruntime==1.16.3
