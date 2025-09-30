@@ -1,3 +1,5 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/screen/ReportDetailScreen.kt
+
 package com.example.mdgapp.ui.screen
 
 import androidx.compose.foundation.layout.*
@@ -11,27 +13,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mdgapp.data.viewmodel.ReportViewModel
+import com.example.mdgapp.data.model.TripDetail
 import com.example.mdgapp.ui.component.*
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportDetailScreen(
     navController: NavController,
-    dateString: String?,
-    // ✅ 修改點：同樣改為直接接收 viewModel 參數
-    viewModel: ReportViewModel
+    tripId: Int?,
+    // ▼▼▼ 【核心修改】讓此畫面直接接收「資料」和「動作」，而不是特定的 ViewModel ▼▼▼
+    report: TripDetail?,
+    onFetchDetails: (Int) -> Unit
 ) {
-    val selectedDate = remember(dateString) { dateString?.let { LocalDate.parse(it) } }
-
-    LaunchedEffect(selectedDate) {
-        selectedDate?.let { viewModel.selectReportByDate(it) }
+    // 當 tripId 存在且發生變化時，執行 onFetchDetails 這個動作
+    LaunchedEffect(tripId) {
+        tripId?.let(onFetchDetails)
     }
-
-    val report by viewModel.selectedReport.collectAsState()
 
     Scaffold(
         topBar = {
@@ -56,7 +54,8 @@ fun ReportDetailScreen(
         },
         containerColor = Color.Black
     ) { paddingValues ->
-        report?.let {
+        // 如果 report 物件不為 null，則顯示內容
+        report?.let { detailedReport ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -66,12 +65,26 @@ fun ReportDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Spacer(modifier = Modifier.height(0.dp))
-                ScoreHeader(it.totalScore, it.scoreRating, it.geminiFeedback)
-                MetricsCard(it.performanceMetrics)
-                EventLogCard(it.events)
+
+                val score = detailedReport.score.toDoubleOrNull()?.toInt() ?: 0
+                val scoreRating = when {
+                    score >= 90 -> "優秀"
+                    score >= 80 -> "良好"
+                    score >= 60 -> "警告"
+                    else -> "危險"
+                }
+
+                ScoreHeader(
+                    totalScore = score,
+                    scoreRating = scoreRating,
+                    geminiFeedback = detailedReport.aiSuggestion
+                )
+
+                EventLogCard(events = detailedReport.aiVisionLogSet)
                 Spacer(modifier = Modifier.height(16.dp))
             }
         } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            // 如果 report 物件為 null (正在載入)，則顯示讀取動畫
             CircularProgressIndicator()
         }
     }

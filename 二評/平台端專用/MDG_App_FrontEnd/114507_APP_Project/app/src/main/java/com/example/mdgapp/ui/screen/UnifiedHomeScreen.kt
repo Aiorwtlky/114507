@@ -138,17 +138,6 @@ fun AppBottomBar(navController: NavController, userRole: String) {
             unselectedIconColor = Color.White,
             unselectedTextColor = Color.White
         )
-
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-                // ✅ 在這裡加入 Log
-                Log.d("NavigationCheck", "行駛軌跡按鈕被點擊，準備導航至 routeTracking")
-                navController.navigate("routeTracking") },
-            icon = { Icon(painterResource(id = R.drawable.ic_map), "行駛軌跡", modifier = Modifier.size(iconSize)) },
-            label = { Text("行駛軌跡", fontSize = labelFontSize) },
-            colors = itemColors
-        )
         NavigationBarItem(
             selected = false,
             onClick = {

@@ -1,3 +1,5 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/screen/LaunchScreen.kt
+
 package com.example.mdgapp.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
@@ -19,35 +21,52 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.mdgapp.R
+import com.example.mdgapp.data.local.TokenManager // 👈 【重點】1. 匯入 TokenManager
 import com.example.mdgapp.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.delay
 
 @Composable
 fun LaunchScreen(
-    // ✅ 修正 1：參數改為接收 NavController
     navController: NavController,
     previewMode: Boolean = false
 ) {
     var visible by remember { mutableStateOf(false) }
 
-    // 在非預覽模式下，執行計時並導航
+    // 在非預覽模式下，才執行我們的檢查與導航邏輯
     if (!previewMode) {
-        LaunchedEffect(Unit) {
+        // LaunchedEffect 會在畫面第一次顯示時執行一次
+        LaunchedEffect(key1 = true) {
             visible = true
-            delay(2500) // 啟動畫面顯示時長
-            // ✅ 修正 1：計時結束，直接使用 navController 導航
-            navController.navigate("register") {
-                // 從返回堆疊中移除啟動畫面，避免使用者按返回鍵回到這裡
+            delay(2000) // 讓 Logo 動畫有時間播放
+
+            // ▼▼▼▼▼ 【重點】2. 核心決策邏輯 ▼▼▼▼▼
+            // 從 TokenManager 檢查本機是否有 Token
+            val token = TokenManager.getToken()
+
+            // 決定下一個畫面的路徑
+            val destination = if (token.isNullOrBlank()) {
+                // 如果沒有 Token，目標是登入頁
+                "login"
+            } else {
+                // 如果有 Token，目標是主頁
+                "home"
+            }
+
+            // 執行導航
+            navController.navigate(destination) {
+                // 從返回堆疊中移除 launch 畫面，讓使用者按返回鍵時不會再回到這裡
                 popUpTo("launch") { inclusive = true }
             }
+            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
         }
     } else {
-        // 在預覽模式下，僅顯示動畫
+        // 在預覽模式下，僅顯示動畫，不進行導航
         LaunchedEffect(Unit) {
             visible = true
         }
     }
 
+    // --- 以下的 UI 程式碼完全保持不變 ---
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -68,7 +87,6 @@ fun LaunchScreen(
                         painter = painterResource(id = R.drawable.mdg_logo),
                         contentDescription = "MDG Logo",
                         contentScale = ContentScale.Crop,
-                        // ✅ 優化 1：移除了多餘的 clip
                         modifier = Modifier.size(200.dp)
                     )
                 }
@@ -81,7 +99,6 @@ fun LaunchScreen(
 @Composable
 fun PreviewLaunchScreen() {
     MyApplicationTheme(darkTheme = true) {
-        // ✅ 修正 1：預覽時傳入一個假的 NavController
         LaunchScreen(navController = rememberNavController(), previewMode = true)
     }
 }

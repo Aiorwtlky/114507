@@ -1,9 +1,18 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/data/remote/ApiService.kt
+
 package com.example.mdgapp.data.remote
 
 import com.example.mdgapp.data.model.Trip
+import com.example.mdgapp.data.model.LoginRequest
+import com.example.mdgapp.data.model.LoginResponse
+import com.example.mdgapp.data.model.RegisterRequest
+import com.example.mdgapp.data.model.RegisterResponse
 import retrofit2.Response
-import retrofit2.http.*
-import com.google.gson.annotations.SerializedName
+import com.example.mdgapp.data.model.TripDetail // 👈 匯入新的資料模型
+import retrofit2.http.Path // 👈 匯入 @Path
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
 
 interface ApiService {
 
@@ -11,20 +20,14 @@ interface ApiService {
     @POST("/api-token-auth/")
     suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
 
+    // 使用者註冊
+    @POST("/api/register/")
+    suspend fun registerUser(@Body request: RegisterRequest): Response<RegisterResponse>
+
     // 取得行程列表
     @GET("/api/trips/")
-    suspend fun getTrips(@Header("Authorization") token: String): Response<List<Trip>>
+    suspend fun getTrips(): Response<List<Trip>>
 
+    @GET("/api/trips/{id}/")
+    suspend fun getTripDetails(@Path("id") tripId: Int): Response<TripDetail>
 }
-
-// 為了方便，我們先把登入需要的 Request 和 Response Body 也定義在這裡
-// 之後可以考慮移到 model 資料夾
-data class LoginRequest(
-    val username: String,
-    val password: String
-)
-
-data class LoginResponse(
-    @SerializedName("token")
-    val token: String
-)

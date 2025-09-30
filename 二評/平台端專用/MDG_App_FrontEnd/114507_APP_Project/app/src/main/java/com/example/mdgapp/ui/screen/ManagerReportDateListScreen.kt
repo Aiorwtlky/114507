@@ -1,3 +1,5 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/screen/ManagerReportDateListScreen.kt
+
 package com.example.mdgapp.ui.screen
 
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mdgapp.data.viewmodel.ManagerReportViewModel
 import com.example.mdgapp.ui.component.ReportListItemCard
+import java.time.OffsetDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +32,7 @@ fun ManagerReportDateListScreen(
     val reports by viewModel.selectedDriverReports.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val drivers by viewModel.drivers.collectAsState()
-    // 從駕駛員列表中找到當前選擇的駕駛員名稱
+
     val driverName = remember(driverId, drivers) {
         drivers.find { it.driverId == driverId }?.driverName ?: "駕駛"
     }
@@ -37,7 +40,6 @@ fun ManagerReportDateListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                // ✅ 顯示駕駛員名稱，讓使用者介面更清晰
                 title = { Text("$driverName 的報表列表") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
@@ -63,12 +65,16 @@ fun ManagerReportDateListScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(reports, key = { it.date }) { report ->
+                items(reports, key = { it.id }) { report ->
+                    val zonedDateTime = OffsetDateTime.parse(report.startTime)
+                    val date = zonedDateTime.toLocalDate()
+                    val score = report.score.toDoubleOrNull()?.toInt() ?: 0
+
                     ReportListItemCard(
-                        date = report.date,
-                        totalScore = report.totalScore,
+                        date = date,
+                        totalScore = score,
                         onClick = {
-                            navController.navigate("managerReportDetail/${report.date}")
+                            navController.navigate("managerReportDetail/${report.id}")
                         }
                     )
                 }

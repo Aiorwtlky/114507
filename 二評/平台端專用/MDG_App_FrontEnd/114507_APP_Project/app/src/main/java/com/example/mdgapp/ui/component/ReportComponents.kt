@@ -1,6 +1,7 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/component/ReportComponents.kt
+
 package com.example.mdgapp.ui.component
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -12,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mdgapp.data.model.DangerousEventItem
+import com.example.mdgapp.data.model.AiVisionLog
 import com.example.mdgapp.data.model.PerformanceMetrics
 import com.example.mdgapp.data.model.TripInfo
 import java.time.LocalDate
@@ -20,7 +21,6 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-// --- ✅ 新增：根據分數回傳對應顏色的輔助函式 ---
 @Composable
 private fun getScoreColor(score: Int): Color {
     return when {
@@ -48,7 +48,6 @@ fun ReportListItemCard(date: LocalDate, totalScore: Int, onClick: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(formattedDate, color = Color.White, fontSize = 18.sp)
-                // --- ✅ 修改點：讓分數顯示對應顏色 ---
                 Row {
                     Text("$dayOfWeek - 總分: ", color = Color.Gray, fontSize = 14.sp)
                     Text(
@@ -68,8 +67,13 @@ fun ReportListItemCard(date: LocalDate, totalScore: Int, onClick: () -> Unit) {
     }
 }
 
+// ▼▼▼ 【修改重點 1】修改 ScoreHeader 的參數名稱 ▼▼▼
 @Composable
-fun ScoreHeader(score: Int, rating: String, feedback: String) {
+fun ScoreHeader(
+    totalScore: Int,
+    scoreRating: String,
+    geminiFeedback: String
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
         modifier = Modifier.fillMaxWidth()
@@ -79,23 +83,63 @@ fun ScoreHeader(score: Int, rating: String, feedback: String) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("本次駕駛總分", fontSize = 16.sp, color = Color.Gray)
-            Text(score.toString(), fontSize = 64.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            // --- ✅ 修改點：讓評級文字顯示對應顏色 ---
+            // 使用新的參數名稱
+            Text(totalScore.toString(), fontSize = 64.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Text(
-                text = rating,
+                text = scoreRating,
                 fontSize = 20.sp,
-                color = getScoreColor(score = score)
+                color = getScoreColor(score = totalScore)
             )
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = Color.Gray)
             Spacer(modifier = Modifier.height(12.dp))
             Text("AI 智慧評語", fontSize = 14.sp, color = Color.Gray)
-            Text(feedback, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(top = 4.dp))
+            // 使用新的參數名稱
+            Text(geminiFeedback, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(top = 4.dp))
         }
     }
 }
 
-// ... 以下其他元件保持不變 ...
+// ▼▼▼ 【修改重點 2】修改 EventLogCard 和 EventRow 來接收新的資料模型 ▼▼▼
+@Composable
+fun EventLogCard(events: List<AiVisionLog>) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("事件紀錄與改善建議", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Spacer(modifier = Modifier.height(12.dp))
+            // 如果沒有事件，顯示提示訊息
+            if (events.isEmpty()) {
+                Text("本次行程無特別事件紀錄。", color = Color.Gray, fontSize = 14.sp)
+            } else {
+                events.forEach { event ->
+                    EventRow(event) // 將 AiVisionLog 物件傳遞給 EventRow
+                    HorizontalDivider(color = Color(0xFF424242), modifier = Modifier.padding(vertical = 8.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EventRow(event: AiVisionLog) {
+    Column(Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            // 使用 AiVisionLog 和其巢狀的 AiEvent 物件中的資料
+            Text(event.event.description, color = Color.White, fontWeight = FontWeight.Bold)
+            Text("-${event.event.deductionPoints}分", color = Color.Red, fontWeight = FontWeight.Bold)
+        }
+        Text(event.timestamp, color = Color.Gray, fontSize = 12.sp)
+        Spacer(modifier = Modifier.height(4.dp))
+        // API 文件中沒有提供改善建議，我們先顯示事件詳情
+        Text("詳細資訊: ${event.eventDetails}", color = Color.LightGray, fontSize = 14.sp)
+    }
+}
+
+
+// --- 以下元件保持不變 ---
 
 @Composable
 fun MetricsCard(metrics: PerformanceMetrics) {
@@ -121,36 +165,6 @@ fun MetricItem(label: String, score: Int) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(score.toString(), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
         Text(label, fontSize = 12.sp, color = Color.Gray)
-    }
-}
-
-@Composable
-fun EventLogCard(events: List<DangerousEventItem>) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("事件紀錄與改善建議", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Spacer(modifier = Modifier.height(12.dp))
-            events.forEach { event ->
-                EventRow(event)
-                HorizontalDivider(color = Color(0xFF424242), modifier = Modifier.padding(vertical = 8.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun EventRow(event: DangerousEventItem) {
-    Column(Modifier.fillMaxWidth()) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Text(event.eventType, color = Color.White, fontWeight = FontWeight.Bold)
-            Text("-${event.deductionPoints}分", color = Color.Red, fontWeight = FontWeight.Bold)
-        }
-        Text("${event.time} | 嚴重程度: ${event.severity}", color = Color.Gray, fontSize = 12.sp)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text("改善建議: ${event.suggestion}", color = Color.LightGray, fontSize = 14.sp)
     }
 }
 

@@ -1,8 +1,11 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/navigation/AppNavGraph.kt
+
 package com.example.mdgapp.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -24,11 +27,12 @@ fun AppNavGraph(navController: NavHostController) {
 
     NavHost(
         navController = navController,
-        startDestination = "launch",
-        modifier = Modifier.fillMaxSize() // ✅ 修正一：為 NavHost 設定大小
+        startDestination = "home",
+        modifier = Modifier.fillMaxSize()
     ) {
 
         // ==================== 基礎流程路由 ====================
+        composable("login") { LoginScreen(navController = navController) }
         composable("register") { RegisterScreen(navController = navController) }
         composable("launch") { LaunchScreen(navController = navController) }
         composable("home") {
@@ -43,12 +47,11 @@ fun AppNavGraph(navController: NavHostController) {
         // ==================== 功能性頁面路由 ====================
         composable("qrScan") { QrScanScreen(navController = navController) }
 
-        // ✅ 修正二：移除錯誤的巢狀結構，直接呼叫 Screen
-        composable("routeTracking") {
+        /*composable("routeTracking") {
             RouteTrackingScreen(
                 navController = navController
             )
-        }
+        }*/
 
         // ==================== 駕駛員專用路由 ====================
         composable("announcementList") { AnnouncementListScreen(navController = navController) }
@@ -66,14 +69,17 @@ fun AppNavGraph(navController: NavHostController) {
         composable("reportList") {
             ReportListScreen(navController = navController, viewModel = reportViewModel)
         }
+        // ▼▼▼ 【修改重點 1】修正駕駛員報表詳情的呼叫方式 ▼▼▼
         composable(
-            "reportDetail/{date}",
-            arguments = listOf(navArgument("date") { type = NavType.StringType })
+            "reportDetail/{tripId}",
+            arguments = listOf(navArgument("tripId") { type = NavType.IntType })
         ) { backStackEntry ->
+            val report by reportViewModel.selectedReport.collectAsStateWithLifecycle()
             ReportDetailScreen(
                 navController = navController,
-                dateString = backStackEntry.arguments?.getString("date"),
-                viewModel = reportViewModel
+                tripId = backStackEntry.arguments?.getInt("tripId"),
+                report = report,
+                onFetchDetails = { id -> reportViewModel.fetchTripDetails(id) }
             )
         }
 
@@ -156,6 +162,7 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
+        // --- 管理者報表 ---
         composable(
             "managerReportDateList/{driverId}",
             arguments = listOf(navArgument("driverId") { type = NavType.StringType })
@@ -166,16 +173,22 @@ fun AppNavGraph(navController: NavHostController) {
                 viewModel = managerReportViewModel
             )
         }
+
+        // ▼▼▼ 【修改重點 2】刪除所有舊的、重複的定義，只保留這一個正確的版本 ▼▼▼
         composable(
-            "managerReportDetail/{date}",
-            arguments = listOf(navArgument("date") { type = NavType.StringType })
+            "managerReportDetail/{tripId}",
+            arguments = listOf(navArgument("tripId") { type = NavType.IntType })
         ) { backStackEntry ->
-            ManagerReportDetailScreen(
+            val report by managerReportViewModel.selectedReportDetail.collectAsStateWithLifecycle()
+            ReportDetailScreen(
                 navController = navController,
-                dateString = backStackEntry.arguments?.getString("date"),
-                viewModel = managerReportViewModel
+                tripId = backStackEntry.arguments?.getInt("tripId"),
+                report = report,
+                onFetchDetails = { id -> managerReportViewModel.fetchTripDetails(id) }
             )
         }
+
+        // --- 管理者下載 ---
         composable(
             "managerDownloadFileList/{driverId}",
             arguments = listOf(navArgument("driverId") { type = NavType.StringType })

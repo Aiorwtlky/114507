@@ -1,3 +1,5 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/data/remote/RetrofitInstance.kt
+
 package com.example.mdgapp.data.remote
 
 import okhttp3.OkHttpClient
@@ -15,9 +17,10 @@ object RetrofitInstance {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    // 建立 OkHttp 客戶端，並加入日誌攔截器
+    // 建立 OkHttp 客戶端，並加入日誌攔截器和我們自訂的認證攔截器
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(AuthInterceptor()) // 👈 【重點】加上這一行
         .build()
 
     // 透過懶加載 (by lazy) 的方式建立 Retrofit 實例，確保只在第一次使用時才被初始化
