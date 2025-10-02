@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}
-  邀請新成員 · My Driving God
-{% endblock %}
+{% block title %}邀請新成員 · My Driving God{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -14,51 +12,69 @@
       <div class="d-card-body">
         <div class="invite-header">
           <h1>新增成員</h1>
-          <p>北大物流 C組</p>
+          {# 【修改】顯示真實的群組名稱 #}
+          <p>{{ group.name }}</p>
         </div>
 
         <div class="invite-main">
-          <div class="qr-code-section">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://example.com/join/北大物流C組" alt="群組邀請 QR Code" />
-          </div>
-          <div class="link-section">
-            <p class="invite-instruction">複製此網址以邀請新成員：</p>
-            <div class="url-input-group">
-              <input type="text" id="invite-link" value="https://mydrivinggod.com/join/a3x7b9p" readonly />
-              <button id="copy-button" class="btn-copy"><i class="fa-solid fa-copy"></i> 複製</button>
+          {# --- 【核心修改】使用 if 判斷來顯示不同內容 --- #}
+          {% if invite_code %}
+            {# 如果 app.py 傳來了 invite_code，就顯示邀請碼 #}
+            <div class="qr-code-section">
+              {# 【修改】動態生成 QR Code #}
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ invite_code.code }}" alt="群組邀請 QR Code" />
             </div>
-          </div>
+            <div class="link-section">
+              <p class="invite-instruction">請將此邀請碼提供給新成員 ({{ invite_code.expires_at | format_datetime }} 前有效):</p>
+              <div class="url-input-group">
+                {# 【修改】顯示真實的邀請碼 #}
+                <input type="text" id="invite-link" value="{{ invite_code.code }}" readonly />
+                <button id="copy-button" class="btn-copy"><i class="fa-solid fa-copy"></i> 複製</button>
+              </div>
+            </div>
+          {% else %}
+            {# 如果還沒有 invite_code，就顯示生成按鈕 #}
+            <div class="generate-section">
+                <p class="invite-instruction">點擊下方按鈕，為此群組生成一組專屬的邀請碼。</p>
+                {# 這個表單會向當前頁面發送 POST 請求 #}
+                <form method="post" action="{{ url_for('invite_member', group_id=group.id) }}">
+                    <button type="submit" class="btn">生成邀請碼</button>
+                </form>
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>
 
     <div class="button-wrapper">
-      <a href="{{ url_for('group_leader_view') }}" class="btn-solid-return">完成</a>
+      {# 【修改】返回按鈕連結到正確的群組 #}
+      <a href="{{ url_for('group_leader_view', group_id=group.id) }}" class="btn-solid-return">完成</a>
     </div>
   </div>
 {% endblock %}
 
 {% block extra_js %}
   <script>
-    document.getElementById('copy-button').addEventListener('click', function () {
-      const linkInput = document.getElementById('invite-link')
-      linkInput.select()
-      linkInput.setSelectionRange(0, 99999)
-    
-      try {
-        navigator.clipboard.writeText(linkInput.value).then(() => {
-          const originalText = this.innerHTML
-          this.innerHTML = '<i class="fa-solid fa-check"></i> 已複製!'
-          this.classList.add('copied')
-    
-          setTimeout(() => {
-            this.innerHTML = originalText
-            this.classList.remove('copied')
-          }, 2000)
-        })
-      } catch (err) {
-        console.error('無法複製連結: ', err)
-      }
-    })
+    const copyButton = document.getElementById('copy-button');
+    if (copyButton) {
+        copyButton.addEventListener('click', function () {
+            const linkInput = document.getElementById('invite-link');
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            try {
+                navigator.clipboard.writeText(linkInput.value).then(() => {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fa-solid fa-check"></i> 已複製!';
+                    this.classList.add('copied');
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.classList.remove('copied');
+                    }, 2000);
+                });
+            } catch (err) {
+                console.error('無法複製: ', err);
+            }
+        });
+    }
   </script>
 {% endblock %}

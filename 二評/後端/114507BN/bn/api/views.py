@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.db.models.functions import TruncMonth
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -16,7 +16,7 @@ import logging
 
 from .models import (
     Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile,
-    GroupAnnouncement, InvitationCode
+    GroupAnnouncement, InvitationCode, GroupMember
 )
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
@@ -90,13 +90,18 @@ class UserProfileAPIView(generics.RetrieveUpdateAPIView):
 # =============================================================================
 
 class MyGroupsListAPIView(generics.ListAPIView):
-    """獲取當前登入使用者所加入的所有群組列表"""
+    """獲取當前登入使用者所管理的所有群組列表"""
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        return user.joined_groups.all().order_by('-created_at')
+        # --- ▼▼▼【第二步】將 get_queryset 方法替換為以下內容 ▼▼▼ ---
+        # 查詢條件：群組的成員包含我，或者，群組的建立者是我
+        return Group.objects.filter(
+            Q(members=user) | Q(created_by=user)
+        ).distinct().order_by('-created_at')
+        # --- ▲▲▲ 請將 get_queryset 方法替換為以上內容 ▲▲▲ ---
 
 class GroupCreateAPIView(generics.CreateAPIView):
     """建立新群組"""
@@ -106,6 +111,9 @@ class GroupCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+        group = serializer.instance
+        GroupMember.objects.create(group=group, user=self.request.user)
+
 
 class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """讀取、更新、刪除單一群組"""
