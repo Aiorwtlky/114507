@@ -1,59 +1,18 @@
-/* --- 全新、整理過的 dashboard.js --- */
+// static/js/pages/dashboard.js
 
-// --- 主邏輯：等待整個網頁文件 (DOM) 載入完成後，再執行裡面的所有程式碼 ---
 document.addEventListener('DOMContentLoaded', function () {
 
-    console.log("dashboard.js 執行了！所有功能準備中...");
-
-    // --- 功能一：設定「查看更多」按鈕 ---
-    // (這段是您原本的程式碼，我幫您保留並整理好)
-    function setupShowMoreToggle(toggleSelector, listSelector, initialVisibleCount) {
-        const toggleButton = document.querySelector(toggleSelector);
-        if (!toggleButton) return;
-
-        const listItems = document.querySelectorAll(`${listSelector} li`);
-        const hiddenItems = Array.from(listItems).slice(initialVisibleCount);
-
-        hiddenItems.forEach(item => item.style.display = 'none');
-
-        if (hiddenItems.length === 0) {
-            toggleButton.style.display = 'none';
-            return;
-        }
-
-        let isExpanded = false;
-        toggleButton.addEventListener('click', function () {
-            isExpanded = !isExpanded;
-            hiddenItems.forEach(item => {
-                item.style.display = isExpanded ? 'flex' : 'none';
-            });
-            // 注意：這裡假設您的按鈕本身就是一個 <button> 或 <a>
-            // 如果按鈕結構複雜，可能需要調整 this.querySelector
-            this.textContent = isExpanded ? '查看較少' : '查看更多';
-        });
-    }
-
-    // 呼叫「查看更多」功能
-    // 注意：您 HTML 中的 class name 要與這裡對應，例如 .score-violation-more-toggle
-    // 我看了一下您的 HTML，裡面並沒有這些 class，所以這段功能可能暫時不會生效。
-    // 但我先幫您保留，未來您可以加上對應的 class 來啟用它。
-    setupShowMoreToggle('.score-violation-more-toggle', '.score-list-items', 3);
-    setupShowMoreToggle('.group-more-toggle', '.group-list-items', 4);
-    setupShowMoreToggle('.report-more-toggle', '.report-list-items', 3);
-
-
-    // --- 功能二：繪製「趨勢追蹤」折線圖 ---
-
-    // 1. 找到我們的 canvas 畫布
+    // --- 功能：繪製「趨勢追蹤」折線圖 ---
     const ctx = document.getElementById('trendsChart');
 
-    // 檢查畫布是否存在
-    if (ctx) {
-        // 2. 準備圖表數據
-        const labels = ['2025 第1季', '2025 第2季', '2025 第3季', '2025 第4季'];
-        const dataPoints = [95, 98.1, 49.8, 96];
+    // 檢查圖表畫布是否存在，以及 Flask 是否傳來了有效的數據
+    // (trendsDataFromServer 這個變數是在 dashboard.html 中被定義的)
+    if (ctx && typeof trendsDataFromServer !== 'undefined' && trendsDataFromServer.length > 0) {
+        
+        // 【動態部分】從 trendsDataFromServer 動態生成圖表標籤和數據點
+        const labels = trendsDataFromServer.map(item => item.month);
+        const dataPoints = trendsDataFromServer.map(item => item.average_score);
 
-        // 3. 建立並設定我們的折線圖
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -62,11 +21,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     label: '安全分數',
                     data: dataPoints,
                     fill: false,
-                    borderColor: '#28a745',
-                    backgroundColor: '#28a745',
+                    borderColor: '#1a2a5f', // 使用主題藍色
+                    backgroundColor: '#1a2a5f',
                     pointRadius: 5,
                     pointHoverRadius: 8,
-                    tension: 0.1
+                    tension: 0.2 // 讓線條更平滑
                 }]
             },
             options: {
@@ -88,7 +47,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
-    } // if (ctx) 結束
-
-}); // DOMContentLoaded 結束
-
+    } else if (ctx) {
+        // 如果沒有數據，在圖表中央顯示一個提示文字
+        const context = ctx.getContext('2d');
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = '#999';
+        context.font = '16px "Noto Sans TC", sans-serif';
+        context.fillText('暫無趨勢數據可供顯示', ctx.width / 2, ctx.height / 2);
+    }
+    
+});

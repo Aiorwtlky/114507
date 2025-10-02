@@ -1,81 +1,48 @@
 {% extends 'base.html' %}
-{% block title %}
-  建立新群組 · My Driving God
-{% endblock %}
+{% block title %}建立新群組 · My Driving God{% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/create_group.css') }}" />
+  {# 我們可以直接沿用登入/註冊頁面的部分樣式 #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/login.css') }}">
+  <style>
+    .create-group-form {
+      padding: 2rem 2.5rem 3rem; /* 調整內距 */
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
-<section class="create-group-section">
-  <h2 class="mega-title gradient-text">建立新群組</h2>
+<section class="login-page">
 
-  <div class="create-group-card">
-    <div class="card-content">
-      <h3 class="card-title">第一步：選擇成員</h3>
-      
-      <div class="search-bar-wrapper">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" class="friend-search-input" placeholder="以姓名搜尋...">
-      </div>
-      
-      <ul class="friend-list">
-        <li class="friend-item">
-          <img src="https://placehold.co/100x100/f0f0f0/333?text=吳" alt="User" class="profile-pic">
-          <span class="friend-name">DK</span>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="friend-1" class="custom-checkbox">
-            <label for="friend-1"></label>
-          </div>
-        </li>
-        <li class="friend-item">
-          <img src="https://placehold.co/100x100/e0e0e0/333?text=白" alt="User" class="profile-pic">
-          <span class="friend-name">許凱</span>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="friend-2" class="custom-checkbox">
-            <label for="friend-2"></label>
-          </div>
-        </li>
-        <li class="friend-item">
-          <img src="https://placehold.co/100x100/d0d0d0/333?text=QV" alt="User" class="profile-pic">
-          <span class="friend-name">QV</span>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="friend-3" class="custom-checkbox">
-            <label for="friend-3"></label>
-          </div>
-        </li>
-        <li class="friend-item">
-          <img src="https://placehold.co/100x100/c0c0c0/333?text=陳" alt="User" class="profile-pic">
-          <span class="friend-name">宋陳澐</span>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="friend-4" class="custom-checkbox">
-            <label for="friend-4"></label>
-          </div>
-        </li>
-        <li class="friend-item">
-          <img src="https://placehold.co/100x100/b0b0b0/333?text=爺" alt="User" class="profile-pic">
-          <span class="friend-name">彥廷</span>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="friend-5" class="custom-checkbox">
-            <label for="friend-5"></label>
-          </div>
-        </li>
-        <li class="friend-item">
-            <img src="https://placehold.co/100x100/a0a0a0/333?text=Am" alt="User" class="profile-pic">
-            <span class="friend-name">花花</span>
-            <div class="checkbox-wrapper">
-              <input type="checkbox" id="friend-6" class="custom-checkbox">
-              <label for="friend-6"></label>
-            </div>
-          </li>
-          </ul>
-      
-      <div class="action-area">
-        <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">取消</a>
-        <button class="custom-btn primary-btn"onclick="window.location.href='{{ url_for('create_group_step2') }}'">下一步</button>
-      </div>
-    </div>
-  </div>
+  {# 【修改】將整個頁面變成一個 POST 表單 #}
+  <form class="login-form create-group-form" action="{{ url_for('create_group') }}" method="post">
+    
+    <h2>建立新群組</h2>
+
+    {# 用來顯示來自 app.py 的成功或失敗訊息 #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages-small">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {# --- 新增的表單欄位 --- #}
+    <label for="group_number">群組編號</label>
+    <input type="text" id="group_number" name="group_number" placeholder="例如 G001" required>
+
+    <label for="name">群組名稱</label>
+    <input type="text" id="name" name="name" placeholder="例如 北區物流A隊" required>
+
+    <label for="description">群組描述 (可選填)</label>
+    <textarea id="description" name="description" rows="4" style="width:100%; padding:.9rem 1rem; font-size:1.1rem; border-radius:10px; border:none; background:rgba(255,255,255,.15); color:var(--text); margin-bottom:1rem;"></textarea>
+
+    {# 【修改】將按鈕改為 type="submit" #}
+    <button type="submit" class="btn">確認建立</button>
+  </form>
+
 </section>
 {% endblock %}

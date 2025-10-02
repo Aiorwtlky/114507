@@ -284,3 +284,85 @@
 .member-table tbody tr[data-href]:hover {
     background-color: #f0f4ff; /* 滑鼠移上去時變淺藍色 */
 }
+/* static/css/pages/group_leader_view.css */
+
+/* --- 【請將以下樣式貼到檔案最下方】 --- */
+
+/* ===== 全新：組長儀表板佈局 ===== */
+.leader-view-layout {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    max-width: 1800px;
+    margin: 30px auto;
+    align-items: flex-start; /* 讓側邊欄和主內容區頂部對齊 */
+}
+
+.leader-sidebar {
+    flex: 0 0 280px; /* 側邊欄固定寬度 280px */
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    position: sticky; /* 讓側邊欄在滾動時固定 */
+    top: 100px; /* 距離頂部的距離 (80px header + 20px margin) */
+}
+
+.leader-sidebar .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #1a2a5f;
+}
+.leader-sidebar .sidebar-header h4 {
+    margin: 0;
+    color: #1a2a5f;
+    font-size: 1.2rem;
+}
+.btn-create-group {
+    background-color: #1a2a5f; color: white; width: 28px; height: 28px;
+    border-radius: 50%; text-decoration: none; display: grid; place-items: center;
+    font-size: 1.5rem; line-height: 1; transition: transform 0.2s;
+}
+.btn-create-group:hover { transform: scale(1.1); }
+
+.group-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.group-nav-item {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+.group-nav-item:hover {
+    background-color: #e9ecef;
+}
+.group-nav-item.active {
+    background-color: #1a2a5f;
+    color: white;
+    font-weight: bold;
+}
+
+.leader-main-content {
+    flex: 1; /* 主內容區佔滿剩餘空間 */
+    min-width: 0;
+}
+
+/* RWD for layout */
+@media (max-width: 1200px) {
+    .leader-view-layout {
+        flex-direction: column;
+    }
+    .leader-sidebar {
+        width: 100%;
+        position: static; /* 在小螢幕上取消固定 */
+    }
+}

@@ -8,11 +8,23 @@
 {% block content %}
 <section class="register-page">
   <form class="register-form" method="post" action="{{ url_for('register') }}" enctype="multipart/form-data">
+    
+    {# 【新增】用來顯示來自 app.py 的成功或失敗訊息 #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages-small">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     <div class="form-header">
       <h2 class="mega-title gradient-text">建立駕駛帳號</h2>
       <div class="photo-upload">
         <label for="photo" class="upload-label">
-          <img id="photoPreview" src="{{ url_for('static', filename='img/user-placeholder.svg') }}" alt="預覽">
+          <img id="photoPreview" src="{{ url_for('static', filename='images/1.jpg') }}" alt="預覽">
           <span>上傳照片</span>
         </label>
         <input type="file" id="photo" name="photo" accept="image/*" hidden>
@@ -40,9 +52,9 @@
         <label for="license">駕照等級</label>
         <select id="license" name="license" required>
           <option value="">請選擇</option>
-          <option value="A">普通小型車</option>
-          <option value="B">大客車</option>
-          <option value="C">大貨車</option>
+          <option value="普通小型車">普通小型車</option>
+          <option value="大客車">大客車</option>
+          <option value="大貨車">大貨車</option>
         </select>
       </div>
       <div class="form-group">

@@ -10,8 +10,20 @@
   <form class="login-form" action="{{ url_for('login') }}" method="post">
     <h2>登入</h2>
 
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" required>
+    {# 用來顯示來自 app.py 的成功或失敗訊息，例如 "帳號或密碼錯誤" #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages-small">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {# 關鍵修改：使用 "username" 而不是 "email" 來登入 #}
+    <label for="username">使用者名稱</label>
+    <input type="text" id="username" name="username" required>
 
     <label for="password">密碼</label>
     <input type="password" id="password" name="password" required>

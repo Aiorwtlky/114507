@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}
-  組長儀表板 · My Driving God
-{% endblock %}
+{% block title %}組長儀表板 · My Driving God{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -9,198 +7,120 @@
 {% endblock %}
 
 {% block content %}
-  <div class="group-detail-container">
-    <div class="d-card group-header-card">
-      <div class="d-card-body">
-        <a href="{{ url_for('group_settings') }}" class="settings-link" title="群組設定"><i class="fa-solid fa-truck"></i></a>
-        <h1 class="group-title">北大物流 C組</h1>
-        <p class="group-meta">
-          <strong>所屬事業:</strong> 北大物流股份有限公司
-        </p>
-        <p class="group-meta">
-          <strong>群組組長:</strong> 江澤民, 胡錦濤
-        </p>
-      </div>
-    </div>
+  {# --- 【全新】佈局：側邊欄 + 主內容區 --- #}
+  <div class.="leader-view-layout">
 
-    <div class="d-card identity-card">
-      <div class="d-card-header">
-        <h3><i class="fa-solid fa-user-tie"></i> 組長身分</h3>
+    {# --- 側邊欄：顯示所有管理的群組 --- #}
+    <aside class="leader-sidebar">
+      <div class="sidebar-header">
+        <h4>我管理的群組</h4>
+        <a href="{{ url_for('create_group') }}" class="btn-create-group" title="建立新群組">+</a>
       </div>
-      <div class="d-card-body">
-        <div class="member-item self">
-          <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="江澤民" class="member-avatar" />
-          <div class="member-details">
-            <span class="member-name">江澤民</span>
-            <span class="member-role">組長</span>
+      <nav class="group-nav-list">
+        {% for g in managed_groups %}
+          <a href="{{ url_for('group_leader_view', group_id=g.id) }}" 
+             class="group-nav-item {% if g.id == current_group_id %}active{% endif %}">
+            {{ g.name }}
+          </a>
+        {% else %}
+          <p>無管理的群組</p>
+        {% endfor %}
+      </nav>
+    </aside>
+
+    {# --- 主內容區：顯示當前選擇的群組詳情 --- #}
+    <main class="leader-main-content">
+      <div class="group-detail-container">
+        <div class="d-card group-header-card">
+          <div class="d-card-body">
+            <a href="{{ url_for('group_settings', group_id=group.id) }}" class="settings-link" title="群組設定"><i class="fa-solid fa-cog"></i></a>
+            <h1 class="group-title">{{ group.name }}</h1>
+            <p class="group-meta"><strong>群組編號:</strong> {{ group.group_number }}</p>
+            <p class="group-meta"><strong>建立者:</strong> {{ group.created_by }}</p>
+          </div>
+        </div>
+
+        <div class="d-card identity-card">
+          <div class="d-card-header"><h3><i class="fa-solid fa-user-tie"></i> 我的身分</h3></div>
+          <div class="d-card-body">
+            <div class="member-item self">
+              <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="User Avatar" class="member-avatar" />
+              <div class="member-details">
+                <span class="member-name">{{ session.get('username', '管理者') }}</span>
+                <span class="member-role">組長</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-card group-members-card">
+          <div class="d-card-header">
+            <h3><i class="fa-solid fa-users"></i> 群組成員</h3>
+            <a href="{{ url_for('invite_member', group_id=group.id) }}" class="action-button">+ 新增成員</a>
+          </div>
+          <div class="d-card-body">
+            <table class="member-table">
+              <thead>
+                <tr>
+                  <th>姓名</th>
+                  <th>總平均分</th>
+                  <th class="actions-col">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for member in members %}
+                <tr data-href="{{ url_for('member_dashboard', member_id=member.id) }}">
+                  <td>{{ member.first_name or member.username }}</td>
+                  <td>{{ "%.1f"|format(member.average_score|float) if member.average_score else 'N/A' }}</td>
+                  <td class="actions-col">
+                    <a href="{{ url_for('member_videos', member_id=member.id) }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">此群組尚無成員。</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="d-card announcements-card">
+          <div class="d-card-header">
+            <h3><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
+            <a href="{{ url_for('create_announcement', group_id=group.id) }}" class="action-button">+ 新增公告</a>
+          </div>
+          <div class="d-card-body">
+            <ul class="announcement-list">
+              {% for ann in announcements %}
+              <li class="announcement-item">
+                <span class="subject">{{ ann.content }}</span>
+                <span class="poster">{{ ann.publisher }}</span>
+                <span class="date">{{ ann.publish_date | format_date }}</span>
+                <div class="announcement-actions">
+                  <i class="fa-solid fa-pencil"></i><i class="fa-solid fa-trash"></i>
+                </div>
+              </li>
+              {% else %}
+              <li class="announcement-item"><span class="subject">暫無公告</span></li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="d-card group-members-card">
-      <div class="d-card-header">
-        <h3><i class="fa-solid fa-truck"></i> 群組成員</h3>
-        <a href="{{ url_for('invite_member') }}" class="action-button">+ 新增成員</a>
-      </div>
-      <div class="d-card-body">
-        <table class="member-table">
-          <thead>
-            <tr>
-              <th class="avatar-col">頭像</th>
-              <th>編號</th>
-              <th>姓名</th>
-              <th>總平均分</th>
-              <th>加入日期</th>
-              <th class="actions-col">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr data-href="{{ url_for('member_dashboard', member_id='B0C01') }}">
-              <td class="avatar-col">
-                <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="黃仁勳" class="table-avatar" />
-              </td>
-              <td>B0C01</td>
-              <td>黃仁勳</td>
-              <td>98</td>
-              <td>2025.01.31</td>
-              <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C01') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
-              </td>
-            </tr>
-            <tr data-href="{{ url_for('member_dashboard', member_id='B0C02') }}">
-              <td class="avatar-col">
-                <img src="https://via.placeholder.com/32/ffc107" alt="陳水扁" class="table-avatar" />
-              </td>
-              <td>B0C02</td>
-              <td>陳水扁</td>
-              <td>85</td>
-              <td>2025.03.15</td>
-              <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C02') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
-              </td>
-            </tr>
-            <tr data-href="{{ url_for('member_dashboard', member_id='B0C03') }}">
-              <td class="avatar-col">
-                <img src="https://via.placeholder.com/32/28a745" alt="馬英九" class="table-avatar" />
-              </td>
-              <td>B0C03</td>
-              <td>馬英九</td>
-              <td>92</td>
-              <td>2025.06.01</td>
-              <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C03') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
-              </td>
-            </tr>
-            <tr data-href="{{ url_for('member_dashboard', member_id='B0C04') }}">
-              <td class="avatar-col">
-                <img src="https://via.placeholder.com/32/dc3545" alt="蔡英文" class="table-avatar" />
-              </td>
-              <td>B0C04</td>
-              <td>蔡英文</td>
-              <td>78</td>
-              <td>2025.08.20</td>
-              <td class="actions-col">
-                <a href="{{ url_for('member_videos', member_id='B0C04') }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="d-card announcements-card">
-      <div class="d-card-header">
-        <h3><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
-        <a href="{{ url_for('create_announcement') }}" class="action-button">+ 新增公告</a>
-      </div>
-      <div class="d-card-body">
-        <ul class="announcement-list">
-          <li class="announcement-item">
-            <span class="subject">2025年10月1日人事組織命令公告三</span>
-            <span class="poster">江澤民</span>
-            <span class="date">2025.09.29</span>
-            <div class="announcement-actions">
-              <i class="fa-solid fa-pencil"></i>
-              <i class="fa-solid fa-trash"></i>
-            </div>
-          </li>
-          <li class="announcement-item">
-            <span class="subject">A3修配廠路線調整（9/20）</span>
-            <span class="poster">胡錦濤</span>
-            <span class="date">2025.09.21</span>
-            <div class="announcement-actions">
-              <i class="fa-solid fa-pencil"></i>
-              <i class="fa-solid fa-trash"></i>
-            </div>
-          </li>
-          <li class="announcement-item">
-            <span class="subject">颱風假後立即回報車輛停放地點</span>
-            <span class="poster">江澤民</span>
-            <span class="date">2025.09.16</span>
-            <div class="announcement-actions">
-              <i class="fa-solid fa-pencil"></i>
-              <i class="fa-solid fa-trash"></i>
-            </div>
-          </li>
-          <li class="announcement-item">
-            <span class="subject">共同維護行車安全</span>
-            <span class="poster">江澤民</span>
-            <span class="date">2025.08.29</span>
-            <div class="announcement-actions">
-              <i class="fa-solid fa-pencil"></i>
-              <i class="fa-solid fa-trash"></i>
-            </div>
-          </li>
-          <li class="announcement-item">
-            <span class="subject">晨間酒精檢測務必準時送出</span>
-            <span class="poster">江澤民</span>
-            <span class="date">2025.08.19</span>
-            <div class="announcement-actions">
-              <i class="fa-solid fa-pencil"></i>
-              <i class="fa-solid fa-trash"></i>
-            </div>
-          </li>
-          <li class="announcement-item">
-            <span class="subject">車輛清潔競賽開始報名</span>
-            <span class="poster">胡錦濤</span>
-            <span class="date">2025.08.11</span>
-            <div class="announcement-actions">
-              <i class="fa-solid fa-pencil"></i>
-              <i class="fa-solid fa-trash"></i>
-            </div>
-          </li>
-          <li class="announcement-item">
-            <span class="subject">更新系統密碼以符合安全規範</span>
-            <span class="poster">系統管理員</span>
-            <span class="date">2025.08.01</span>
-            <div class="announcement-actions">
-              <i class="fa-solid fa-pencil"></i>
-              <i class="fa-solid fa-trash"></i>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div> <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
+    </main>
+  </div>
 {% endblock %}
 
 {% block extra_js %}
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // 找到所有帶有 data-href 屬性的表格列
-      const clickableRows = document.querySelectorAll('tr[data-href]')
+      const clickableRows = document.querySelectorAll('tr[data-href]');
       clickableRows.forEach((row) => {
         row.addEventListener('click', function (event) {
-          // 檢查點擊的目標是不是 a 標籤或 i 標籤
-          // 如果是，就代表使用者想點的是「操作」按鈕，我們就不跳轉
-          if (event.target.tagName === 'A' || event.target.tagName === 'I') {
-            return
-          } // 否則，就跳轉到 data-href 中指定的網址
-    
-          window.location.href = this.dataset.href
-        })
-      })
-    })
+          if (event.target.tagName === 'A' || event.target.tagName === 'I') return;
+          window.location.href = this.dataset.href;
+        });
+      });
+    });
   </script>
 {% endblock %}

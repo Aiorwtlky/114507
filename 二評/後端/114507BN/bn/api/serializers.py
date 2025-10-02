@@ -17,9 +17,19 @@ class PersonnelProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     personnelprofile = PersonnelProfileSerializer(read_only=True)
+    is_group_leader = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'personnelprofile']
+        # 【修正一】將 is_groups_leader (複數) 改為 is_group_leader (單數)
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile']
+
+    def get_is_group_leader(self, obj):
+        """
+        【修正二】判斷邏輯改為：檢查此使用者(obj)是否為任何一個群組的建立者(created_by)。
+        """
+        return Group.objects.filter(created_by=obj).exists()
+
 
 class GroupMemberSerializer(serializers.ModelSerializer):
     average_score = serializers.FloatField(read_only=True, default=0)
@@ -33,20 +43,18 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'group_number', 'name', 'description', 'created_by', 'created_at']
 
-# --- 【新增這個 Serializer】 ---
 class GroupAnnouncementSerializer(serializers.ModelSerializer):
-    """公告的序列化器"""
     publisher = serializers.StringRelatedField(read_only=True)
-    
     class Meta:
         model = GroupAnnouncement
         fields = ['id', 'announcement_number', 'content', 'publish_date', 'is_active', 'publisher', 'group']
-        read_only_fields = ['publisher', 'group'] # 建立時，這兩個欄位由系統自動填入
+        read_only_fields = ['publisher', 'group']
 
 class VehicleDeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleDevice
         fields = '__all__'
+
 
 # --- 用於行程詳情的巢狀序列化器 ---
 

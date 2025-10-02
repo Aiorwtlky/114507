@@ -1,23 +1,64 @@
-# Environment variables
-.env
+# ============== #
+# Django / Python
+# ============== #
 
-# Python virtual environment
-.venv/
+# 虛擬環境
+# 這非常重要，避免把整個 Python 環境上傳
 venv/
+.venv/
+env/
+.env/
+venv.bak/
 
-# Python cache files
+# Django 收集的靜態檔案 (你剛剛提到的)
+staticfiles/
+
+# 使用者上傳的媒體檔案
+media/
+
+# Python 的快取檔案和編譯檔案
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Django local database
+# 開發用的資料庫檔案
+# 絕對不要把你的本地資料庫上傳
 db.sqlite3
+db.sqlite3-journal
 
-# Log files
-logs/
+# 環境變數檔案 (儲存 SECRET_KEY、資料庫密碼等敏感資訊)
+# 洩漏這個檔案會非常危險！
+.env
+*.env
+
+# Log 檔案
 *.log
 
-# VS Code settings
+
+# ================== #
+# 編輯器 / 作業系統
+# ================== #
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# VS Code
 .vscode/
 
-# macOS system files
-.DS_Store
+# PyCharm
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+
+# ================== #
+# 測試 / 其他
+# ================== #
+.coverage
+htmlcov/
