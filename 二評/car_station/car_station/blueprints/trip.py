@@ -1,5 +1,5 @@
 # blueprints/trip.py
-from flask import Blueprint, render_template, jsonify, request, redirect, url_for
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, current_app
 from models import db, Trip, Personnel, VehicleDevice, RouteLog, GPIOLog, EventLog, VideoRecord
 from datetime import datetime
 import os
@@ -32,7 +32,7 @@ def trip_monitor(trip_id):
 
 @trip_bp.route('/api/start_trip', methods=['POST'])
 def api_start_trip():
-    """API: 開始行程（模擬刷卡）"""
+    """API: 開始行程(模擬刷卡)"""
     try:
         # 檢查是否有進行中的行程
         active_trip = Trip.query.filter_by(status='進行中').first()
@@ -73,7 +73,6 @@ def api_start_trip():
         
         # 自動開始錄影
         from blueprints.video import record_camera_worker, recording_status, recording_threads
-        from flask import current_app
         
         print(f"[錄影] 開始行程錄影: {trip.trip_number}")
         
@@ -88,7 +87,7 @@ def api_start_trip():
                 recording_threads[camera_position] = thread
                 print(f"[錄影] 啟動 {camera_position} 鏡頭")
         
-        # 自動啟動 AI 監控
+        # ✅ 修改點 1: 自動啟動 AI 監控
         print("=" * 50)
         print("[AI] 準備啟動 AI 監控系統")
         print("=" * 50)
@@ -97,13 +96,14 @@ def api_start_trip():
             from blueprints.camera import ai_monitoring_active, ai_monitoring_worker
             print("[AI] 成功導入 camera 模組")
             
-            for camera_type in ['inside', 'outside']:
+            # 只測試內鏡頭
+            for camera_type in ['inside']:  # 原本是 ['inside', 'outside']
                 print(f"[AI] 正在啟動 {camera_type} AI...")
                 ai_monitoring_active[camera_type] = True
                 
                 thread = threading.Thread(
                     target=ai_monitoring_worker,
-                    args=(camera_type, trip.id, 2),
+                    args=(current_app._get_current_object(), camera_type, trip.id, 2),
                     daemon=True
                 )
                 thread.start()
@@ -136,13 +136,13 @@ def api_start_trip():
         traceback.print_exc()
         return jsonify({
             "status": "error",
-            "message": f"開始行程失敗：{str(e)}"
+            "message": f"開始行程失敗:{str(e)}"
         }), 500
 
 
 @trip_bp.route('/api/end_trip', methods=['POST'])
 def api_end_trip():
-    """API: 結束行程（模擬刷卡）"""
+    """API: 結束行程(模擬刷卡)"""
     try:
         # 找到進行中的行程
         active_trip = Trip.query.filter_by(status='進行中').first()
@@ -186,7 +186,6 @@ def api_end_trip():
         time.sleep(2)
         
         # 強制更新影片記錄狀態
-        from models import VideoRecord
         incomplete_videos = VideoRecord.query.filter_by(
             trip_id=active_trip.id,
             recording_status='recording'
@@ -206,12 +205,12 @@ def api_end_trip():
                 else:
                     video.recording_status = 'failed'
                     video.end_time = active_trip.end_time
-                    print(f"[影片] {video.video_number} 失敗（空檔案）")
+                    print(f"[影片] {video.video_number} 失敗(空檔案)")
             else:
                 video.recording_status = 'failed'
                 video.end_time = active_trip.end_time
                 video.file_size = 0
-                print(f"[影片] {video.video_number} 失敗（檔案不存在）")
+                print(f"[影片] {video.video_number} 失敗(檔案不存在)")
         
         # 計算行程時長
         if active_trip.start_time:
@@ -243,7 +242,7 @@ def api_end_trip():
         traceback.print_exc()
         return jsonify({
             "status": "error",
-            "message": f"結束行程失敗：{str(e)}"
+            "message": f"結束行程失敗:{str(e)}"
         }), 500
 
 
@@ -273,7 +272,7 @@ def api_trip_status():
 
 @trip_bp.route('/api/add_event', methods=['POST'])
 def api_add_event():
-    """API: 新增評分事件（模擬按鈕）"""
+    """API: 新增評分事件(模擬按鈕)"""
     try:
         data = request.get_json()
         event_code = data.get('event_code')
@@ -315,7 +314,7 @@ def api_add_event():
         
         return jsonify({
             "status": "success",
-            "message": f"已記錄事件：{event.event_description}",
+            "message": f"已記錄事件:{event.event_description}",
             "event": {
                 "code": event_code,
                 "description": event.event_description,
@@ -328,7 +327,7 @@ def api_add_event():
         db.session.rollback()
         return jsonify({
             "status": "error",
-            "message": f"新增事件失敗：{str(e)}"
+            "message": f"新增事件失敗:{str(e)}"
         }), 500
 
 

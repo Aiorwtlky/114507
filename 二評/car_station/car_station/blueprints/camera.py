@@ -247,14 +247,15 @@ def cameras_list():
 
 ai_monitoring_active = {'inside': False, 'outside': False}
 
-def ai_monitoring_worker(camera_id, trip_id, interval=2):
+def ai_monitoring_worker(app, camera_id, trip_id, interval=2):  # 加入 app 參數
     """
     AI 監控執行緒
     
     Args:
+        app: Flask app 物件
         camera_id: 'inside' 或 'outside'
         trip_id: 行程 ID
-        interval: 偵測間隔（秒）
+        interval: 偵測間隔(秒)
     """
     print(f"========== AI 監控執行緒啟動 ==========")
     print(f"camera_id={camera_id}, trip_id={trip_id}")
@@ -266,8 +267,8 @@ def ai_monitoring_worker(camera_id, trip_id, interval=2):
         
         print("[1/3] 模組導入成功")
         
-        # 初始化
-        with current_app.app_context():
+        # 使用傳入的 app 物件建立 context
+        with app.app_context():
             trip = Trip.query.get(trip_id)
             if not trip:
                 print(f"錯誤: 找不到行程 ID {trip_id}")
@@ -276,7 +277,7 @@ def ai_monitoring_worker(camera_id, trip_id, interval=2):
             vision_system = get_vision_system()
             print("[2/3] 視覺系統初始化成功")
             
-            # 設定駕駛員（用於個體化校準）
+            # 設定駕駛員(用於個體化校準)
             if trip.personnel:
                 vision_system.set_driver(trip.personnel.personnel_number)
             
@@ -305,7 +306,11 @@ def ai_monitoring_worker(camera_id, trip_id, interval=2):
                 
                 frame_count += 1
                 
-                # 準備 GPIO 數據（外鏡頭需要）
+                # 第一幀時確認攝影機狀態
+                if frame_count == 1:
+                    print(f"✅ [{camera_id}] 攝影機畫面大小: {frame.shape}")
+                
+                # 準備 GPIO 資料(外鏡頭需要)
                 gpio_data = None
                 if camera_id == 'outside':
                     try:
@@ -328,9 +333,10 @@ def ai_monitoring_worker(camera_id, trip_id, interval=2):
                     gps_data=None
                 )
                 
-                # 如果偵測到事件，儲存到資料庫
+                # 如果偵測到事件,儲存到資料庫
                 if event_record:
-                    with current_app.app_context():
+                    # 在資料庫操作時使用 app.app_context()
+                    with app.app_context():
                         try:
                             LocalEventHelper.create_event(
                                 trip_id=trip_id,
@@ -342,6 +348,7 @@ def ai_monitoring_worker(camera_id, trip_id, interval=2):
                                 event_details=event_record.get('event_details'),
                                 local_image_path=event_record.get('local_image_path')
                             )
+                            print(f"🚨 [{camera_id}] 偵測到事件: {event_record['event_number']} - {event_record['event_description']}")
                         except Exception as e:
                             print(f"儲存事件失敗: {e}")
                 

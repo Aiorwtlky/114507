@@ -44,7 +44,8 @@ GPS_CONFIG = {
 
 # RTSP 攝影機設定
 CAMERA_URLS = {
-    "inside": "rtsp://admin:123456@192.168.100.10/stream1",   # 車內鏡頭
+    # "inside": "rtsp://admin:123456@192.168.100.10/stream1",   # 車內鏡頭
+    "inside": 0,
     "outside": "rtsp://admin:123456@192.168.100.12/stream1"  # 車外鏡頭
 }
 
