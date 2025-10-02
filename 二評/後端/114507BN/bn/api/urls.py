@@ -1,67 +1,80 @@
 # api/urls.py
 
 from django.urls import path
-# 【新增】從 simplejwt 匯入 Token 相關的 View
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 from .views import (
+    # User
+    UserRegisterAPIView,
+    UserProfileAPIView,
     PersonnelListAPIView,
+    # Group
+    MyGroupsListAPIView,
+    GroupCreateAPIView,
+    GroupDetailAPIView,
+    GroupMembersListAPIView,
     GroupListAPIView,
+    # Announcement
+    GroupAnnouncementListCreateAPIView,
+    GroupAnnouncementDetailAPIView,
+    # Device
     DeviceListAPIView,
+    # Trip, Video & Report
     TripListAPIView,
     TripDetailAPIView,
+    VideoListAPIView,
+    generate_trip_report_pdf, # 【新增】
+    # Data Upload
     TripStartAPIView,
+    TripEndAPIView,
     AiVisionLogCreateAPIView,
     VideoRecordCreateAPIView,
-    TripEndAPIView,
-    UserRegisterAPIView,
+    # AI, System & Stats
     ChatbotAPIView,
-    # CustomAuthToken, # 【修改】移除舊的 CustomAuthToken
-    UserProfileAPIView,
     health_check,
     system_stats,
+    UserTrendsAPIView,
 )
 
 urlpatterns = [
-    # =============================================================================
-    # 【修改】認證相關 API
-    # =============================================================================
-    # path('auth/login/', CustomAuthToken.as_view(), name='api_token_auth'), # 移除舊的登入 API
-
-    # 【新增】使用 simple-jwt 提供的 API 端點
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # 獲取 token (登入)
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),     # 刷新 token
-
+    # 認證 API
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/register/', UserRegisterAPIView.as_view(), name='user-register'),
     path('auth/profile/', UserProfileAPIView.as_view(), name='user-profile'),
 
-    # =============================================================================
-    # 系統狀態 API
-    # =============================================================================
-    path('health/', health_check, name='health-check'),
-    path('system/stats/', system_stats, name='system-stats'),
-
-    # =============================================================================
-    # 前端資料查詢 API
-    # =============================================================================
+    # 群組與成員管理 API
+    path('me/groups/', MyGroupsListAPIView.as_view(), name='my-group-list'),
+    path('groups/', GroupCreateAPIView.as_view(), name='group-create'),
+    path('groups/all/', GroupListAPIView.as_view(), name='group-list-all'),
+    path('groups/<int:pk>/', GroupDetailAPIView.as_view(), name='group-detail'),
+    path('groups/<int:pk>/members/', GroupMembersListAPIView.as_view(), name='group-members-list'),
+    
+    # 公告管理 API
+    path('groups/<int:group_pk>/announcements/', GroupAnnouncementListCreateAPIView.as_view(), name='group-announcement-list-create'),
+    path('announcements/<int:pk>/', GroupAnnouncementDetailAPIView.as_view(), name='announcement-detail'),
+    
+    # 數據讀取與報表 API
     path('personnel/', PersonnelListAPIView.as_view(), name='personnel-list'),
-    path('groups/', GroupListAPIView.as_view(), name='group-list'),
     path('devices/', DeviceListAPIView.as_view(), name='device-list'),
     path('trips/', TripListAPIView.as_view(), name='trip-list'),
     path('trips/<int:pk>/', TripDetailAPIView.as_view(), name='trip-detail'),
-
-    # =============================================================================
-    # AI 功能 API
-    # =============================================================================
-    path('chatbot/', ChatbotAPIView.as_view(), name='chatbot'),
-
-    # =============================================================================
-    # 樹莓派與設備管理 API
-    # =============================================================================
+    path('videos/', VideoListAPIView.as_view(), name='video-list'),
+    path('trips/<int:trip_pk>/report/', generate_trip_report_pdf, name='trip-report-pdf'), 
+    
+    # 統計 API
+    path('statistics/trends/', UserTrendsAPIView.as_view(), name='user-trends'),
+    
+    # 樹莓派資料上傳 API
     path('trips/start/', TripStartAPIView.as_view(), name='trip-start'),
     path('trips/<int:pk>/end/', TripEndAPIView.as_view(), name='trip-end'),
     path('events/', AiVisionLogCreateAPIView.as_view(), name='event-create'),
     path('videos/', VideoRecordCreateAPIView.as_view(), name='video-create'),
+    
+    # AI 與系統狀態 API
+    path('chatbot/', ChatbotAPIView.as_view(), name='chatbot'),
+    path('health/', health_check, name='health-check'),
+    path('system/stats/', system_stats, name='system-stats'),
 ]
