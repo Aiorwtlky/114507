@@ -16,14 +16,14 @@ import logging
 
 from .models import (
     Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile,
-    GroupAnnouncement
+    GroupAnnouncement, InvitationCode
 )
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
     TripDetailSerializer, VehicleDeviceSerializer, TripStartSerializer,
     AiVisionLogCreateSerializer, VideoRecordCreateSerializer, TripEndSerializer,
     UserRegisterSerializer, PersonnelProfileSerializer, GroupMemberSerializer,
-    GroupAnnouncementSerializer, VideoRecordSerializer
+    GroupAnnouncementSerializer, VideoRecordSerializer, InvitationCodeSerializer
 )
 from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPublisherOrAdmin
@@ -152,6 +152,19 @@ class GroupAnnouncementDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = GroupAnnouncement.objects.all()
     serializer_class = GroupAnnouncementSerializer
     permission_classes = [permissions.IsAuthenticated, IsAnnouncementPublisherOrAdmin]
+
+class InvitationCodeCreateAPIView(generics.CreateAPIView):
+    """為特定群組建立一個新的邀請碼"""
+    serializer_class = InvitationCodeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
+        # 權限檢查：只有組長或管理員能生成邀請碼
+        if group.created_by != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("You do not have permission to create invitation codes for this group.")
+        # 自動設定建立者和群組
+        serializer.save(created_by=self.request.user, group=group)
 
 # =============================================================================
 # 數據讀取 API (含查詢擴充)

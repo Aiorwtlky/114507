@@ -4,6 +4,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.conf import settings
+import datetime
+import secrets
+from django.utils import timezone
+from datetime import timedelta
 
 # =============================================================================
 # 1. 人員與群組管理 (User & Group Management)
@@ -196,3 +200,24 @@ class VideoRecord(models.Model):
         db_table = 'video_record'
         verbose_name = "影像紀錄"
         verbose_name_plural = "11. 影像紀錄"
+
+class InvitationCode(models.Model):
+    code = models.CharField(max_length=8, unique=True, verbose_name="邀請碼")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="所屬群組")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="建立者")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="建立時間")
+    expires_at = models.DateTimeField(verbose_name="過期時間")
+    is_used = models.BooleanField(default=False, verbose_name="是否已使用")
+
+    def save(self, *args, **kwargs):
+        if not self.pk: # 只在第一次建立時執行
+            self.code = secrets.token_hex(4).upper() # 生成一個8位數的隨機碼
+            self.expires_at = timezone.now() + timedelta(days=1) # 設定 24 小時後過期
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.group.name} 的邀請碼: {self.code}"
+
+    class Meta:
+        verbose_name = "群組邀請碼"
+        verbose_name_plural = "12. 群組邀請碼"

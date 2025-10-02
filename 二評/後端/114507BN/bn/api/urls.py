@@ -25,7 +25,7 @@ from .views import (
     TripListAPIView,
     TripDetailAPIView,
     VideoListAPIView,
-    generate_trip_report_pdf, # 【新增】
+    generate_trip_report_pdf,
     # Data Upload
     TripStartAPIView,
     TripEndAPIView,
@@ -36,6 +36,7 @@ from .views import (
     health_check,
     system_stats,
     UserTrendsAPIView,
+    InvitationCodeCreateAPIView, 
 )
 
 urlpatterns = [
@@ -55,7 +56,8 @@ urlpatterns = [
     # 公告管理 API
     path('groups/<int:group_pk>/announcements/', GroupAnnouncementListCreateAPIView.as_view(), name='group-announcement-list-create'),
     path('announcements/<int:pk>/', GroupAnnouncementDetailAPIView.as_view(), name='announcement-detail'),
-    
+    path('groups/<int:group_pk>/invitations/', InvitationCodeCreateAPIView.as_view(), name='group-invitation-create'),
+
     # 數據讀取與報表 API
     path('personnel/', PersonnelListAPIView.as_view(), name='personnel-list'),
     path('devices/', DeviceListAPIView.as_view(), name='device-list'),
