@@ -44,19 +44,16 @@ class UnifiedAIDetector:
                 'description': '中度疲勞駕駛 (閉眼1-3秒)',
                 'points': 15
             },
-            'drowsy_mild': {
-                'code': 'A02',  # 使用 A02
-                'description': '中度疲勞駕駛 (閉眼1-3秒)',
-                'points': 15
-            },
-            
-            # 分心（頭部低垂視為分心）
-            'drowsy_head_drop': {
+            'frequent_yawning': {  # 新增
                 'code': 'A03',
-                'description': '長時間分心 (低頭/轉頭超過5秒)',
+                'description': '頻繁打哈欠 (1分鐘≥3次)',
                 'points': 20
             },
-            
+            'no_face_detected': {  # 新增
+                'code': 'A04',
+                'description': '長時間無臉部偵測 (超過5秒)',
+                'points': 15
+            },
             # 車道偏離
             'lane_departure_left': {
                 'code': 'B01',

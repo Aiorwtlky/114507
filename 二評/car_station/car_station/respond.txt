@@ -1,32 +1,25 @@
-
 C:\Users\super\AppData\Local\Programs\Python\Python312\Lib\site-packages\google\protobuf\symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
   warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
-🔧 校準中... 10/30 樣本
-🔧 校準中... 20/30 樣本
-✅ 校準完成！駕駛員基準 EAR: 0.239
-   閉眼閾值: 0.179
-✅ 已儲存駕駛員 DRIVER_BIG_EYES 的校準數據
-基準 EAR: 0.239
-閾值: 0.179
+校準中... 9/30校準 10/30
+校準中... 19/30校準 20/30
+校準中... 29/30校準完成 EAR=0.225
+>>> A02 觸發 (閉眼30幀=1.0秒, EAR=0.154)
 
-測試駕駛員: DRIVER_SMALL_EYES
-W0000 00:00:1759371622.389915   25504 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-W0000 00:00:1759371622.404328   25984 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-🔧 校準中... 10/30 樣本
-🔧 校準中... 20/30 樣本
-✅ 校準完成！駕駛員基準 EAR: 0.246
-   閉眼閾值: 0.185
-✅ 已儲存駕駛員 DRIVER_SMALL_EYES 的校準數據
-基準 EAR: 0.246
-閾值: 0.185
+🚨 drowsy_moderate
+   MAR: 2.715
+   打哈欠: 0 次
+>>> A02 觸發 (閉眼30幀=1.0秒, EAR=0.117)
 
-測試駕駛員: DRIVER_VERY_SMALL
-W0000 00:00:1759371638.488990   17884 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-W0000 00:00:1759371638.503250    1724 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-🔧 校準中... 10/30 樣本
-🔧 校準中... 20/30 樣本
-✅ 校準完成！駕駛員基準 EAR: 0.226
-   閉眼閾值: 0.169
-✅ 已儲存駕駛員 DRIVER_VERY_SMALL 的校準數據
-基準 EAR: 0.226
-閾值: 0.169
+🚨 drowsy_moderate
+   MAR: 2.454
+   打哈欠: 0 次
+>>> A01 觸發 (閉眼90幀=3.0秒, EAR=0.126)
+
+🚨 drowsy_severe
+   MAR: 2.621
+   打哈欠: 1 次
+>>> A03 觸發 (打哈欠3次)
+
+🚨 frequent_yawning
+   MAR: 2.479
+   打哈欠: 3 次
