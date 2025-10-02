@@ -11,12 +11,12 @@ from django.http import JsonResponse
 from datetime import datetime
 import logging
 
-from .models import Group, Trip, VehicleDevice, AiVisionLog, VideoRecord
+from .models import Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile # 【修改】匯入 PersonnelProfile
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
     TripDetailSerializer, VehicleDeviceSerializer, TripStartSerializer,
     AiVisionLogCreateSerializer, VideoRecordCreateSerializer, TripEndSerializer,
-    UserRegisterSerializer
+    UserRegisterSerializer, PersonnelProfileSerializer # 【修改】匯入 PersonnelProfileSerializer
 )
 from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin
@@ -37,7 +37,6 @@ class CustomAuthToken(ObtainAuthToken):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         
-        # 記錄登入事件
         logger.info(f"User {user.username} logged in from {request.META.get('REMOTE_ADDR')}")
         
         return Response({
@@ -54,16 +53,67 @@ class UserRegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]
+    # 【說明】這個 View 不需要修改，因為 UserRegisterSerializer 已經處理了所有巢狀邏輯。
+
+# --- 【以下為主要修改部分】 ---
 
 class UserProfileAPIView(generics.RetrieveUpdateAPIView):
     """
-    讓用戶查看和更新自己的個人資料
+    【修改】讓用戶查看和更新自己的個人資料 (User + PersonnelProfile)
     """
-    serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    # 【修改】我們需要兩個 serializer，一個用於讀取 (GET)，一個用於寫入 (PUT/PATCH)
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            # 在更新時，我們只需要用到 Profile 的 serializer
+            return PersonnelProfileSerializer
+        # 在讀取時，我們使用 UserSerializer 來顯示完整的巢狀資料
+        return UserSerializer
 
     def get_object(self):
+        # 根據請求方法，決定要操作 User 物件還是其關聯的 Profile 物件
+        if self.request.method in ['PUT', 'PATCH']:
+            # 找到或建立該使用者的 Profile
+            profile, created = PersonnelProfile.objects.get_or_create(user=self.request.user)
+            return profile
         return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        """
+        【新增】自訂 update 方法以同時處理 User 和 PersonnelProfile 的更新
+        """
+        # 取得 User 和 Profile 物件
+        user = request.user
+        profile = self.get_object()
+        
+        # 取得傳入的資料
+        data = request.data
+
+        # 1. 更新 User 模型的欄位
+        user_fields = ['username', 'email', 'first_name', 'last_name']
+        user_data_to_update = {key: data[key] for key in user_fields if key in data}
+        
+        # 如果提供了 password，則需要特殊處理
+        if 'password' in data and data['password']:
+            user.set_password(data['password'])
+        
+        # 將其他 User 欄位更新到物件
+        for key, value in user_data_to_update.items():
+            setattr(user, key, value)
+        user.save()
+
+        # 2. 更新 PersonnelProfile 模型的欄位
+        # 使用 get_serializer 方法來處理 Profile 的部分更新 (partial=True)
+        profile_serializer = self.get_serializer(profile, data=data, partial=True)
+        profile_serializer.is_valid(raise_exception=True)
+        profile_serializer.save()
+
+        # 3. 回傳完整的、更新後的使用者資料
+        # 我們用 UserSerializer 來回傳完整的巢狀結構
+        final_user_serializer = UserSerializer(user, context=self.get_serializer_context())
+        return Response(final_user_serializer.data, status=status.HTTP_200_OK)
+
 
 # =============================================================================
 # 數據讀取 API (加入更精細的權限)
@@ -175,7 +225,6 @@ class ChatbotAPIView(views.APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # 記錄聊天請求
             logger.info(f"Chatbot request from user {request.user.username}")
             
             ai_reply = get_chatbot_response(chat_history)
@@ -199,12 +248,10 @@ def health_check(request):
     系統健康檢查 API - 讓你知道系統是否正常運行
     """
     try:
-        # 測試資料庫連接
         from django.db import connection
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
         
-        # 測試 AI 服務狀態
         from .services import client
         ai_status = "available" if client else "unavailable"
         

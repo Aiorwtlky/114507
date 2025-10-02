@@ -3,17 +3,26 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import (
-    PersonnelProfile, Group, Trip, ScoringStandard, 
+    PersonnelProfile, Group, Trip, ScoringStandard,
     AiVisionLog, VideoRecord, VehicleDevice
 )
 
 # --- 基礎序列化器 ---
 
 class PersonnelProfileSerializer(serializers.ModelSerializer):
-    """Serializer for our custom profile data."""
+    """【修改】Serializer for our custom profile data, now including all new fields."""
     class Meta:
         model = PersonnelProfile
-        fields = ['personnel_number', 'gender', 'license_number']
+        # 【修改】加入所有我們在 models.py 新增的欄位
+        fields = [
+            'personnel_number',
+            'gender',
+            'license_number',
+            'avatar',                 # 新增
+            'phone',                  # 新增
+            'license_type',           # 新增
+            'driving_experience'      # 新增
+        ]
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the User model, including basic profile info."""
@@ -69,7 +78,8 @@ class TripListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Trip
-        fields = ['id', 'trip_number', 'name', 'score', 'start_time', 'end_time', 'personnel', 'group', 'device']
+        # 【修改】將我們在 Trip 模型中新增的 total_mileage 欄位也加進來
+        fields = ['id', 'trip_number', 'name', 'score', 'start_time', 'end_time', 'personnel', 'group', 'device', 'total_mileage']
 
 class TripDetailSerializer(serializers.ModelSerializer):
     """
@@ -79,17 +89,17 @@ class TripDetailSerializer(serializers.ModelSerializer):
     personnel = UserSerializer(read_only=True) # 巢狀顯示完整人員資訊
     group = GroupSerializer(read_only=True)
     device = VehicleDeviceSerializer(read_only=True)
-    
+
     # 透過 related_name (需要您在 models.py 中定義) 來取得所有關聯的紀錄
     aivisionlog_set = AiVisionLogSerializer(many=True, read_only=True)
     videorecord_set = VideoRecordSerializer(many=True, read_only=True)
 
     class Meta:
         model = Trip
-        # 包含所有欄位以及巢狀的關聯資料
+        # 【修改】將我們在 Trip 模型中新增的 total_mileage 欄位也加進來
         fields = [
             'id', 'trip_number', 'name', 'score', 'ai_suggestion', 'start_time', 'end_time',
-            'personnel', 'group', 'device', 'aivisionlog_set', 'videorecord_set'
+            'personnel', 'group', 'device', 'aivisionlog_set', 'videorecord_set', 'total_mileage'
         ]
 
 class TripStartSerializer(serializers.ModelSerializer):
@@ -124,7 +134,7 @@ class VideoRecordCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating a new VideoRecord entry from the Pi.
     """
-    trip = serializers.PrimaryKeyRelatedField(queryset=Trip.objects.all())
+    trip = serializers.PrimaryKeyRelatedField(queryset=VideoRecord.objects.all())
 
     class Meta:
         model = VideoRecord

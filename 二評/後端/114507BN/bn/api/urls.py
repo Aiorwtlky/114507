@@ -1,6 +1,11 @@
 # api/urls.py
 
 from django.urls import path
+# 【新增】從 simplejwt 匯入 Token 相關的 View
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from .views import (
     PersonnelListAPIView,
     GroupListAPIView,
@@ -13,7 +18,7 @@ from .views import (
     TripEndAPIView,
     UserRegisterAPIView,
     ChatbotAPIView,
-    CustomAuthToken,
+    # CustomAuthToken, # 【修改】移除舊的 CustomAuthToken
     UserProfileAPIView,
     health_check,
     system_stats,
@@ -21,18 +26,23 @@ from .views import (
 
 urlpatterns = [
     # =============================================================================
-    # 認證相關 API
+    # 【修改】認證相關 API
     # =============================================================================
-    path('auth/login/', CustomAuthToken.as_view(), name='api_token_auth'),
+    # path('auth/login/', CustomAuthToken.as_view(), name='api_token_auth'), # 移除舊的登入 API
+
+    # 【新增】使用 simple-jwt 提供的 API 端點
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # 獲取 token (登入)
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),     # 刷新 token
+
     path('auth/register/', UserRegisterAPIView.as_view(), name='user-register'),
     path('auth/profile/', UserProfileAPIView.as_view(), name='user-profile'),
-    
+
     # =============================================================================
     # 系統狀態 API
     # =============================================================================
     path('health/', health_check, name='health-check'),
     path('system/stats/', system_stats, name='system-stats'),
-    
+
     # =============================================================================
     # 前端資料查詢 API
     # =============================================================================
@@ -41,12 +51,12 @@ urlpatterns = [
     path('devices/', DeviceListAPIView.as_view(), name='device-list'),
     path('trips/', TripListAPIView.as_view(), name='trip-list'),
     path('trips/<int:pk>/', TripDetailAPIView.as_view(), name='trip-detail'),
-    
+
     # =============================================================================
     # AI 功能 API
     # =============================================================================
     path('chatbot/', ChatbotAPIView.as_view(), name='chatbot'),
-    
+
     # =============================================================================
     # 樹莓派與設備管理 API
     # =============================================================================

@@ -1,6 +1,9 @@
+# api/models.py
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from django.conf import settings
 
 # =============================================================================
 # 1. 人員與群組管理 (User & Group Management)
@@ -8,18 +11,38 @@ from django.core.validators import RegexValidator
 
 class PersonnelProfile(models.Model):
     GENDER_CHOICES = [('MALE', '男'), ('FEMALE', '女'), ('UNSPECIFIED', '不願透漏')]
-    license_validator = RegexValidator(regex=r'^[A-Z]\d{9}$', message='駕照號碼格式必須為：1位英文大寫字母 + 9位數字。')
+    
+    # 【註解】原有的 RegexValidator 已被移除，因為駕照號碼可能不再是必填或唯一
+    # license_validator = RegexValidator(regex=r'^[A-Z]\d{9}$', message='駕照號碼格式必須為：1位英文大寫字母 + 9位數字。')
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, verbose_name="使用者帳號")
     personnel_number = models.CharField(max_length=50, unique=True, verbose_name="人員編號")
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='UNSPECIFIED', verbose_name="性別")
-    license_number = models.CharField(max_length=10, unique=True, validators=[license_validator], verbose_name="駕照號碼")
+    
+    # 【修改】放寬駕照號碼的限制，使其非唯一且可為空
+    license_number = models.CharField(max_length=20, blank=True, verbose_name="駕照號碼")
+    
+    # --- 【以下為根據前端需求新增的欄位】 ---
 
+    # 【新增】用於儲存使用者頭像
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name="個人頭像")
+
+    # 【新增】用於儲存聯絡電話
+    phone = models.CharField(max_length=20, blank=True, verbose_name="聯絡電話")
+
+    # 【新增】用於儲存駕照等級
+    license_type = models.CharField(max_length=50, blank=True, verbose_name="駕照等級")
+
+    # 【新增】用於儲存駕駛年資
+    driving_experience = models.PositiveIntegerField(default=0, verbose_name="駕駛年資")
+    
     class Meta:
-        db_table = 'personnel_profile' # 建議為 profile 建立獨立的表
+        db_table = 'personnel_profile' 
         verbose_name = "人員詳細資料"
         verbose_name_plural = "1. 人員詳細資料"
     def __str__(self): return self.user.username
 
+# ... (Group 和 GroupMember 模型維持不變) ...
 class Group(models.Model):
     id = models.BigAutoField(primary_key=True)
     group_number = models.CharField(max_length=50, unique=True)
@@ -27,6 +50,23 @@ class Group(models.Model):
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # 【新增】記錄群組的建立者，用於權限判斷
+    # on_delete=models.SET_NULL: 如果建立者帳號被刪除，這個欄位會設為 NULL，群組不會被跟著刪除
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='owned_groups'
+    )
+    
+    # 【新增】透過 GroupMember 中介模型建立多對多關聯
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through='GroupMember',
+        related_name='joined_groups'
+    )
+
 
     class Meta:
         db_table = 'group'
@@ -46,10 +86,8 @@ class GroupMember(models.Model):
         verbose_name = "群組成員"
         verbose_name_plural = "3. 群組成員"
 
-# =============================================================================
-# 2. 公告與行程管理 (Announcement & Trip Management)
-# =============================================================================
 
+# ... (SystemAnnouncement, GroupAnnouncement, VehicleDevice 模型維持不變) ...
 class SystemAnnouncement(models.Model):
     id = models.BigAutoField(primary_key=True)
     announcement_number = models.CharField(max_length=50, unique=True)
@@ -86,6 +124,10 @@ class VehicleDevice(models.Model):
         verbose_name = "車機設備"
         verbose_name_plural = "6. 車機設備管理"
 
+# =============================================================================
+# 2. ... 行程管理 (Trip Management) ...
+# =============================================================================
+
 class Trip(models.Model):
     id = models.BigAutoField(primary_key=True)
     trip_number = models.CharField(max_length=50, unique=True)
@@ -98,15 +140,16 @@ class Trip(models.Model):
     start_time = models.DateTimeField(blank=True, null=True)
     end_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # 【新增】建議性欄位，用於儲存計算好的總里程以優化效能
+    total_mileage = models.FloatField(blank=True, null=True, verbose_name="總里程(KM)")
+
     class Meta:
         db_table = 'trip'
         verbose_name = "行程"
         verbose_name_plural = "7. 行程管理"
 
-# =============================================================================
-# 3. 數據記錄與評分 (Data Logging & Scoring)
-# =============================================================================
-
+# ... (RouteLog, ScoringStandard, AiVisionLog, VideoRecord 模型維持不變) ...
 class RouteLog(models.Model):
     id = models.BigAutoField(primary_key=True)
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='route_logs')

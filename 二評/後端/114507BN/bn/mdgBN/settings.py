@@ -5,6 +5,7 @@ Django settings for mdgBN project - Production Ready Version
 from pathlib import Path
 import os
 import environ
+from datetime import timedelta # 【新增】匯入 timedelta 以設定 JWT 過期時間
 
 env = environ.Env(
     DEBUG=(bool, False)
@@ -23,11 +24,10 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = [
-    'localhost', 
-    '127.0.0.1', 
+    'localhost',
+    '127.0.0.1',
     'mdgitrc.ntub.edu.tw',
     '140.131.114.182',
-    # 如果有其他域名也可以加進來
 ]
 
 # Application definition
@@ -40,14 +40,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken',
-    'api',  # 你的主要 app
+    # 'rest_framework.authtoken', # 【修改】移除舊的 authtoken
+    'api',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # 處理靜態檔案
-    'corsheaders.middleware.CorsMiddleware',       # 必須在 CommonMiddleware 之前
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -83,18 +83,10 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
 # 國際化設定
@@ -107,7 +99,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# 媒體檔案設定（雖然你用 Cloudinary，但設定一下以防萬一）
+# 媒體檔案設定
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -115,7 +107,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =============================================================================
-# CORS 設定 - 讓前端可以調用你的 API
+# CORS 設定
 # =============================================================================
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5000",
@@ -123,14 +115,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://mdgitrc.ntub.edu.tw:5000",
     "http://140.131.114.182:5000",
     "https://140.131.114.182:5000",
-    # Android 模擬器
     "http://10.0.2.2:5000",
 ]
-
-# 如果需要支援 credentials（cookies, authorization headers）
 CORS_ALLOW_CREDENTIALS = True
-
-# 允許的 headers
 CORS_ALLOW_HEADERS = [
     'authorization',
     'content-type',
@@ -147,18 +134,18 @@ CORS_ALLOW_HEADERS = [
 # =============================================================================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 【修改】將預設認證改為 JWTAuthentication
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
-    'DEFAULT_RENDERER_CLASSES': [
+    'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',  # 開發時方便測試
-    ],
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
@@ -170,7 +157,51 @@ REST_FRAMEWORK = {
 }
 
 # =============================================================================
-# 日誌設定 - 生產環境很重要！
+# 【新增】SIMPLE JWT 設定
+# =============================================================================
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
+
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": "",
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JSON_ENCODER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+
+    "JTI_CLAIM": "jti",
+
+    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+
+    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
+    "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
+    "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
+    "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
+    "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+}
+
+
+# =============================================================================
+# 日誌設定
 # =============================================================================
 LOGGING = {
     'version': 1,
@@ -190,7 +221,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
-            'maxBytes': 1024*1024*5,  # 5MB
+            'maxBytes': 1024*1024*5,
             'backupCount': 5,
             'formatter': 'verbose',
         },
@@ -218,23 +249,18 @@ LOGGING = {
 }
 
 # =============================================================================
-# 安全性設定 - 生產環境必需
+# 安全性設定
 # =============================================================================
 if not DEBUG:
-    # HTTPS 相關設定
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     SECURE_HSTS_SECONDS = 86400
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    
-    # 如果使用 HTTPS，取消註解下面這行
-    # SECURE_SSL_REDIRECT = True
 
-# Session 設定
-SESSION_COOKIE_AGE = 86400  # 24 小時
+SESSION_COOKIE_AGE = 86400
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_HTTPONLY = True
 if not DEBUG:
-    SESSION_COOKIE_SECURE = True  # 只有 HTTPS 時才設為 True
+    SESSION_COOKIE_SECURE = True
