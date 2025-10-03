@@ -366,3 +366,39 @@
         position: static; /* 在小螢幕上取消固定 */
     }
 }
+
+button.promote-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    color: #1a2a5f; /* 與其他圖示顏色一致 */
+    font-size: 1em; /* 與其他圖示大小一致 */
+    vertical-align: middle; /* 確保與旁邊的影片圖示對齊 */
+}
+
+button.promote-btn:hover {
+    opacity: 0.7;
+}
+
+/* 【新增】成員列表頭像樣式 */
+.member-table th.avatar-col,
+.member-table td.avatar-col {
+    width: 60px;
+    padding-left: 15px;
+    padding-right: 0;
+    text-align: center;
+}
+
+.member-table .table-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover; /* 確保圖片不變形 */
+}
+
+/* 修正您自己頭像的 object-fit */
+.member-avatar {
+    object-fit: cover;
+}

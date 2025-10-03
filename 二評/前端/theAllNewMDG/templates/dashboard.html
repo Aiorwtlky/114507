@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}個人儀表板 · My Driving God{% endblock %}
+{% block title %}儀表板 · My Driving God{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -7,189 +7,150 @@
 {% endblock %}
 
 {% block content %}
-  <div class="dashboard-container">
-    <div class="dashboard-column-left">
-      
-      {# --- 個人資訊卡片 (動態化) --- #}
-      <div class="d-card personal-info-card">
-        <div class="d-card-header">
-          <h3><i class="fas fa-user"></i> 個人資訊</h3>
+<div class="dashboard-grid">
+
+  {# --- 卡片一：使用者個人資訊 (已串接) --- #}
+  <div class="d-card profile-card">
+    <div class="d-card-body">
+      <div class="profile-header">
+        <img src="{{ profile.personnelprofile.avatar or url_for('static', filename='images/1.jpg') }}" alt="User Avatar" class="profile-avatar">
+        <div class="profile-info">
+          {# 從後端 profile 物件中取得使用者名稱 #}
+          <h2 class="profile-name">{{ profile.first_name or profile.username }}</h2>
+          <p class="profile-id">ID: {{ profile.personnelprofile.personnel_number }}</p>
         </div>
-        <div class="d-card-body">
-          <div class="profile-summary">
-            <img src="{{ profile.personnelprofile.avatar if profile.personnelprofile and profile.personnelprofile.avatar else url_for('static', filename='images/1.jpg') }}" alt="driver photo" class="profile-avatar" />
-            <div class="profile-details">
-              <h4 class="profile-name">{{ profile.first_name or profile.username }}</h4>
-              <p class="profile-meta">ID: {{ profile.id }}</p>
-              <p class="profile-meta">
-                {% if my_groups and my_groups|length > 0 %}
-                  {{ my_groups[0].name }}
-                {% else %}
-                  暫無群組
-                {% endif %}
-              </p>
-            </div>
-          </div>
-          <div class="profile-footer-layout">
-            <a href="{{ url_for('past_average_standalone') }}" class="btn-trip-data">行車數據</a>
-            <div class="profile-stats">
-              <div class="stat-item"><span>累計里程:</span><span class="stat-value">--- 公里</span></div>
-              <div class="stat-item"><span>上次登入:</span><span class="stat-value">剛剛</span></div>
-            </div>
-          </div>
-        </div>
+        <a href="{{ url_for('edit_profile') }}" class="btn-edit-profile" title="編輯個人資料"><i class="fa-solid fa-pencil"></i></a>
       </div>
-
-      {# --- ▼▼▼ 新增：我的管理權限卡片 ▼▼▼ --- #}
-      {% if profile.administered_groups %}
-        <div class="d-card admin-access-card">
-          <div class="d-card-header">
-            <h3><i class="fa-solid fa-user-shield"></i> 我的管理權限</h3>
-          </div>
-          <div class="d-card-body">
-            <p>您擁有以下群組的管理權限,點選可進入管理頁面:</p>
-            <ul class="admin-group-list">
-              {% for group in my_groups %}
-                {% if group.id in profile.administered_groups %}
-                  <li>
-                    <a href="{{ url_for('group_leader_view', group_id=group.id) }}">
-                      管理 <strong>{{ group.name }}</strong>
-                    </a>
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-      {% endif %}
-      {# --- ▲▲▲ 新增區塊結束 ▲▲▲ --- #}
-
-      {# --- 我的群組卡片 (動態化) --- #}
-      <div class="d-card my-group-card">
-        <div class="d-card-header">
-          <h3><i class="fas fa-users group-icon"></i> 我的群組</h3>
-          <a href="{{ url_for('create_group') }}" class="action-button">+ 建立</a>
-        </div>
-        <ul class="group-list">
-          {% for group in my_groups %}
-            <li><a href="{{ url_for('group_detail', group_id=group.id) }}">{{ group.name }}</a></li>
-          {% else %}
-            <li>您尚未加入任何群組。</li>
-          {% endfor %}
-        </ul>
-        <div class="card-actions-center">
-          <a href="{{ url_for('my_groups_standalone') }}" class="btn-view-more">查看更多</a>
-        </div>
-      </div>
-      
-      {# --- 過往趨勢圖卡片 (數據由 JS 處理) --- #}
-      <div class="d-card trends-card">
-        <div class="d-card-header">
-          <h3><i class="fa-solid fa-arrow-trend-up"></i> 過往趨勢</h3>
-        </div>
-        <div class="d-card-body">
-          <div class="chart-controls">
-            <div class="control-item"><select name="period"><option value="month" selected>月</option></select></div>
-            <div class="control-item"><select name="year"><option value="2025" selected>2025年</option></select></div>
-          </div>
-          <div class="chart-area"><canvas id="trendsChart"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-column-right">
-      {# --- 前次行程卡片 (動態化) --- #}
-      {% if trips and trips|length > 0 %}
-        {% set latest_trip = trips[0] %}
-        <div class="d-card last-trip-card--large">
-          <div class="d-card-body">
-            <div class="trip-section">
-              <div class="d-card-header" style="padding-left:0; padding-top:0;">
-                <h3><i class="fa-solid fa-route"></i> 前次行程</h3>
-                <a href="{{ url_for('trip_report', trip_id=latest_trip.id) }}" class="header-link" title="查看詳細報告"><i class="fa-solid fa-map-location-dot"></i></a>
-              </div>
-              <a href="{{ url_for('trip_report', trip_id=latest_trip.id) }}" class="trip-overview-link">
-                <div class="trip-details-header">
-                  <div class="trip-meta-group">
-                    <p class="trip-meta">{{ latest_trip.start_time | format_datetime }} - {{ latest_trip.end_time | format_time }} • {{ latest_trip.group }}</p>
-                    <p class="trip-meta">{{ latest_trip.name }}</p>
-                  </div>
-                  <div class="trip-vitals">
-                    <div class="vital-item"><span>總耗時</span><strong>--</strong></div>
-                    <div class="vital-item"><span>總里程</span><strong>{{ "%.1f"|format(latest_trip.total_mileage|float) if latest_trip.total_mileage else '--' }} km</strong></div>
-                  </div>
-                </div>
-              </a>
-            </div>
-            <hr class="internal-divider" />
-            <div class="score-and-violations-section">
-              <div class="score-section">
-                <h3>安全總分</h3>
-                <div class="score-display">{{ "%.0f"|format(latest_trip.score|float) if latest_trip.score else 'N/A' }}</div>
-              </div>
-              <div class="violations-section"><h3>本次違規項目</h3><ul><li>請至詳細報告中查看</li></ul></div>
-            </div>
-            <hr class="internal-divider" />
-            <div class="ai-suggestion-section">
-              <h3><i class="fa-solid fa-file-alt"></i> AI 行車建議</h3>
-              <div class="ai-suggestion-body">
-                <div class="ai-suggestion-content">
-                  <p>{{ latest_trip.ai_suggestion if latest_trip.ai_suggestion else '本次行程表現良好,無特別建議。' }}</p>
-                </div>
-                <div class="card-actions vertical-right ai-buttons">
-                  <a href="{{ url_for('coaching') }}" class="action-button">查看完整建議</a>
-                  <a href="{{ url_for('print_report', trip_id=latest_trip.id) }}" class="action-button" target="_blank">列印本次報表</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      {% else %}
-        <div class="d-card"><div class="d-card-body"><p>目前沒有任何行程記錄。</p></div></div>
-      {% endif %}
-
-      {# --- 過往行程與平均卡片 (動態化) --- #}
-      <div class="dashboard-row">
-        <div class="d-card commute-avg-card">
-          <div class="d-card-header"><h3>過往平均</h3></div>
-          <div class="d-card-body"><p>詳細數據請點擊上方「行車數據」按鈕查看。</p></div>
-        </div>
-        <div class="d-card past-trips-card">
-          <div class="d-card-header"><h3><i class="fa-solid fa-newspaper"></i> 過往行程</h3></div>
-          <div class="d-card-body">
-            <ul>
-              {% if trips and trips|length > 1 %}
-                {% for trip in trips[1:5] %}
-                  <li>
-                    <a href="{{ url_for('trip_report', trip_id=trip.id) }}" class="trip-link">
-                      <div class="trip-info">
-                        <span class="trip-date-group">{{ trip.start_time | format_date }} {{ trip.group }}</span>
-                        <span class="trip-time-route">{{ trip.start_time | format_time }} - {{ trip.name }}</span>
-                      </div>
-                      <div class="trip-score">{{ "%.0f"|format(trip.score|float) if trip.score else 'N/A' }}</div>
-                    </a>
-                  </li>
-                {% endfor %}
-              {% else %}
-                <li>暫無更多行程記錄。</li>
-              {% endif %}
-            </ul>
-            <div class="card-actions-center">
-              <a href="{{ url_for('all_reports') }}" class="btn-view-more">其他過往行程</a>
-            </div>
-          </div>
-        </div>
+      <div class="profile-details">
+        <div class="detail-item"><i class="fa-solid fa-envelope"></i> <span>{{ profile.email }}</span></div>
+        <div class="detail-item"><i class="fa-solid fa-phone"></i> <span>{{ profile.personnelprofile.phone or '未提供' }}</span></div>
+        <div class="detail-item"><i class="fa-solid fa-id-card"></i> <span>駕照: {{ profile.personnelprofile.license_type or '未提供' }}</span></div>
+        <div class="detail-item"><i class="fa-solid fa-calendar-days"></i> <span>年資: {{ profile.personnelprofile.driving_experience }} 年</span></div>
       </div>
     </div>
   </div>
-  <a href="{{ url_for('chat') }}" class="floating-chatbot-btn" title="智慧客服"><i class="fa-solid fa-comments"></i></a>
+
+  {# --- 卡片二：所屬群組 (已串接) --- #}
+  <div class="d-card groups-card">
+    <div class="d-card-header">
+      <h3><i class="fa-solid fa-users"></i> 我加入的群組</h3>
+    </div>
+    <div class="d-card-body">
+      <ul class="group-list">
+        {# 使用 for 迴圈遍歷後端傳來的 my_groups 列表 #}
+        {% for group in my_groups %}
+          <li class="group-item">
+            <i class="fa-solid fa-truck-fast group-icon"></i>
+            <div class="group-info">
+              <span class="group-name">{{ group.name }}</span>
+              <span class="group-leader">組長: {{ group.created_by }}</span>
+            </div>
+          </li>
+        {% else %}
+          <li class="group-item-empty">您尚未加入任何群組。</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  {# --- 卡片三：近期行程 (已串接) --- #}
+  <div class="d-card trips-card">
+    <div class="d-card-header">
+      <h3><i class="fa-solid fa-route"></i> 近期行程記錄</h3>
+    </div>
+    <div class="d-card-body">
+      <table class="trip-table">
+        <tbody>
+          {# 使用 for 迴圈遍歷後端傳來的 trips 列表 #}
+          {% for trip in trips %}
+          <tr onclick="window.location.href='{{ url_for('trip_report', trip_id=trip.id) }}'">
+            <td>{{ trip.start_time | format_date }}</td>
+            <td>{{ trip.name }}</td>
+            <td><span class="score-badge">{{ "%.1f"|format(trip.score|float) if trip.score else 'N/A' }}</span></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="no-trips">暫無行程記錄</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# --- 卡片四：分數趨勢圖 (已串接) --- #}
+  <div class="d-card chart-card">
+    <div class="d-card-header">
+      <h3><i class="fa-solid fa-chart-line"></i> 駕駛分數趨勢</h3>
+    </div>
+    <div class="d-card-body">
+      <canvas id="trendsChart"></canvas>
+    </div>
+  </div>
+
+  {# --- 【全新功能】卡片五：管理員專用通道 (已串接) --- #}
+  {% if profile.administered_groups %}
+  <div class="d-card admin-panel-card">
+    <div class="d-card-header">
+      <h3><i class="fa-solid fa-user-shield"></i> 群組管理面板</h3>
+    </div>
+    <div class="d-card-body">
+      {# 遍歷使用者有管理權限的每一個群組 #}
+      {% for group in my_groups %}
+        {% if group.id in profile.administered_groups %}
+          <div class="admin-group-section">
+            <h4 class="admin-group-name">{{ group.name }}</h4>
+            <div class="admin-group-actions">
+              {# 新增公告的按鈕 #}
+              <a href="{{ url_for('create_announcement', group_id=group.id) }}" class="admin-action-btn">
+                <i class="fa-solid fa-bullhorn"></i> 發布公告
+              </a>
+              {# 邀請成員的按鈕 #}
+              <a href="{{ url_for('invite_member', group_id=group.id, next_page='dashboard') }}" class="admin-action-btn">
+                <i class="fa-solid fa-user-plus"></i> 邀請成員
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+</div>
 {% endblock %}
 
 {% block extra_js %}
+  {# 引入 Chart.js 函式庫 #}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  {# 這個 <script> 區塊會將後端數據傳遞給 dashboard.js #}
   <script>
-    const trendsDataFromServer = {{ trends_data | tojson }};
+    document.addEventListener('DOMContentLoaded', function () {
+      // 從後端獲取趨勢數據 (安全地轉換為 JSON)
+      const trendsData = JSON.parse('{{ trends_data | tojson | safe }}');
+      
+      const labels = trendsData.map(item => item.month);
+      const scores = trendsData.map(item => item.average_score);
+
+      const ctx = document.getElementById('trendsChart').getContext('2d');
+      const trendsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '月平均分數',
+            data: scores,
+            borderColor: '#1a2a5f',
+            backgroundColor: 'rgba(26, 42, 95, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: false, suggestedMin: 60, suggestedMax: 100 } }
+        }
+      });
+    });
   </script>
-  <script src="{{ url_for('static', filename='js/pages/dashboard.js') }}" defer></script>
 {% endblock %}

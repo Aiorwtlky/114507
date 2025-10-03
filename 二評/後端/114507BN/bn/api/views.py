@@ -133,6 +133,14 @@ class GroupMembersListAPIView(generics.ListAPIView):
         ).annotate(
             average_score=Avg('trip__score')
         ).order_by('username')
+    
+    def get_serializer_context(self):
+        """
+        將 URL 中的 group_id 傳遞給 Serializer。
+        """
+        context = super().get_serializer_context()
+        context['group_id'] = self.kwargs['pk']
+        return context
 
 # =============================================================================
 # 公告管理 API

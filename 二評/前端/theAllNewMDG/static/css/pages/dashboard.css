@@ -1072,3 +1072,83 @@
         /* 確保文字本身不換行，符合您的手繪圖 */
         white-space: nowrap; 
       }
+
+
+/* ===== 全域文字顏色修正 (請貼到 dashboard.css 最下方) ===== */
+
+/* 為卡片內的所有基本元素設定一個清晰可見的預設深灰色。
+  這可以解決大部分文字消失的問題。
+*/
+.d-card .d-card-body,
+.d-card .d-card-body p,
+.d-card .d-card-body li,
+.d-card .d-card-body span,
+.d-card .d-card-body th,
+.d-card .d-card-body td,
+.d-card .profile-name,
+.d-card .profile-id,
+.d-card .group-name,
+.d-card .group-leader {
+    color: #333333; /* 深灰色，比純黑柔和 */
+}
+
+/* 確保卡片內的連結使用主題藍色，以便識別 */
+.d-card .d-card-body a {
+    color: #1a2a5f;
+}
+
+/* 強制設定卡片標題為主題藍色 */
+.d-card .d-card-header h3 {
+    color: #1a2a5f;
+}
+
+/* 確保分數的數字顏色正確 */
+.score-badge {
+    color: #ffffff; /* 分數標籤內的數字應該是白色的 */
+}
+
+.admin-group-section {
+    border-bottom: 1px dashed #ccc;
+    padding: 15px 0;
+}
+.admin-group-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.admin-group-section:first-child {
+    padding-top: 0;
+}
+
+.admin-group-name {
+    margin: 0 0 10px 0;
+    color: #1a2a5f;
+}
+
+.admin-group-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background-color: #f0f2f5;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.admin-action-btn:hover {
+    background-color: #1a2a5f;
+    color: white;
+}
+
+.admin-action-btn.view-full {
+    margin-left: auto; /* 將「完整儀表板」按鈕推到最右邊 */
+    background-color: transparent;
+}

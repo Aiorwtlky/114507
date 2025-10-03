@@ -7,10 +7,8 @@
 {% endblock %}
 
 {% block content %}
-  {# --- 【全新】佈局：側邊欄 + 主內容區 --- #}
-  <div class.="leader-view-layout">
+  <div class="leader-view-layout">
 
-    {# --- 側邊欄：顯示所有管理的群組 --- #}
     <aside class="leader-sidebar">
       <div class="sidebar-header">
         <h4>我管理的群組</h4>
@@ -28,7 +26,6 @@
       </nav>
     </aside>
 
-    {# --- 主內容區：顯示當前選擇的群組詳情 --- #}
     <main class="leader-main-content">
       <div class="group-detail-container">
         <div class="d-card group-header-card">
@@ -44,53 +41,56 @@
           <div class="d-card-header"><h3><i class="fa-solid fa-user-tie"></i> 我的身分</h3></div>
           <div class="d-card-body">
             <div class="member-item self">
-              <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="User Avatar" class="member-avatar" />
+              {# 【修正】使用正確的字典語法 `[]` 並加上 if 判斷來顯示您自己的頭像 #}
+              <img src="{{ profile['personnelprofile']['avatar'] if profile['personnelprofile'] else '' or url_for('static', filename='images/1.jpg') }}" alt="User Avatar" class="member-avatar" />
               <div class="member-details">
-                <span class="member-name">{{ session.get('username', '管理者') }}</span>
-                <span class="member-role">組長</span>
+                <span class="member-name">{{ profile.first_name or profile.username }}</span>
+                <span class="member-role">管理者</span>
               </div>
             </div>
           </div>
         </div>
-
+        
         <div class="d-card group-members-card">
           <div class="d-card-header">
             <h3><i class="fa-solid fa-users"></i> 群組成員</h3>
-            <a href="{{ url_for('invite_member', group_id=group.id) }}" class="action-button">+ 新增成員</a>
+            <a href="{{ url_for('invite_member', group_id=group.id, next_page='leader_view') }}" class="action-button">+ 新增成員</a>
           </div>
           <div class="d-card-body">
             <table class="member-table">
               <thead>
                 <tr>
+                  <th class="avatar-col">頭像</th>
                   <th>姓名</th>
                   <th>總平均分</th>
                   <th class="actions-col">操作</th>
                 </tr>
               </thead>
-                <tbody>
-                  {% for member in members %}
-                  <tr data-href="{{ url_for('member_dashboard', member_id=member.id) }}">
-                    <td>{{ member.first_name or member.username }}</td>
-                    <td>{{ "%.1f"|format(member.average_score|float) if member.average_score else 'N/A' }}</td>
+              <tbody>
+                {% for member in members %}
+                <tr data-href="{{ url_for('member_dashboard', member_id=member.id) }}">
+                  <td class="avatar-col">
+                    {# 【修正】使用正確的字典語法 `[]` 並加上 if 判斷來顯示成員頭像 #}
+                    <img src="{{ member['personnelprofile']['avatar'] if member['personnelprofile'] else '' or url_for('static', filename='images/1.jpg') }}" alt="{{ member.username }}'s Avatar" class="table-avatar" />
+                  </td>
+                  <td>{{ member.first_name or member.username }}</td>
+                  <td>{{ "%.1f"|format(member.average_score|float) if member.average_score else 'N/A' }}</td>
+                  <td class="actions-col">
+                    <a href="{{ url_for('member_videos', member_id=member.id) }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
                     
-                    <td class="actions-col">
-                      <a href="{{ url_for('member_videos', member_id=member.id) }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
-                      
-                      {# 只有當這位成員不是建立者，也不是管理員時，才顯示「提升」按鈕 #}
-                      {% if member.username != group.created_by and member.role != 'ADMIN' %}
-                        <a href="#" class="promote-btn" 
-                          data-group-id="{{ group.id }}" 
-                          data-user-id="{{ member.id }}" 
-                          title="提升為管理員">
+                    {% if member.username != group.created_by and member.role != 'ADMIN' %}
+                      <form action="{{ url_for('promote_member', group_id=group.id, user_id=member.id) }}" method="post" style="display: inline;" onsubmit="return confirm('您確定要將這位成員提升為群組管理員嗎？');">
+                        <button type="submit" class="promote-btn" title="提升為管理員">
                           <i class="fa-solid fa-user-shield"></i>
-                        </a>
-                      {% endif %}
-                    </td>
-                    </tr>
-                  {% else %}
-                  <tr><td colspan="3">此群組尚無成員。</td></tr>
-                  {% endfor %}
-                </tbody>
+                        </button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" style="text-align: center;">此群組尚無成員。</td></tr>
+                {% endfor %}
+              </tbody>
             </table>
           </div>
         </div>
@@ -128,48 +128,11 @@
       const clickableRows = document.querySelectorAll('tr[data-href]');
       clickableRows.forEach((row) => {
         row.addEventListener('click', function (event) {
-          if (event.target.tagName === 'A' || event.target.tagName === 'I') return;
+          if (event.target.closest('button, a')) return;
           window.location.href = this.dataset.href;
         });
       });
     });
-
-      const promoteButtons = document.querySelectorAll('.promote-btn');
-      promoteButtons.forEach(button => {
-          button.addEventListener('click', function(event) {
-              event.preventDefault(); // 防止連結跳轉
-              event.stopPropagation(); // 防止觸發整行點擊
-
-              const groupId = this.dataset.groupId;
-              const userId = this.dataset.userId;
-
-              if (confirm(`您確定要將這位成員提升為群組管理員嗎？`)) {
-                  const accessToken = "{{ session.access_token }}"; // 從 session 獲取 token
-
-                  fetch(`/api/groups/${groupId}/members/${userId}/role/`, {
-                      method: 'PATCH',
-                      headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': `Bearer ${accessToken}`
-                      },
-                      body: JSON.stringify({ role: 'ADMIN' })
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                      if (data.success) {
-                          alert('權限更新成功！');
-                          window.location.reload(); // 重新整理頁面以顯示最新狀態
-                      } else {
-                          alert('權限更新失敗：' + (data.error || '未知錯誤'));
-                      }
-                  })
-                  .catch(error => {
-                      console.error('Error:', error);
-                      alert('發生網路錯誤，請稍後再試。');
-                  });
-              }
-          });
-      });
   </script>
-  
 {% endblock %}
+

@@ -12,34 +12,28 @@
       <div class="d-card-body">
         <div class="invite-header">
           <h1>新增成員</h1>
-          {# 【修改】顯示真實的群組名稱 #}
           <p>{{ group.name }}</p>
         </div>
 
         <div class="invite-main">
-          {# --- 【核心修改】使用 if 判斷來顯示不同內容 --- #}
           {% if invite_code %}
-            {# 如果 app.py 傳來了 invite_code，就顯示邀請碼 #}
             <div class="qr-code-section">
-              {# 【修改】動態生成 QR Code #}
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ invite_code.code }}" alt="群組邀請 QR Code" />
             </div>
             <div class="link-section">
               <p class="invite-instruction">請將此邀請碼提供給新成員 ({{ invite_code.expires_at | format_datetime }} 前有效):</p>
               <div class="url-input-group">
-                {# 【修改】顯示真實的邀請碼 #}
                 <input type="text" id="invite-link" value="{{ invite_code.code }}" readonly />
                 <button id="copy-button" class="btn-copy"><i class="fa-solid fa-copy"></i> 複製</button>
               </div>
             </div>
           {% else %}
-            {# 如果還沒有 invite_code，就顯示生成按鈕 #}
             <div class="generate-section">
-                <p class="invite-instruction">點擊下方按鈕，為此群組生成一組專屬的邀請碼。</p>
-                {# 這個表單會向當前頁面發送 POST 請求 #}
-                <form method="post" action="{{ url_for('invite_member', group_id=group.id) }}">
-                    <button type="submit" class="btn">生成邀請碼</button>
-                </form>
+              <p class="invite-instruction">點擊下方按鈕，為此群組生成一組專屬的邀請碼。</p>
+              <form method="post" action="{{ url_for('invite_member', group_id=group.id) }}">
+                <input type="hidden" name="next_page" value="{{ next_page }}">
+                <button type="submit" class="btn">生成邀請碼</button>
+              </form>
             </div>
           {% endif %}
         </div>
@@ -47,8 +41,11 @@
     </div>
 
     <div class="button-wrapper">
-      {# 【修改】返回按鈕連結到正確的群組 #}
-      <a href="{{ url_for('group_leader_view', group_id=group.id) }}" class="btn-solid-return">完成</a>
+      {% if next_page == 'dashboard' %}
+        <a href="{{ url_for('dashboard') }}" class="btn-solid-return">完成</a>
+      {% else %}
+        <a href="{{ url_for('group_leader_view', group_id=group.id) }}" class="btn-solid-return">完成</a>
+      {% endif %}
     </div>
   </div>
 {% endblock %}
