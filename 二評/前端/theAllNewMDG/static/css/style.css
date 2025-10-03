@@ -329,14 +329,16 @@ body::before {
 /* 卡片 */
 /* ---- Card（桌機預設）---- */
 /* ---- Card (桌機預設) ---- */
+/* ---- Card (桌機預設) ---- */
 .card {
   width: 100%;
   height: clamp(480px, 13vh, 600px);
-  background: rgba(255, 255, 255, .07);
-  border: 1px solid rgba(255, 255, 255, .15);
+  /* 關鍵修改：卡片背景改成白色，邊框改成淺灰色 */
+  background: #ffffff; 
+  border: 1px solid #ddd; 
   border-radius: 22px;
   padding: 1.6rem 1.2rem;
-  backdrop-filter: blur(8px);
+  backdrop-filter: none; /* 移除模糊 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -344,44 +346,47 @@ body::before {
   text-align: center;
   transition: .4s;
   font-size: 2rem;
+  /* 新增：為卡片增加輕微陰影 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
 }
 
 /* 內文字級 & 漸層標題 */
 .card i {
   font-size: 3.4em;
-  /* 圖示大小不變，作為視覺主體 */
   margin-bottom: .65em;
-  color: var(--glow);
-  filter: drop-shadow(0 0 6px var(--glow));
+  color: var(--glow); 
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.2)); /* 降低陰影效果 */
   transition: transform 0.3s ease;
 }
 
 .card h3 {
   font-size: 1.2em;
-  /* <<< 已縮小 */
   margin-bottom: .4em;
-  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-  -webkit-background-clip: text;
-  color: transparent;
+  /* 關鍵修改：將標題的漸層文字效果移除，使用純黑色或深藍色 */
+  background: none; 
+  -webkit-background-clip: unset; 
+  -webkit-text-fill-color: #1a1a1a; /* 設定為深色 */
+  color: #1a1a1a; /* 設定為深色 */
   background-size: 200% auto;
   transition: transform 0.3s ease;
 }
 
 .card p {
   font-size: 0.8em;
-  /* <<< 已縮小 */
   line-height: 1.5;
-  /* 稍微增加行高，讓小字更好讀 */
   opacity: .9;
   min-height: 2.5em;
   display: flex;
   align-items: flex-start;
+  /* 關鍵修改：內文設定為深灰色 */
+  color: #333; 
 }
-
+/* 讓卡片 hover 效果不要變形，維持白底 */
 .card:hover {
   transform: translateY(-10px);
   box-shadow: 0 14px 26px rgba(0, 0, 0, .45);
   border-color: var(--glow);
+  background: #ffffff; /* 確保 hover 時依然是白底 */
 }
 
 .card:hover i {
