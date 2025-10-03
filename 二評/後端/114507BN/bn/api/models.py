@@ -84,6 +84,17 @@ class GroupMember(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     joined_at = models.DateTimeField(auto_now_add=True)
 
+    ROLE_CHOICES = [
+        ('MEMBER', '成員'),
+        ('ADMIN', '管理員'),
+    ]
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        default='MEMBER',
+        verbose_name="群組角色"
+    )
+    
     class Meta:
         db_table = 'group_member'
         unique_together = (('group', 'user'),)

@@ -254,10 +254,24 @@ def my_groups_standalone():
 def past_average_standalone():
     # ...
     return "Not Implemented Yet"
-@app.route("/group_settings")
-def group_settings():
-    # ...
-    return "Not Implemented Yet"
+# 修正您現有的 group_settings，讓它能接收 group_id
+@app.route("/group_settings/<int:group_id>")
+def group_settings(group_id):
+    # 未來我們會在這裡實作群組設定功能
+    return f"這裡是群組 {group_id} 的設定頁面 (尚未實作)"
+
+# 這個路由就是解決您目前錯誤的關鍵
+@app.route("/member_dashboard/<int:member_id>")
+def member_dashboard(member_id):
+    # 現在先回傳一個簡單的訊息，確保頁面不會崩潰
+    return f"這裡是成員 {member_id} 的儀表板 (尚未實作)"
+
+# 這是樣板中用到的另一個路由，也需要補上
+@app.route("/member_videos/<int:member_id>")
+def member_videos(member_id):
+    # 未來用來顯示特定成員的行車影片列表
+    return f"這裡是成員 {member_id} 的影片列表 (尚未實作)"
+
 @app.route("/print_report/<int:trip_id>")
 def print_report(trip_id):
     # ...

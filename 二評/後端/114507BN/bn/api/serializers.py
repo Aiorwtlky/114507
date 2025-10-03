@@ -20,19 +20,29 @@ class PersonnelProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     personnelprofile = PersonnelProfileSerializer(read_only=True)
     is_group_leader = serializers.SerializerMethodField()
+    administered_groups = serializers.SerializerMethodField()
+
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile', 'administered_groups']
 
     def get_is_group_leader(self, obj):
         return Group.objects.filter(created_by=obj).exists()
+    
+    def get_administered_groups(self, obj):
+        # 找出使用者角色為 'ADMIN' 的所有 GroupMember 紀錄
+        admin_memberships = GroupMember.objects.filter(user=obj, role='ADMIN')
+        # 從這些紀錄中，取出 group 的 id，並回傳成一個列表
+        return [membership.group.id for membership in admin_memberships]
 
 class GroupMemberSerializer(serializers.ModelSerializer):
     average_score = serializers.FloatField(read_only=True, default=0)
+    role = serializers.CharField(source='groupmember.role', read_only=True, default='MEMBER') 
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'average_score']
+        fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role']
 
 class GroupSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField(read_only=True)
@@ -126,12 +136,10 @@ class VideoRecordCreateSerializer(serializers.ModelSerializer):
         model = VideoRecord
         fields = ['video_number', 'trip', 'start_time', 'end_time', 'location', 'file_size']
 
-# --- 【修改這個 Serializer】 ---
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     personnelprofile = PersonnelProfileSerializer()
     
-    # 【新增】接收前端傳來的邀請碼，非必填
     invitation_code = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=8)
 
     class Meta:

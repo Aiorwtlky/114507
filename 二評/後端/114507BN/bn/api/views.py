@@ -149,11 +149,17 @@ class GroupAnnouncementListCreateAPIView(generics.ListCreateAPIView):
         return GroupAnnouncement.objects.filter(group__id=group_pk).order_by('-publish_date')
 
     def perform_create(self, serializer):
-        # 建立公告時，自動設定發布者為當前使用者，群組為 URL 指定的群組
-        group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
-        if group.created_by != self.request.user and not self.request.user.is_staff:
-            raise PermissionDenied("You do not have permission to post announcements in this group.")
-        serializer.save(publisher=self.request.user, group=group)
+            group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
+            
+            # --- ▼▼▼ 修改權限檢查邏輯 ▼▼▼ ---
+            is_owner = (group.created_by == self.request.user)
+            is_staff = self.request.user.is_staff
+            is_group_admin = GroupMember.objects.filter(group=group, user=self.request.user, role='ADMIN').exists()
+
+            if not (is_owner or is_staff or is_group_admin):
+                raise PermissionDenied("您沒有權限在此群組中發布公告。")
+            # --- ▲▲▲ 修改結束 ▲▲▲ ---
+            serializer.save(publisher=self.request.user, group=group)
 
 class GroupAnnouncementDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """讀取、更新、刪除單則公告"""
@@ -168,10 +174,16 @@ class InvitationCodeCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
-        # 權限檢查：只有組長或管理員能生成邀請碼
-        if group.created_by != self.request.user and not self.request.user.is_staff:
-            raise PermissionDenied("You do not have permission to create invitation codes for this group.")
-        # 自動設定建立者和群組
+
+        # --- ▼▼▼ 修改權限檢查邏輯 ▼▼▼ ---
+        is_owner = (group.created_by == self.request.user)
+        is_staff = self.request.user.is_staff
+        is_group_admin = GroupMember.objects.filter(group=group, user=self.request.user, role='ADMIN').exists()
+
+        if not (is_owner or is_staff or is_group_admin):
+            raise PermissionDenied("您沒有權限為此群組生成邀請碼。")
+        # --- ▲▲▲ 修改結束 ▲▲▲ ---
+
         serializer.save(created_by=self.request.user, group=group)
 
 # =============================================================================
@@ -389,3 +401,34 @@ def generate_trip_report_pdf(request, trip_pk):
     response['Content-Disposition'] = f'inline; filename="trip_report_{trip.trip_number}.pdf"'
 
     return response
+
+
+class GroupMemberRoleAPIView(views.APIView):
+    """更新群組成員的角色"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, group_pk, user_pk):
+            group = get_object_or_404(Group, pk=group_pk)
+            target_member_profile = get_object_or_404(GroupMember, group=group, user__id=user_pk)
+
+            # --- ▼▼▼ 修改權限檢查邏輯 ▼▼▼ ---
+            # 權限檢查：只有群組建立者或其他管理員才能變更角色
+            is_owner = (group.created_by == request.user)
+            is_staff = request.user.is_staff
+            is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
+
+            if not (is_owner or is_staff or is_group_admin):
+                raise PermissionDenied("您沒有權限變更成員角色。")
+            
+            # 【新增】一個小限制：不能移除群組建立者自己的管理員權限
+            if group.created_by == target_member_profile.user and request.data.get('role') == 'MEMBER':
+                raise PermissionDenied("不能移除群組建立者的管理員權限。")
+            # --- ▲▲▲ 修改結束 ▲▲▲ ---
+
+            new_role = request.data.get('role')
+            if new_role not in ['MEMBER', 'ADMIN']:
+                return Response({"error": "無效的角色"}, status=status.HTTP_400_BAD_REQUEST)
+
+            target_member_profile.role = new_role
+            target_member_profile.save()
+            return Response({"success": f"使用者 {target_member_profile.user.username} 的角色已更新為 {new_role}"}, status=status.HTTP_200_OK)

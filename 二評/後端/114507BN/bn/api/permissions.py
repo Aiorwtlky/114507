@@ -18,16 +18,29 @@ class IsOwnerOrAdmin(BasePermission):
 
 class IsGroupOwnerOrAdmin(BasePermission):
     """
-    自訂權限：只允許群組的建立者 (created_by) 或管理員 (admin) 進行編輯或刪除。
+    自訂權限：允許群組的建立者(created_by)、群組管理員(role='ADMIN')或網站管理員(admin)進行編輯或刪除。
     """
     def has_object_permission(self, request, view, obj):
-        # 任何已登入的使用者都有讀取權限
+        # 讀取權限：維持不變，是群組成員就可以看
         if request.method in SAFE_METHODS:
-            # 【優化】更精確的權限：必須是群組成員才能查看
             return GroupMember.objects.filter(group=obj, user=request.user).exists() or request.user.is_staff
         
-        # 寫入權限只開放給物件的擁有者或管理員
-        return obj.created_by == request.user or request.user.is_staff
+        # --- ▼▼▼ 修改寫入權限的檢查邏輯 ▼▼▼ ---
+        if not request.user.is_authenticated:
+            return False
+            
+        is_owner = (obj.created_by == request.user)
+        is_staff = request.user.is_staff
+        # 檢查請求的使用者是否為該群組的管理員
+        is_group_admin = GroupMember.objects.filter(
+            group=obj, 
+            user=request.user, 
+            role='ADMIN'
+        ).exists()
+
+        return is_owner or is_staff or is_group_admin
+        # --- ▲▲▲ 修改結束 ▲▲▲ ---
+
 
 # --- 【新增這個 Class】 ---
 class IsAnnouncementPublisherOrAdmin(BasePermission):

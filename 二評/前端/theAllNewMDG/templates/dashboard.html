@@ -40,6 +40,30 @@
         </div>
       </div>
 
+      {# --- ▼▼▼ 新增：我的管理權限卡片 ▼▼▼ --- #}
+      {% if profile.administered_groups %}
+        <div class="d-card admin-access-card">
+          <div class="d-card-header">
+            <h3><i class="fa-solid fa-user-shield"></i> 我的管理權限</h3>
+          </div>
+          <div class="d-card-body">
+            <p>您擁有以下群組的管理權限,點選可進入管理頁面:</p>
+            <ul class="admin-group-list">
+              {% for group in my_groups %}
+                {% if group.id in profile.administered_groups %}
+                  <li>
+                    <a href="{{ url_for('group_leader_view', group_id=group.id) }}">
+                      管理 <strong>{{ group.name }}</strong>
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+      {# --- ▲▲▲ 新增區塊結束 ▲▲▲ --- #}
+
       {# --- 我的群組卡片 (動態化) --- #}
       <div class="d-card my-group-card">
         <div class="d-card-header">
@@ -87,7 +111,7 @@
               <a href="{{ url_for('trip_report', trip_id=latest_trip.id) }}" class="trip-overview-link">
                 <div class="trip-details-header">
                   <div class="trip-meta-group">
-                    <p class="trip-meta">{{ latest_trip.start_time | format_datetime }} - {{ latest_trip.end_time | format_time }} ‧ {{ latest_trip.group }}</p>
+                    <p class="trip-meta">{{ latest_trip.start_time | format_datetime }} - {{ latest_trip.end_time | format_time }} • {{ latest_trip.group }}</p>
                     <p class="trip-meta">{{ latest_trip.name }}</p>
                   </div>
                   <div class="trip-vitals">
@@ -110,7 +134,7 @@
               <h3><i class="fa-solid fa-file-alt"></i> AI 行車建議</h3>
               <div class="ai-suggestion-body">
                 <div class="ai-suggestion-content">
-                  <p>{{ latest_trip.ai_suggestion if latest_trip.ai_suggestion else '本次行程表現良好，無特別建議。' }}</p>
+                  <p>{{ latest_trip.ai_suggestion if latest_trip.ai_suggestion else '本次行程表現良好,無特別建議。' }}</p>
                 </div>
                 <div class="card-actions vertical-right ai-buttons">
                   <a href="{{ url_for('coaching') }}" class="action-button">查看完整建議</a>

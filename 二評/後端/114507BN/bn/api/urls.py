@@ -37,6 +37,7 @@ from .views import (
     system_stats,
     UserTrendsAPIView,
     InvitationCodeCreateAPIView, 
+    GroupMemberRoleAPIView,
 )
 
 urlpatterns = [
@@ -52,6 +53,8 @@ urlpatterns = [
     path('groups/all/', GroupListAPIView.as_view(), name='group-list-all'),
     path('groups/<int:pk>/', GroupDetailAPIView.as_view(), name='group-detail'),
     path('groups/<int:pk>/members/', GroupMembersListAPIView.as_view(), name='group-members-list'),
+    path('groups/<int:group_pk>/members/<int:user_pk>/role/', GroupMemberRoleAPIView.as_view(), name='group-member-role-update'),
+
     
     # 公告管理 API
     path('groups/<int:group_pk>/announcements/', GroupAnnouncementListCreateAPIView.as_view(), name='group-announcement-list-create'),

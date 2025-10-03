@@ -67,19 +67,30 @@
                   <th class="actions-col">操作</th>
                 </tr>
               </thead>
-              <tbody>
-                {% for member in members %}
-                <tr data-href="{{ url_for('member_dashboard', member_id=member.id) }}">
-                  <td>{{ member.first_name or member.username }}</td>
-                  <td>{{ "%.1f"|format(member.average_score|float) if member.average_score else 'N/A' }}</td>
-                  <td class="actions-col">
-                    <a href="{{ url_for('member_videos', member_id=member.id) }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
-                  </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="3">此群組尚無成員。</td></tr>
-                {% endfor %}
-              </tbody>
+                <tbody>
+                  {% for member in members %}
+                  <tr data-href="{{ url_for('member_dashboard', member_id=member.id) }}">
+                    <td>{{ member.first_name or member.username }}</td>
+                    <td>{{ "%.1f"|format(member.average_score|float) if member.average_score else 'N/A' }}</td>
+                    
+                    <td class="actions-col">
+                      <a href="{{ url_for('member_videos', member_id=member.id) }}" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
+                      
+                      {# 只有當這位成員不是建立者，也不是管理員時，才顯示「提升」按鈕 #}
+                      {% if member.username != group.created_by and member.role != 'ADMIN' %}
+                        <a href="#" class="promote-btn" 
+                          data-group-id="{{ group.id }}" 
+                          data-user-id="{{ member.id }}" 
+                          title="提升為管理員">
+                          <i class="fa-solid fa-user-shield"></i>
+                        </a>
+                      {% endif %}
+                    </td>
+                    </tr>
+                  {% else %}
+                  <tr><td colspan="3">此群組尚無成員。</td></tr>
+                  {% endfor %}
+                </tbody>
             </table>
           </div>
         </div>
@@ -122,5 +133,43 @@
         });
       });
     });
+
+      const promoteButtons = document.querySelectorAll('.promote-btn');
+      promoteButtons.forEach(button => {
+          button.addEventListener('click', function(event) {
+              event.preventDefault(); // 防止連結跳轉
+              event.stopPropagation(); // 防止觸發整行點擊
+
+              const groupId = this.dataset.groupId;
+              const userId = this.dataset.userId;
+
+              if (confirm(`您確定要將這位成員提升為群組管理員嗎？`)) {
+                  const accessToken = "{{ session.access_token }}"; // 從 session 獲取 token
+
+                  fetch(`/api/groups/${groupId}/members/${userId}/role/`, {
+                      method: 'PATCH',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${accessToken}`
+                      },
+                      body: JSON.stringify({ role: 'ADMIN' })
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          alert('權限更新成功！');
+                          window.location.reload(); // 重新整理頁面以顯示最新狀態
+                      } else {
+                          alert('權限更新失敗：' + (data.error || '未知錯誤'));
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Error:', error);
+                      alert('發生網路錯誤，請稍後再試。');
+                  });
+              }
+          });
+      });
   </script>
+  
 {% endblock %}
