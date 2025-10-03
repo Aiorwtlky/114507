@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mdgapp.R
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.Icons
+
 
 @Composable
 fun AppBottomBar(navController: NavController, userRole: String) {
@@ -58,8 +61,8 @@ fun AppBottomBar(navController: NavController, userRole: String) {
         // 項目 3: 打卡 (對所有角色顯示)
         NavigationBarItem(
             selected = false,
-            onClick = { navController.navigate("qrScan") },
-            icon = { Icon(painterResource(id = R.drawable.ic_qr), "打卡", modifier = Modifier.size(iconSize)) },
+            onClick = { navController.navigate("checkIn") },
+            icon = { Icon(Icons.Filled.Check, "打卡", modifier = Modifier.size(iconSize)) },
             label = { Text("打卡", fontSize = labelFontSize) },
             colors = itemColors
         )

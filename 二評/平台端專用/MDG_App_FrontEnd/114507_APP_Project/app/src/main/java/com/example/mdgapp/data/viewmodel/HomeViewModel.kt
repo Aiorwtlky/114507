@@ -1,13 +1,8 @@
-// 檔案路徑: app/src/main/java/com/example/mdgapp/data/viewmodel/HomeViewModel.kt
-
 package com.example.mdgapp.data.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mdgapp.data.model.toLastTripInfo
-import com.example.mdgapp.data.remote.ApiService
-import com.example.mdgapp.data.remote.RetrofitInstance
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +12,10 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
+
+// =================================================================================
+// Data Class 定義
+// =================================================================================
 
 data class LastTripInfo(
     val startTime: LocalDateTime,
@@ -60,8 +59,12 @@ data class HomeUiState(
     val isLoading: Boolean = true
 )
 
+
+// =================================================================================
+// ViewModel 實作
+// =================================================================================
+
 class HomeViewModel : ViewModel() {
-    private val apiService: ApiService = RetrofitInstance.api
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -73,31 +76,30 @@ class HomeViewModel : ViewModel() {
     private fun initialize() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
+            delay(1000) // 模擬網路延遲
 
-            try {
-                // AuthInterceptor 會在背景自動從 TokenManager 取得 Token 並加入請求中
-                val response = apiService.getTrips()
+            // 產生模擬的 "前次行程" 資料
+            val mockLastTrip = LastTripInfo(
+                startTime = LocalDateTime.now().minusHours(3),
+                endTime = LocalDateTime.now().minusHours(1),
+                duration = Duration.ofHours(2),
+                startLocation = "林口區",
+                endLocation = "台北車站",
+                mileage = 35.2,
+                totalScore = 92,
+                improvementPercentage = 3,
+                violations = listOf(Violation("急加速", -3)),
+                aiSuggestion = "建議路線穩定，請繼續保持。"
+            )
 
-                if (response.isSuccessful) {
-                    val trips = response.body()
-                    val lastTrip = trips?.firstOrNull()?.toLastTripInfo()
-
-                    _uiState.update {
-                        it.copy(
-                            lastTrip = lastTrip,
-                            isLoading = false
-                        )
-                    }
-                } else {
-                    Log.e("HomeViewModel", "取得行程列表失敗: ${response.code()}")
-                    _uiState.update { it.copy(isLoading = false) }
-                }
-
-            } catch (e: Exception) {
-                Log.e("HomeViewModel", "初始化時發生錯誤", e)
-                _uiState.update { it.copy(isLoading = false) }
+            _uiState.update {
+                it.copy(
+                    lastTrip = mockLastTrip,
+                    isLoading = false
+                )
             }
 
+            // 初始化圖表資料
             onAverageTimeUnitSelected("月")
             onTrendTimeUnitSelected("月")
         }
@@ -151,10 +153,14 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onTrendValueSelected(value: String) {
+        // 模擬根據選擇的值變更圖表數據
+        val (data, labels) = generateChartData(_uiState.value.pastTrend.selectedTimeUnit)
         _uiState.update { currentState ->
             currentState.copy(
                 pastTrend = currentState.pastTrend.copy(
-                    selectedValue = value
+                    selectedValue = value,
+                    chartData = data, // 重新生成數據以反映變化
+                    chartLabels = labels
                 )
             )
         }

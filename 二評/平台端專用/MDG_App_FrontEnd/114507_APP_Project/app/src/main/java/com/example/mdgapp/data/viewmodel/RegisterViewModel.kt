@@ -1,32 +1,24 @@
-// 檔案路徑: app/src/main/java/com/example/mdgapp/data/viewmodel/RegisterViewModel.kt
-
 package com.example.mdgapp.data.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mdgapp.data.model.PersonnelProfileRequest
-import com.example.mdgapp.data.model.RegisterRequest
-import com.example.mdgapp.data.remote.ApiService
-import com.example.mdgapp.data.remote.RetrofitInstance
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// 用來管理註冊畫面的所有狀態
+// ✅ 1. 將所有需要的欄位加回 UiState
 data class RegisterUiState(
-    // 輸入欄位的狀態
     val username: String = "",
     val password: String = "",
+    val confirmPassword: String = "",
     val email: String = "",
-    val firstName: String = "",
     val lastName: String = "",
+    val firstName: String = "",
     val personnelNumber: String = "",
-    val gender: String = "MALE", // 預設值
+    val gender: String = "MALE", // 預設值 MALE 或 FEMALE
     val licenseNumber: String = "",
-
-    // 處理流程的狀態
     val isLoading: Boolean = false,
     val registrationError: String? = null,
     val isRegistrationSuccess: Boolean = false
@@ -34,59 +26,37 @@ data class RegisterUiState(
 
 class RegisterViewModel : ViewModel() {
 
-    private val apiService: ApiService = RetrofitInstance.api
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState = _uiState.asStateFlow()
 
-    // 供 UI 呼叫，用來更新各個欄位的狀態
+    // ✅ 2. 加入所有欄位對應的更新函式
     fun onUsernameChange(value: String) = _uiState.update { it.copy(username = value) }
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = value) }
+    fun onConfirmPasswordChange(value: String) = _uiState.update { it.copy(confirmPassword = value) }
     fun onEmailChange(value: String) = _uiState.update { it.copy(email = value) }
-    fun onFirstNameChange(value: String) = _uiState.update { it.copy(firstName = value) }
     fun onLastNameChange(value: String) = _uiState.update { it.copy(lastName = value) }
+    fun onFirstNameChange(value: String) = _uiState.update { it.copy(firstName = value) }
     fun onPersonnelNumberChange(value: String) = _uiState.update { it.copy(personnelNumber = value) }
     fun onGenderChange(value: String) = _uiState.update { it.copy(gender = value) }
     fun onLicenseNumberChange(value: String) = _uiState.update { it.copy(licenseNumber = value) }
 
-    // UI 點擊「註冊」按鈕時呼叫此函式
     fun registerUser() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, registrationError = null) }
+            delay(1500) // 模擬網路延遲
 
-            // 1. 從目前的 state 組合出 API 需要的 request 物件
-            val currentState = _uiState.value
-            val request = RegisterRequest(
-                username = currentState.username.trim(),
-                password = currentState.password,
-                email = currentState.email.trim(),
-                firstName = currentState.firstName.trim(),
-                lastName = currentState.lastName.trim(),
-                personnelProfile = PersonnelProfileRequest(
-                    personnelNumber = currentState.personnelNumber.trim(),
-                    gender = currentState.gender,
-                    licenseNumber = currentState.licenseNumber.trim()
-                )
-            )
-
-            try {
-                // 2. 呼叫 API
-                val response = apiService.registerUser(request)
-
-                // 3. 處理回應
-                if (response.isSuccessful) {
-                    Log.d("RegisterViewModel", "註冊成功: ${response.body()}")
-                    _uiState.update { it.copy(isLoading = false, isRegistrationSuccess = true) }
-                } else {
-                    // 處理 API 回傳的錯誤，例如帳號已存在
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("RegisterViewModel", "註冊失敗: ${response.code()}, $errorBody")
-                    _uiState.update { it.copy(isLoading = false, registrationError = "註冊失敗: $errorBody") }
-                }
-            } catch (e: Exception) {
-                // 處理網路連線等例外錯誤
-                Log.e("RegisterViewModel", "註冊時發生例外", e)
-                _uiState.update { it.copy(isLoading = false, registrationError = "網路錯誤，請稍後再試") }
+            val state = _uiState.value
+            if (state.password != state.confirmPassword) {
+                _uiState.update { it.copy(isLoading = false, registrationError = "兩次輸入的密碼不一致") }
+                return@launch
             }
+            if (state.username.isBlank() || state.password.isBlank() || state.email.isBlank() || state.lastName.isBlank() || state.firstName.isBlank()) {
+                _uiState.update { it.copy(isLoading = false, registrationError = "必填欄位不得為空") }
+                return@launch
+            }
+
+            // 模擬註冊成功
+            _uiState.update { it.copy(isLoading = false, isRegistrationSuccess = true) }
         }
     }
 }

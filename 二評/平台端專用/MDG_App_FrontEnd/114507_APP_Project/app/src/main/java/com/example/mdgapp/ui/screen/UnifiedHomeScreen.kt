@@ -24,16 +24,11 @@ import com.example.mdgapp.ui.component.GaugeScoreCard
 import com.example.mdgapp.ui.component.TrendChart
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
-import android.util.Log // ✅ 確認已 import Log
 
-// =================================================================================
-// 主要的 UnifiedHomeScreen Composable
-// =================================================================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnifiedHomeScreen(
     navController: NavController,
-    userRole: String,
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -44,14 +39,13 @@ fun UnifiedHomeScreen(
         topBar = {
             HomeTopBar(
                 navController = navController,
-                userRole = userRole,
                 onAvatarClick = {
                     coroutineScope.launch { drawerState.open() }
                 }
             )
         },
         bottomBar = {
-            AppBottomBar(navController = navController, userRole = userRole)
+            AppBottomBar(navController = navController)
         },
         containerColor = Color.Black
     ) { paddingValues ->
@@ -64,14 +58,10 @@ fun UnifiedHomeScreen(
     }
 }
 
-// =================================================================================
-// 頂部導覽列 (頭像、公告、下載)
-// =================================================================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeTopBar(
     navController: NavController,
-    userRole: String,
     onAvatarClick: () -> Unit
 ) {
     TopAppBar(
@@ -91,23 +81,14 @@ private fun HomeTopBar(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
-                    onClick = {
-                        val route = if (userRole == "manager") "managerAnnouncementList" else "announcementList"
-                        navController.navigate(route)
-                    },
+                    onClick = { navController.navigate("announcementList") },
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) { Text("公告") }
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Button(
-                    onClick = {
-                        // 修改點：管理者點擊下載，現在是查看自己的下載列表
-                        val route = if (userRole == "manager") "managerSelfDownloadList" else "downloadFileList"
-                        navController.navigate(route)
-                    },
+                    onClick = { navController.navigate("downloadFileList") },
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
@@ -123,14 +104,9 @@ private fun HomeTopBar(
     )
 }
 
-// =================================================================================
-// 底部功能列元件
-// =================================================================================
 @Composable
-fun AppBottomBar(navController: NavController, userRole: String) {
-    NavigationBar(
-        containerColor = Color.Black
-    ) {
+fun AppBottomBar(navController: NavController) {
+    NavigationBar(containerColor = Color.Black) {
         val labelFontSize = 12.sp
         val iconSize = 24.dp
         val itemColors = NavigationBarItemDefaults.colors(
@@ -138,41 +114,31 @@ fun AppBottomBar(navController: NavController, userRole: String) {
             unselectedIconColor = Color.White,
             unselectedTextColor = Color.White
         )
+
         NavigationBarItem(
             selected = false,
-            onClick = {
-                // 修改點：駕駛員現在導航到唯讀的群組頁面
-                val route = if (userRole == "manager") "groupManagement" else "driverGroupScreen"
-                navController.navigate(route)
-            },
+            onClick = { navController.navigate("driverGroupScreen") },
             icon = { Icon(painterResource(id = R.drawable.ic_group), "群組", modifier = Modifier.size(iconSize)) },
             label = { Text("群組", fontSize = labelFontSize) },
             colors = itemColors
         )
         NavigationBarItem(
             selected = false,
-            onClick = { navController.navigate("qrScan") },
-            icon = { Icon(painterResource(id = R.drawable.ic_qr), "打卡", modifier = Modifier.size(iconSize)) },
+            onClick = { navController.navigate("checkIn") },
+            icon = { Icon(painterResource(id = R.drawable.good), "打卡", modifier = Modifier.size(iconSize)) },
             label = { Text("打卡", fontSize = labelFontSize) },
             colors = itemColors
         )
         NavigationBarItem(
             selected = false,
-            onClick = {
-                // 修改點：管理者點擊報表，現在是查看自己的報表列表
-                val route = if (userRole == "manager") "managerSelfReportList" else "reportList"
-                navController.navigate(route)
-            },
+            onClick = { navController.navigate("reportList") },
             icon = { Icon(painterResource(id = R.drawable.ic_post), "報表", modifier = Modifier.size(iconSize)) },
             label = { Text("報表", fontSize = labelFontSize) },
             colors = itemColors
         )
         NavigationBarItem(
             selected = false,
-            onClick = {
-                val route = if (userRole == "manager") "managerProfile" else "profile"
-                navController.navigate(route)
-            },
+            onClick = { navController.navigate("profile") },
             icon = { Icon(painterResource(id = R.drawable.ic_person), "我的", modifier = Modifier.size(iconSize)) },
             label = { Text("我的", fontSize = labelFontSize) },
             colors = itemColors
@@ -180,13 +146,10 @@ fun AppBottomBar(navController: NavController, userRole: String) {
     }
 }
 
-// =================================================================================
-// 儀表板與卡片內容 (為保持檔案完整性而附上，內容不變)
-// =================================================================================
 @Composable
 private fun DashboardContent(uiState: HomeUiState, viewModel: HomeViewModel, navController: NavController, modifier: Modifier = Modifier) {
     if (uiState.isLoading) {
-        Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
     } else {
         Column(
             modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 16.dp),
@@ -234,7 +197,11 @@ fun LastTripCard(lastTrip: LastTripInfo, navController: NavController) {
             }
             Text("AI 行車建議: ${lastTrip.aiSuggestion}", style = MaterialTheme.typography.bodySmall, color = Color.LightGray)
             Button(
-                onClick = { /* navController.navigate(...) */ },
+                onClick = {
+                    // 取得前次行程的日期，並將其轉為字串傳遞給路由
+                    val dateString = lastTrip.startTime.toLocalDate().toString()
+                    navController.navigate("reportDetail/$dateString")
+                },
                 modifier = Modifier.align(Alignment.End),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
             ) {

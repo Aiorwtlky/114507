@@ -1,5 +1,3 @@
-// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/screen/ManagerReportDateListScreen.kt
-
 package com.example.mdgapp.ui.screen
 
 import androidx.compose.foundation.layout.*
@@ -16,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mdgapp.data.viewmodel.ManagerReportViewModel
 import com.example.mdgapp.ui.component.ReportListItemCard
-import java.time.OffsetDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +29,6 @@ fun ManagerReportDateListScreen(
     val reports by viewModel.selectedDriverReports.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val drivers by viewModel.drivers.collectAsState()
-
     val driverName = remember(driverId, drivers) {
         drivers.find { it.driverId == driverId }?.driverName ?: "駕駛"
     }
@@ -65,16 +61,14 @@ fun ManagerReportDateListScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(reports, key = { it.id }) { report ->
-                    val zonedDateTime = OffsetDateTime.parse(report.startTime)
-                    val date = zonedDateTime.toLocalDate()
-                    val score = report.score.toDoubleOrNull()?.toInt() ?: 0
-
+                // ✅ 修正：使用 report.date 作為 key
+                items(reports, key = { it.date }) { report ->
                     ReportListItemCard(
-                        date = date,
-                        totalScore = score,
+                        // ✅ 修正：傳遞正確的欄位 date 和 totalScore
+                        date = report.date,
+                        totalScore = report.totalScore,
                         onClick = {
-                            navController.navigate("managerReportDetail/${report.id}")
+                            navController.navigate("managerReportDetail/${report.date}")
                         }
                     )
                 }
