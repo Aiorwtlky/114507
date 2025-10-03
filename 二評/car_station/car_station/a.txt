@@ -1,0 +1,88 @@
+这是一个基于OpenCV的Python代码示例，用于估计车辆之间的距离。此代码使用摄像头捕获视频并检测车辆，并通过三角测量来估计车辆之间的距离。
+
+首先，请确保安装了opencv-python和其他必要的库。
+
+﹉
+
+pip install opencv-python
+pip install numpy
+﹉
+
+然后，创建一个名为car_distance_estimator.py的Python文件，并在其中添加以下代码：
+
+﹉
+
+import cv2
+
+import numpy as np
+
+ 
+
+# 定义相机参数
+
+FOCAL_LENGTH = 700 # 焦距，单位：像素
+
+KNOWN_WIDTH = 1.8 # 已知车辆宽度，单位：米
+
+IMAGE_PATH = "path/to/image.jpg"
+
+def detect_and_draw_boxes(image):
+
+    # 使用Haar级联分类器来检测车辆
+
+    car_cascade = cv2.CascadeClassifier('cars.xml')
+
+    cars = car_cascade.detectMultiScale(image, 1.1, 1)
+
+ 
+
+    for (x, y, w, h) in cars:
+
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+ 
+
+    return image, cars
+
+def estimate_distance(car_width_in_pixels):
+
+    distance = (FOCAL_LENGTH * KNOWN_WIDTH) / car_width_in_pixels
+
+    return distance
+
+def main():
+
+    # 从图片中读取数据
+
+    image = cv2.imread(IMAGE_PATH)
+
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+ 
+
+    image_with_boxes, detected_cars = detect_and_draw_boxes(gray_image)
+
+ 
+
+    for i, (x, y, w, h) in enumerate(detected_cars):
+
+        distance = estimate_distance(w)
+
+        cv2.putText(image_with_boxes, f"{distance:.2f} m", (x, y - 10),
+
+         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+
+cv2.imshow("Car Distance Estimator", image_with_boxes) cv2.waitKey(0) cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+
+main()
+
+﹉
+
+注意：cars.xml是一个Haar级联分类器文件，用于检测车辆。你可以从这里下载该文件：cars.xml。
+
+在运行代码之前，请确保将IMAGE_PATH替换为你要计算距离的图像文件的路径。
+————————————————
+版权声明：本文为CSDN博主「Linbo  Walking」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/weixin_64437665/article/details/130411876
