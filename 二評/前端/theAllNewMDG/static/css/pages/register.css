@@ -19,12 +19,14 @@
 .register-form {
   width: 100%;
   max-width: 960px;
-  background: rgba(0, 0, 0, 0.9);
+  /* 關鍵修改：背景改為白色，移除透明和模糊效果 */
+  background: #ffffff; 
   border-radius: 20px;
   padding: 3rem;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
-  color: var(--text);
+  backdrop-filter: none; /* 移除模糊效果 */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* 輕微的深色陰影 */
+  /* 關鍵修改：表單容器內的預設文字顏色改成深色 */
+  color: #1a1a1a; 
   animation: fadeUp 0.9s ease-out;
 }
 
@@ -65,11 +67,13 @@
 }
 
 /* ===== Label & Input ===== */
+/* ===== Label & Input ===== */
 .form-group label {
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 0.4rem;
-  color: var(--text);
+  /* 關鍵修改：標籤文字改成深色 */
+  color: #333333; 
 }
 
 .form-group input,
@@ -77,17 +81,21 @@
   font-size: 1.3rem;
   padding: 1.2rem 1.4rem;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.07);
-  color: #fff;
+  /* 關鍵修改：邊框使用淺灰色 */
+  border: 1px solid #cccccc; 
+  /* 關鍵修改：背景使用白色或極淺灰色，取代透明黑 */
+  background: #f7f7f7; 
+  /* 關鍵修改：輸入的文字改成黑色 */
+  color: #1a1a1a; 
   transition: all 0.3s ease;
   font-family: "Oxanium", sans-serif;
 }
 
 .form-group input:focus,
 .form-group select:focus {
+  /* 焦點效果可以保留或調整成您喜歡的主色調 */
   box-shadow: 0 0 10px var(--primary);
-  background: rgba(255,255,255,0.12);
+  background: #ffffff; /* 焦點時背景變純白 */
   transform: scale(1.015);
   outline: none;
 }
@@ -96,16 +104,17 @@
 .scroll-box {
   height: 140px;
   overflow-y: auto;
-  background: rgba(255,255,255,.05);
+  /* 關鍵修改：背景使用極淺灰色 */
+  background: #f0f0f0; 
   padding: 1rem;
   border-radius: 10px;
   font-size: 1rem;
   margin-bottom: 1.2rem;
   line-height: 1.6;
-  color: #ccc;
-  border: 1px solid rgba(255,255,255,0.1);
+  /* 關鍵修改：文字使用深色 */
+  color: #333333; 
+  border: 1px solid #cccccc; /* 淺色邊框 */
 }
-
 /* ===== 勾選區塊 ===== */
 .agree {
   font-size: 1.15rem;
@@ -113,6 +122,8 @@
   align-items: center;
   gap: .6rem;
   margin: 1rem 0 2rem;
+  /* 關鍵修正：確保勾選框文字是深色 */
+  color: #1a1a1a; 
 }
 
 .agree input[type="checkbox"] {
@@ -180,7 +191,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255,255,255,0.06);
+  /* 關鍵修改：背景使用白色或淺灰色，並移除透明度 */
+  background: #ffffff; 
+  /* 保留虛線，但可以調整顏色讓它更柔和 */
   border: 2px dashed var(--primary);
   padding: 1rem;
   border-radius: 14px;
@@ -188,11 +201,26 @@
   transition: border-color 0.3s ease;
   text-align: center;
   font-size: 1rem;
-  color: #fff;
+  /* 關鍵修改：上傳區塊文字改為深色 */
+  color: #1a1a1a; 
   width: 140px;
   height: 140px;
   position: relative;
   overflow: hidden;
+  /* 增加輕微陰影讓它從白底浮起 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+}
+
+/* 點擊更換文字 (偽元素) */
+.photo-upload::before {
+  content: "點擊更換";
+  font-size: 0.8rem;
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  /* 關鍵修改：文字使用柔和的深色 */
+  color: rgba(51, 51, 51, 0.7); 
 }
 
 .photo-upload:hover {
@@ -209,15 +237,7 @@
   margin-bottom: 0.5rem;
 }
 
-.photo-upload::before {
-  content: "點擊更換";
-  font-size: 0.8rem;
-  position: absolute;
-  bottom: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255,255,255,0.6);
-}
+
 
 @media(max-width: 768px) {
   .form-header {
@@ -255,4 +275,11 @@
 
 .photo-upload.has-image i {
   display: none;
+}
+
+/* 確保 .scroll-box 內部的所有文字都是深色 */
+.scroll-box p {
+  color: #333333; 
+  /* 確保沒有其他透明度設定 */
+  opacity: 1; 
 }
