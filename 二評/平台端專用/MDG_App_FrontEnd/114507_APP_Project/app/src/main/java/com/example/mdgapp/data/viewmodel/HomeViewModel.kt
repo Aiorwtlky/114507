@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
 // =================================================================================
@@ -78,19 +77,7 @@ class HomeViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = true) }
             delay(1000) // 模擬網路延遲
 
-            // 產生模擬的 "前次行程" 資料
-            val mockLastTrip = LastTripInfo(
-                startTime = LocalDateTime.now().minusHours(3),
-                endTime = LocalDateTime.now().minusHours(1),
-                duration = Duration.ofHours(2),
-                startLocation = "林口區",
-                endLocation = "台北車站",
-                mileage = 35.2,
-                totalScore = 92,
-                improvementPercentage = 3,
-                violations = listOf(Violation("急加速", -3)),
-                aiSuggestion = "建議路線穩定，請繼續保持。"
-            )
+            val mockLastTrip = generateRandomLastTrip()
 
             _uiState.update {
                 it.copy(
@@ -103,6 +90,55 @@ class HomeViewModel : ViewModel() {
             onAverageTimeUnitSelected("月")
             onTrendTimeUnitSelected("月")
         }
+    }
+
+    private fun generateRandomLastTrip(): LastTripInfo {
+        // --- 隨機參數設定 ---
+        val baseScore = 100
+        val possibleViolations = listOf(
+            Violation("急加速", -5) to "偵測到多次急加速，請平穩起步以節省油耗。",
+            Violation("急煞車", -7) to "與前車距離過近導致急煞，請保持安全車距。",
+            Violation("超速", -10) to "在市區道路有超速紀錄，請注意速限。",
+            Violation("疲勞駕駛", -8) to "偵測到疲勞跡象，建議稍作休息再上路。"
+        )
+        val locations = listOf(
+            "台北車站" to "桃園機場",
+            "新竹科學園區" to "台中市區",
+            "高雄港" to "台南市中心",
+            "花蓮市" to "太魯閣"
+        )
+
+        // --- 產生隨機數據 ---
+        val selectedViolations = if (Random.nextBoolean()) {
+            possibleViolations.shuffled().take(Random.nextInt(1, 3))
+        } else {
+            emptyList()
+        }
+
+        val totalDeduction = selectedViolations.sumOf { it.first.scoreDeduction }
+        val finalScore = (baseScore + totalDeduction).coerceIn(0, 100)
+
+        val aiSuggestion = if (selectedViolations.isEmpty()) {
+            "本次行程表現優秀，無任何違規紀錄。"
+        } else {
+            selectedViolations.random().second
+        }
+
+        val (start, end) = locations.random()
+        val durationMinutes = Random.nextLong(30, 180)
+
+        return LastTripInfo(
+            startTime = LocalDateTime.now().minusMinutes(durationMinutes + Random.nextLong(30, 120)),
+            endTime = LocalDateTime.now().minusMinutes(Random.nextLong(15, 29)),
+            duration = Duration.ofMinutes(durationMinutes),
+            startLocation = start,
+            endLocation = end,
+            mileage = Random.nextDouble(25.0, 200.0).roundTo(1),
+            totalScore = finalScore,
+            improvementPercentage = if (finalScore > 85) Random.nextInt(1, 11) else Random.nextInt(-5, 5),
+            violations = selectedViolations.map { it.first },
+            aiSuggestion = aiSuggestion
+        )
     }
 
     fun onAverageTimeUnitSelected(timeUnit: String) {
@@ -153,13 +189,12 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onTrendValueSelected(value: String) {
-        // 模擬根據選擇的值變更圖表數據
         val (data, labels) = generateChartData(_uiState.value.pastTrend.selectedTimeUnit)
         _uiState.update { currentState ->
             currentState.copy(
                 pastTrend = currentState.pastTrend.copy(
                     selectedValue = value,
-                    chartData = data, // 重新生成數據以反映變化
+                    chartData = data,
                     chartLabels = labels
                 )
             )
@@ -203,4 +238,10 @@ class HomeViewModel : ViewModel() {
             }
         }
     }
+}
+
+private fun Double.roundTo(decimals: Int): Double {
+    var multiplier = 1.0
+    repeat(decimals) { multiplier *= 10 }
+    return kotlin.math.round(this * multiplier) / multiplier
 }

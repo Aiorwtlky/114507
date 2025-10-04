@@ -119,11 +119,31 @@ fun ReportListItemCard(
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")), color = Color.White, fontSize = 16.sp)
-            Text("總分: $totalScore", color = Color.White, fontSize = 16.sp)
+            // 日期文字
+            Text(
+                text = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                color = Color.White,
+                fontSize = 16.sp
+            )
+
+            // ✅ 1. 使用 Spacer 將分數推向右邊
+            Spacer(modifier = Modifier.weight(1f))
+
+            // 分數文字
+            Text(
+                text = "總分: $totalScore",
+                // ✅ 2. 根據分數設定顏色
+                color = when {
+                    totalScore >= 90 -> Color.Green
+                    totalScore >= 80 -> Color.Cyan
+                    totalScore >= 60 -> Color.Yellow
+                    else -> Color.Red
+                },
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
