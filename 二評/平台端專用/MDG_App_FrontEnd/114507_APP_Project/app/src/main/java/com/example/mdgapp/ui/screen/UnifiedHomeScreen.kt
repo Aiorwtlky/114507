@@ -71,12 +71,13 @@ private fun HomeTopBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onAvatarClick) {
-                    Image(
-                        painter = painterResource(id = R.drawable.jiboda1),
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_person),
                         contentDescription = "頭像",
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
+                            .size(36.dp)
+                            .clip(CircleShape),
+                        tint = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
