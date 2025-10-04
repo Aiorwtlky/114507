@@ -206,3 +206,44 @@
     grid-column: auto; grid-row: auto;
   }
 }
+
+.group-title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #212529;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.group-meta {
+  margin: 0.25rem 0;
+  color: #6c757d;
+}
+
+.identity-body-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.identity-name {
+  font-weight: 600;
+  color: #212529;
+}
+
+.identity-role {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.d-card-body .group-meta {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #6c757d !important; /* 強制指定為灰色，避免被覆蓋 */
+}
+
+.d-card-body .group-meta strong {
+  color: #343a40 !important; /* 強制指定標籤為深灰色 */
+  margin-right: 8px;
+}

@@ -30,64 +30,69 @@
 
     <div class="d-card group-header-card">
       <div class="d-card-header">
+        {# 【新增圖示】 #}
         <h3><i class="fa-solid fa-circle-info"></i> 群組資訊</h3>
         <a href="{{ url_for('group_settings', group_id=group.id) }}" class="action-button" title="群組設定"><i class="fa-solid fa-cog"></i> 設定</a>
       </div>
       <div class="d-card-body">
         <h2 class="group-title">{{ group.name }}</h2>
-        <p class="group-meta"><strong>編號:</strong> {{ group.group_number }}</p>
-        <p class="group-meta"><strong>建立者:</strong> {{ group.created_by }}</p>
+        <p class="group-meta"><strong>編號:</strong>{{ group.group_number }}</p>
+        <p class="group-meta"><strong>建立者:</strong>{{ group.created_by }}</p>
       </div>
     </div>
 
     <div class="d-card identity-card">
       <div class="d-card-header">
-          <h3><i class="fa-solid fa-user-tie"></i> 我的身分</h3>
+        {# 【新增圖示】 #}
+        <h3><i class="fa-solid fa-user-tie"></i> 我的身分</h3>
       </div>
       <div class="d-card-body">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <img src="{{ profile['personnelprofile']['avatar'] if profile['personnelprofile'] else '' or url_for('static', filename='images/1.jpg') }}" alt="User Avatar" class="table-avatar" />
-          <div>
-            <span style="font-weight: 600; color: #fff;">{{ profile.first_name or profile.username }}</span>
-            <span style="display: block; font-size: 0.85rem; color: rgba(255,255,255,0.6);">管理者</span>
+        <div class="identity-body-wrapper">
+          {% set avatar_url = (profile['personnelprofile']['avatar'] if profile and profile.get('personnelprofile') else None) or url_for('static', filename='images/1.jpg') %}
+          <img src="{{ avatar_url }}" alt="User Avatar" class="table-avatar" />
+          <div class="identity-text">
+            <span class="identity-name">{{ profile['first_name'] or profile['username'] }}</span>
+            <span class="identity-role">管理者</span>
           </div>
         </div>
       </div>
     </div>
     
     <div class="d-card announcements-card">
-      <div class="d-card-header">
-        <h3><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
-        <a href="{{ url_for('create_announcement', group_id=group.id) }}" class="action-button">+ 新增公告</a>
-      </div>
-      <div class="d-card-body">
-        <ul class="announcement-list">
-          {% for ann in announcements %}
-            <li class="announcement-item">
-              <div class="announcement-content">
-                  <span class="subject">{{ ann.content }}</span>
-                  <span class="meta">由 {{ ann.publisher }} 於 {{ ann.publish_date | format_date }} 發布</span>
-              </div>
-              <div class="announcement-actions">
-                <a href="{{ url_for('edit_announcement', announcement_id=ann.id) }}" title="編輯公告">
-                  <i class="fa-solid fa-pencil"></i>
-                </a>
-                <form action="{{ url_for('delete_announcement', announcement_id=ann.id) }}" method="post" onsubmit="return confirm('您確定要刪除這則公告嗎？');" style="display: inline;">
-                  <button type="submit" class="action-btn-icon" title="刪除公告">
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                </form>
-              </div>
-            </li>
-          {% else %}
-          <li class="announcement-item"><span class="subject">暫無公告</span></li>
-          {% endfor %}
-        </ul>
-      </div>
+        <div class="d-card-header">
+            {# 【新增圖示】 #}
+            <h3><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
+            <a href="{{ url_for('create_announcement', group_id=group.id) }}" class="action-button">+ 新增公告</a>
+        </div>
+        <div class="d-card-body">
+            <ul class="announcement-list">
+            {% for ann in announcements %}
+                <li class="announcement-item">
+                <div class="announcement-content">
+                    <span class="subject">{{ ann.content }}</span>
+                    <span class="meta">由 {{ ann.publisher }} 於 {{ ann.publish_date | format_date }} 發布</span>
+                </div>
+                <div class="announcement-actions">
+                    <a href="{{ url_for('edit_announcement', announcement_id=ann.id) }}" title="編輯公告">
+                    <i class="fa-solid fa-pencil"></i>
+                    </a>
+                    <form action="{{ url_for('delete_announcement', announcement_id=ann.id) }}" method="post" onsubmit="return confirm('您確定要刪除這則公告嗎？');" style="display: inline;">
+                    <button type="submit" class="action-btn-icon" title="刪除公告">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    </form>
+                </div>
+                </li>
+            {% else %}
+            <li class="announcement-item"><span class="subject">暫無公告</span></li>
+            {% endfor %}
+            </ul>
+        </div>
     </div>
 
     <div class="d-card group-members-card">
       <div class="d-card-header">
+        {# 【新增圖示】 #}
         <h3><i class="fa-solid fa-users"></i> 群組成員</h3>
         <a href="{{ url_for('invite_member', group_id=group.id, next_page='leader_view') }}" class="action-button">+ 新增成員</a>
       </div>
@@ -111,7 +116,6 @@
               <td>{{ "%.1f"|format(member.average_score|float) if member.average_score else 'N/A' }}</td>
               <td class="actions-col">
                 <a href="{{ url_for('member_videos', member_id=member.id) }}" class="action-btn" title="查看行車影片"><i class="fa-solid fa-video"></i></a>
-                
                 {% if member.username != group.created_by and member.role != 'ADMIN' %}
                   <form action="{{ url_for('promote_member', group_id=group.id, user_id=member.id) }}" method="post" onsubmit="return confirm('您確定要將這位成員提升為群組管理員嗎？');">
                     <button type="submit" class="action-btn" title="提升為管理員">
@@ -119,7 +123,6 @@
                     </button>
                   </form>
                 {% endif %}
-                
                 {% if member.username != group.created_by %}
                   <form action="{{ url_for('remove_member', group_id=group.id, user_id=member.id) }}" method="post" onsubmit="return confirm('您確定要從群組中移除這位成員嗎？此操作無法復原。');">
                     <button type="submit" class="action-btn-danger" title="移除成員">
@@ -147,7 +150,6 @@
     const clickableRows = document.querySelectorAll('tr[data-href]');
     clickableRows.forEach((row) => {
       row.addEventListener('click', function (event) {
-        // 如果點擊的是按鈕、表單或連結，就不觸發整列跳轉
         if (event.target.closest('button, a, form')) return;
         window.location.href = this.dataset.href;
       });
