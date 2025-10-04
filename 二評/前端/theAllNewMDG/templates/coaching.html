@@ -2,6 +2,7 @@
 {% block title %}AI 行車建議 · My Driving God{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/coaching.css') }}">
 {% endblock %}
 
@@ -9,74 +10,89 @@
 <div class="coach-wrap">
   <h2 class="coach-title">AI 行車建議（最近行程）</h2>
 
-  <!-- 檢查是否有 summary 資料 -->
-  {% if summary %}
   <div class="coach-grid">
-    <!-- 左：總結 -->
     <section class="coach-card">
       <h3 class="coach-h3">總結</h3>
       <p class="coach-muted">
-        平均分數：<b>{{ "%.1f"|format(summary.avg_score|float) }}</b>
+        平均分數：<b>{{ summary.avg_score }}</b>；需要注意的天數：<b>{{ summary.bad_count }}</b>
       </p>
+      <p class="coach-p">常見問題 Top 3：</p>
+      <ul class="coach-ul">
+        {% for t in summary.top_issues %}
+          <li>{{ t }}</li>
+        {% endfor %}
+      </ul>
       <hr class="coach-divider" />
-      <h4 class="coach-h4">綜合建議</h4>
-      <!-- 檢查是否有 AI 建議 -->
-      {% if summary.tips and summary.tips|length > 0 %}
-        <ul class="coach-ul">
-          {% for tip in summary.tips %}
-            {% if tip %} {# 確保 tip 不是空的 #}
-              <li>{{ tip }}</li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>綜合來看，您的駕駛習慣良好，請繼續保持。</p>
-      {% endif %}
+      <h4 class="coach-h4">建議</h4>
+      <ul class="coach-ul">
+        {% for tip in summary.tips %}
+          <li>{{ tip }}</li>
+        {% endfor %}
+      </ul>
       <div class="coach-actions">
         <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
       </div>
     </section>
 
-    <!-- 右：逐日列表 -->
     <section class="coach-card">
-       <div class="coach-toolbar">
-         <h4>逐日 AI 建議</h4>
-       </div>
+      <div class="coach-toolbar seg-toggle" role="tablist" aria-label="篩選">
+        <button id="tab-all"  class="seg-option is-active" role="tab" aria-selected="true"  type="button">全部</button>
+        <button id="tab-attn" class="seg-option"           role="tab" aria-selected="false" type="button">只看需要注意</button>
+      </div>
 
-      <!-- 檢查是否有行程資料 -->
-      {% if trips and trips|length > 0 %}
-        <div id="tripList">
-          {% for trip in trips %}
-          <div class="coach-trip">
-            <div class="coach-trip-left">
-              <div class="coach-badge">{{ trip.start_time | format_date }}</div>
-              <div class="coach-tags">
-                 <span class="coach-tag">{{ trip.name }}</span>
-                 <!-- 顯示單筆行程的 AI 建議 -->
-                 <p class="trip-ai-suggestion">{{ trip.ai_suggestion if trip.ai_suggestion else '無特別建議。' }}</p>
-              </div>
+      <div id="tripList">
+        {% for t in trips %}
+        <div class="coach-trip" data-attn="{{ '1' if t.needs_attention else '0' }}">
+          <div class="coach-trip-left">
+            <div class="coach-badge">{{ t.date }}</div>
+            {% if t.needs_attention %}<span class="coach-tag coach-attn">需要注意</span>{% endif %}
+            <div class="coach-tags">
+              {% for v in t.violations %}
+              <span class="coach-tag" data-violation-id="{{ t.date }}-{{ v.time }}">
+                <span class="violation-text">
+                  {{ v.time }} ·
+                  {% if v.type == 'turn_signal' %}未打方向燈{% elif v.type=='drowsy' %}疲勞{% elif v.type=='phone' %}手機分心{% elif v.type=='speed' %}超速{% else %}{{ v.type }}{% endif %}
+                  (-{{ v.pts }}) · {{ v.loc }}
+                </span>
+                <div class="feedback-icons">
+                  <i class="fa-regular fa-thumbs-up"></i>
+                  <i class="fa-regular fa-thumbs-down"></i>
+                </div>
+              </span>
+              {% endfor %}
             </div>
-            <div class="coach-score good">{{ "%.0f"|format(trip.score|float) }}</div>
           </div>
-          {% endfor %}
+          <div class="coach-score {{ 'bad' if t.needs_attention else 'good' }}">{{ t.score }}</div>
         </div>
-      {% else %}
-        <p>暫無行程記錄可供分析。</p>
-      {% endif %}
+        {% endfor %}
+      </div>
     </section>
   </div>
-  {% else %}
-    <div class="coach-card">
-      <p>無法載入 AI 建議資料，請稍後再試或返回儀表板。</p>
-      <div class="coach-actions">
-        <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
-      </div>
+</div>
+
+<div id="feedback-modal" class="modal-overlay hidden">
+  <div class="modal-content coach-card">
+    <div class="modal-header">
+      <h3 class="coach-h3">提供回饋</h3>
+      <button id="close-modal-btn" class="close-btn" title="關閉">&times;</button>
     </div>
-  {% endif %}
+    <div class="modal-body">
+      <p>您為什麼不喜歡這個建議？（可選填）</p>
+      <div class="form-group-modal">
+        <label for="feedback-email">您的電子郵件（方便我們回覆您，可選填）</label>
+        <input type="email" id="feedback-email" placeholder="name@example.com">
+      </div>
+      <textarea id="feedback-textarea" rows="5" placeholder="請輸入您的意見..."></textarea>
+      <input type="hidden" id="feedback-violation-id">
+    </div>
+    <div class="modal-footer">
+      <button id="cancel-feedback-btn" type="button" class="btn btn-secondary">取消</button>
+      <button id="submit-feedback-btn" type="button" class="btn btn-primary">提交回饋</button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/pages/coaching.js') }}" defer></script>
 {% endblock %}
-
