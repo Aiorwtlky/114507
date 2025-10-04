@@ -1,5 +1,6 @@
 package com.example.mdgapp.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +28,6 @@ import com.example.mdgapp.ui.component.GaugeScoreCard
 import com.example.mdgapp.ui.component.TrendChart
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
-import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +41,7 @@ fun UnifiedHomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
-    // ✅ 當 ReportViewModel 的資料載入後，自動更新 HomeViewModel
+    // 當 ReportViewModel 的資料載入後，自動更新 HomeViewModel
     LaunchedEffect(reports) {
         if (reports.isNotEmpty()) {
             homeViewModel.setLastTrip(reports.first())
@@ -72,7 +71,6 @@ fun UnifiedHomeScreen(
     }
 }
 
-// ... HomeTopBar 和 AppBottomBar 保持不變 ...
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeTopBar(
@@ -115,7 +113,6 @@ private fun HomeTopBar(
 
 @Composable
 fun AppBottomBar(navController: NavController) {
-    val context = LocalContext.current
     NavigationBar(containerColor = Color.Black) {
         val labelFontSize = 12.sp
         val iconSize = 24.dp
@@ -173,7 +170,6 @@ private fun DashboardContent(
                 .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ✅ LastTripCard 不再需要 reportViewModel
             uiState.lastTrip?.let { LastTripCard(it, navController = navController) }
             PastAverageCard(
                 data = uiState.pastAverage,
@@ -200,16 +196,22 @@ fun LastTripCard(
         colors = CardDefaults.cardColors(containerColor = Color.DarkGray)
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val hours = lastTrip.duration.toHours()
+            val minutes = lastTrip.duration.toMinutes() % 60
+            val durationText = if (hours > 0) "${hours} 小時 ${minutes} 分鐘" else "${minutes} 分鐘"
+
             Text("前次行程", style = MaterialTheme.typography.titleLarge, color = Color.White)
             HorizontalDivider(color = Color.Gray)
             Text("行程日期: ${lastTrip.startTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))}", fontSize = 14.sp, color = Color.White)
-            Text("總耗時: ${lastTrip.duration.toMinutes()} 分鐘", fontSize = 14.sp, color = Color.White)
+            Text("總耗時: $durationText", fontSize = 14.sp, color = Color.White)
             Text("路線: ${lastTrip.startLocation} - ${lastTrip.endLocation} (${lastTrip.mileage} km)", fontSize = 14.sp, color = Color.White)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("安全總分: ", style = MaterialTheme.typography.bodyLarge, color = Color.White)
                 Text("${lastTrip.totalScore}", color = Color.Cyan, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("(進步 ${lastTrip.improvementPercentage}%)", color = Color.Green, fontSize = 14.sp)
+                val improvementText = if (lastTrip.improvementPercentage >= 0) "進步 ${lastTrip.improvementPercentage}%" else "退步 ${Math.abs(lastTrip.improvementPercentage)}%"
+                val improvementColor = if (lastTrip.improvementPercentage >= 0) Color.Green else Color.Red
+                Text("($improvementText)", color = improvementColor, fontSize = 14.sp)
             }
             Column {
                 Text("違規項目:", fontWeight = FontWeight.Bold, color = Color.White)
@@ -217,14 +219,13 @@ fun LastTripCard(
                     Text("  - 無", color = Color.Green)
                 } else {
                     lastTrip.violations.forEach {
-                        Text("  - ${it.item} (扣 ${it.scoreDeduction} 分)", color = Color.Red)
+                        Text("  - ${it.item} (扣 ${it.scoreDeduction} 分)", color = Color.Yellow)
                     }
                 }
             }
             Text("AI 行車建議: ${lastTrip.aiSuggestion}", style = MaterialTheme.typography.bodySmall, color = Color.LightGray)
             Button(
                 onClick = {
-                    // ✅ 直接使用 lastTrip 的日期來導航，確保資料一致
                     val reportDate = lastTrip.startTime.toLocalDate().toString()
                     navController.navigate("reportDetail/${reportDate}")
                 },
@@ -237,7 +238,6 @@ fun LastTripCard(
     }
 }
 
-// ... PastAverageCard 和 PastTrendCard 保持不變 ...
 @Composable
 fun PastAverageCard(
     data: PastAverageData,

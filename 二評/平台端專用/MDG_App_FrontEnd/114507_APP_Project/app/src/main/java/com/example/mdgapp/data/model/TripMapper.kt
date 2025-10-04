@@ -32,26 +32,27 @@ fun Trip.toLastTripInfo(): LastTripInfo {
 
 fun DrivingReport.toLastTripInfo(): LastTripInfo {
     // 假設時間格式是 "HH:mm"，並結合報告的日期來建立完整的時間
-    val startTime = LocalDateTime.of(this.date, java.time.LocalTime.parse(this.tripInfo.startTime))
-    val endTime = LocalDateTime.of(this.date, java.time.LocalTime.parse(this.tripInfo.endTime))
+    val startTime = this.date.atTime(java.time.LocalTime.parse(this.tripInfo.startTime))
+    val endTime = this.date.atTime(java.time.LocalTime.parse(this.tripInfo.endTime))
 
     // 將 DrivingReport 中的 events 轉換成 Violations
     val violations = this.events.map { event ->
-        Violation(
+        com.example.mdgapp.data.viewmodel.Violation(
             item = event.eventType,
             scoreDeduction = event.deductionPoints
         )
     }
 
-    return LastTripInfo(
+    return com.example.mdgapp.data.viewmodel.LastTripInfo(
         startTime = startTime,
         endTime = endTime,
-        duration = Duration.ofMinutes(this.tripInfo.totalDurationMinutes.toLong()),
-        startLocation = "未知起點", // 您可以根據需要從其他地方獲取
-        endLocation = "未知終點",   // 您可以根據需要從其他地方獲取
+        duration = java.time.Duration.ofMinutes(this.tripInfo.totalDurationMinutes.toLong()),
+        // ✅ 修正：從傳入的 report 物件中讀取真實地點
+        startLocation = this.startLocation,
+        endLocation = this.endLocation,
         mileage = this.tripInfo.totalDistanceKm,
         totalScore = this.totalScore,
-        improvementPercentage = this.comparisonWithAverage, // 使用與平均分的差異作為進步百分比
+        improvementPercentage = this.comparisonWithAverage,
         violations = violations,
         aiSuggestion = this.geminiFeedback
     )
