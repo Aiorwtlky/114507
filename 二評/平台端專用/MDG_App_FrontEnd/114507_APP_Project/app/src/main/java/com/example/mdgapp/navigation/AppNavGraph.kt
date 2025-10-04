@@ -17,6 +17,7 @@ fun AppNavGraph(navController: NavHostController) {
     val groupManagementViewModel: GroupManagementViewModel = viewModel()
     val driverDownloadViewModel: DriverDownloadViewModel = viewModel()
 
+
     NavHost(navController = navController, startDestination = "launch") {
 
         // ==================== 基礎流程路由 ====================
@@ -24,7 +25,11 @@ fun AppNavGraph(navController: NavHostController) {
         composable("register") { RegisterScreen(navController = navController) }
         composable("launch") { LaunchScreen(navController = navController) }
         composable("home") {
-            UnifiedHomeScreen(navController = navController)
+            // ✅ 將 reportViewModel 傳遞給 UnifiedHomeScreen
+            UnifiedHomeScreen(
+                navController = navController,
+                reportViewModel = reportViewModel
+            )
         }
         composable("profile") { ProfileScreen(navController = navController) }
 
