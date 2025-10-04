@@ -3,14 +3,13 @@ package com.example.mdgapp.data.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mdgapp.data.model.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import kotlin.random.Random
 
-// Repository 已被移除，ViewModel 直接負責產生模擬資料
 class ReportViewModel : ViewModel() {
 
     private val _reports = MutableStateFlow<List<DrivingReport>>(emptyList())
@@ -37,27 +36,53 @@ class ReportViewModel : ViewModel() {
         }
     }
 
-    // 將輔助函式放回 ViewModel 中
+    // ✅ 修正點：優化模擬資料的生成邏輯
     private fun createMockReportForDate(date: LocalDate): DrivingReport {
-        val score = Random.nextInt(55, 101)
+        val baseScore = 100
+        val generatedEvents = createMockEvents()
+        val totalDeduction = generatedEvents.sumOf { it.deductionPoints }
+        val finalScore = (baseScore - totalDeduction).coerceIn(0, 100)
+
         val scoreRating = when {
-            score >= 90 -> "優秀"
-            score >= 80 -> "良好"
-            score >= 60 -> "警告"
+            finalScore >= 90 -> "優秀"
+            finalScore >= 80 -> "良好"
+            finalScore >= 60 -> "警告"
             else -> "危險"
         }
-        return DrivingReport(date, score, scoreRating, Random.nextInt(-5, 6), "整體駕駛平穩，請繼續保持。",
-            TripInfo("08:31", "17:54", Random.nextDouble(80.0, 150.0), Random.nextInt(120, 300)),
-            PerformanceMetrics(Random.nextInt(80, 101), Random.nextInt(70, 96), Random.nextInt(90, 101), Random.nextInt(75, 99)),
-            createMockEvents()
+
+        val geminiFeedback = if (generatedEvents.isEmpty()) {
+            "駕駛行為良好，無明顯危險事件，請繼續保持。"
+        } else {
+            "偵測到 ${generatedEvents.first().eventType} 事件，請特別注意${generatedEvents.first().suggestion.substring(2)}。"
+        }
+
+        return DrivingReport(
+            date = date,
+            totalScore = finalScore,
+            scoreRating = scoreRating,
+            comparisonWithAverage = finalScore - 85, // 假設平均分為85
+            geminiFeedback = geminiFeedback,
+            tripInfo = TripInfo("08:31", "17:54", Random.nextDouble(80.0, 150.0), Random.nextInt(120, 300)),
+            performanceMetrics = PerformanceMetrics(
+                safety = (95 - totalDeduction * 0.5).toInt().coerceIn(60, 100),
+                behavior = (92 - totalDeduction * 0.8).toInt().coerceIn(60, 100),
+                compliance = (98 - totalDeduction * 1.2).toInt().coerceIn(60, 100),
+                efficiency = Random.nextInt(85, 99)
+            ),
+            events = generatedEvents
         )
     }
 
     private fun createMockEvents(): List<DangerousEventItem> {
         val allEvents = listOf(
             DangerousEventItem("急加速", "09:15", "中", 3, "起步時請緩慢踩下油門。"),
-            DangerousEventItem("疲勞駕駛", "14:32", "高", 8, "建議停車休息。")
+            DangerousEventItem("疲勞駕駛", "14:32", "高", 8, "建議停車休息。"),
+            DangerousEventItem("急煞車", "10:55", "中", 4, "請與前車保持安全距離。"),
+            DangerousEventItem("超速", "16:20", "高", 10, "請注意道路速限。")
         )
+        // 50% 的機率沒有任何事件
+        if (Random.nextBoolean()) return emptyList()
+
         return allEvents.shuffled().take(Random.nextInt(1, 3))
     }
 }
