@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -19,22 +23,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mdgapp.R
 import com.example.mdgapp.data.viewmodel.*
-import com.example.mdgapp.ui.component.AppBottomBar
 import com.example.mdgapp.ui.component.ChartFilterMenus
 import com.example.mdgapp.ui.component.GaugeScoreCard
 import com.example.mdgapp.ui.component.TrendChart
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnifiedHomeScreen(
     navController: NavController,
-    viewModel: HomeViewModel = viewModel(),
-    // ✅ 1. 新增 reportViewModel 參數以接收從 AppNavGraph 傳來的資料
-    reportViewModel: ReportViewModel
+    homeViewModel: HomeViewModel = viewModel(),
+    reportViewModel: ReportViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by homeViewModel.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
@@ -54,8 +57,7 @@ fun UnifiedHomeScreen(
     ) { paddingValues ->
         DashboardContent(
             uiState = uiState,
-            homeViewModel = viewModel,
-            // ✅ 2. 將 reportViewModel 傳遞給 DashboardContent
+            homeViewModel = homeViewModel,
             reportViewModel = reportViewModel,
             navController = navController,
             modifier = Modifier.padding(paddingValues)
@@ -63,20 +65,92 @@ fun UnifiedHomeScreen(
     }
 }
 
-// HomeTopBar 和 AppBottomBar 保持不變
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeTopBar(navController: NavController, onAvatarClick: () -> Unit) { /* ... 內容不變 ... */ }
+private fun HomeTopBar(
+    navController: NavController,
+    onAvatarClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onAvatarClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_person),
+                        contentDescription = "頭像",
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape),
+                        tint = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Button(
+                    onClick = { navController.navigate("downloadFileList") },
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) { Text("下載") }
+            }
+        },
+        navigationIcon = {},
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Black
+        ),
+        windowInsets = TopAppBarDefaults.windowInsets.exclude(WindowInsets.navigationBars)
+            .add(WindowInsets(left = 16.dp))
+    )
+}
 
 @Composable
-fun AppBottomBar(navController: NavController) { /* ... 內容不變 ... */ }
-
+fun AppBottomBar(navController: NavController) {
+    val context = LocalContext.current
+    NavigationBar(containerColor = Color.Black) {
+        val labelFontSize = 12.sp
+        val iconSize = 24.dp
+        val itemColors = NavigationBarItemDefaults.colors(
+            indicatorColor = Color.Transparent,
+            unselectedIconColor = Color.White,
+            unselectedTextColor = Color.White
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = { navController.navigate("driverGroupScreen") },
+            icon = { Icon(painterResource(id = R.drawable.ic_group), "群組", modifier = Modifier.size(iconSize)) },
+            label = { Text("群組", fontSize = labelFontSize) },
+            colors = itemColors
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = { navController.navigate("checkIn") },
+            icon = { Icon(Icons.Filled.Check, "打卡", modifier = Modifier.size(iconSize)) },
+            label = { Text("打卡", fontSize = labelFontSize) },
+            colors = itemColors
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = { navController.navigate("reportList") },
+            icon = { Icon(painterResource(id = R.drawable.ic_post), "報表", modifier = Modifier.size(iconSize)) },
+            label = { Text("報表", fontSize = labelFontSize) },
+            colors = itemColors
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = { navController.navigate("profile") },
+            icon = { Icon(painterResource(id = R.drawable.ic_person), "我的", modifier = Modifier.size(iconSize)) },
+            label = { Text("我的", fontSize = labelFontSize) },
+            colors = itemColors
+        )
+    }
+}
 
 @Composable
 private fun DashboardContent(
     uiState: HomeUiState,
     homeViewModel: HomeViewModel,
-    // ✅ 3. DashboardContent 接收 reportViewModel
     reportViewModel: ReportViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
@@ -85,10 +159,12 @@ private fun DashboardContent(
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
     } else {
         Column(
-            modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 16.dp),
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ✅ 4. 將 reportViewModel 傳遞給 LastTripCard
             uiState.lastTrip?.let { LastTripCard(it, navController = navController, reportViewModel = reportViewModel) }
             PastAverageCard(
                 data = uiState.pastAverage,
@@ -108,10 +184,8 @@ private fun DashboardContent(
 fun LastTripCard(
     lastTrip: LastTripInfo,
     navController: NavController,
-    // ✅ 5. LastTripCard 接收 reportViewModel
     reportViewModel: ReportViewModel
 ) {
-    // 觀察報表列表的狀態
     val reports by reportViewModel.reports.collectAsState()
 
     Card(
@@ -120,11 +194,30 @@ fun LastTripCard(
         colors = CardDefaults.cardColors(containerColor = Color.DarkGray)
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // ... (卡片上半部內容不變)
-
+            Text("前次行程", style = MaterialTheme.typography.titleLarge, color = Color.White)
+            HorizontalDivider(color = Color.Gray)
+            Text("行程日期: ${lastTrip.startTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))}", fontSize = 14.sp, color = Color.White)
+            Text("總耗時: ${lastTrip.duration.toMinutes()} 分鐘", fontSize = 14.sp, color = Color.White)
+            Text("路線: ${lastTrip.startLocation} - ${lastTrip.endLocation} (${lastTrip.mileage} km)", fontSize = 14.sp, color = Color.White)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("安全總分: ", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+                Text("${lastTrip.totalScore}", color = Color.Cyan, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("(進步 ${lastTrip.improvementPercentage}%)", color = Color.Green, fontSize = 14.sp)
+            }
+            Column {
+                Text("違規項目:", fontWeight = FontWeight.Bold, color = Color.White)
+                if (lastTrip.violations.isEmpty()) {
+                    Text("  - 無", color = Color.Green)
+                } else {
+                    lastTrip.violations.forEach {
+                        Text("  - ${it.item} (扣 ${it.scoreDeduction} 分)", color = Color.Red)
+                    }
+                }
+            }
+            Text("AI 行車建議: ${lastTrip.aiSuggestion}", style = MaterialTheme.typography.bodySmall, color = Color.LightGray)
             Button(
                 onClick = {
-                    // 從報表列表中取得最新一筆資料的日期
                     val latestReportDate = reports.firstOrNull()?.date
                     if (latestReportDate != null) {
                         navController.navigate("reportDetail/${latestReportDate}")
@@ -139,9 +232,64 @@ fun LastTripCard(
     }
 }
 
-// PastAverageCard 和 PastTrendCard 保持不變
 @Composable
-fun PastAverageCard(data: PastAverageData, onTimeUnitSelected: (String) -> Unit, onValueSelected: (String) -> Unit) { /* ... 內容不變 ... */ }
+fun PastAverageCard(
+    data: PastAverageData,
+    onTimeUnitSelected: (String) -> Unit,
+    onValueSelected: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.DarkGray)
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("過往平均", style = MaterialTheme.typography.titleLarge, color = Color.White)
+            ChartFilterMenus(
+                timeUnitOptions = data.timeUnitOptions,
+                selectedTimeUnit = data.selectedTimeUnit,
+                valueOptions = data.valueOptions,
+                selectedValue = data.selectedValue,
+                onTimeUnitSelected = onTimeUnitSelected,
+                onValueSelected = onValueSelected
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            GaugeScoreCard(
+                score = data.averageScore,
+                label = "平均駕駛行為分數",
+                modifier = Modifier.fillMaxWidth().height(150.dp)
+            )
+        }
+    }
+}
 
 @Composable
-fun PastTrendCard(data: PastTrendData, onTimeUnitSelected: (String) -> Unit, onValueSelected: (String) -> Unit) { /* ... 內容不變 ... */ }
+fun PastTrendCard(
+    data: PastTrendData,
+    onTimeUnitSelected: (String) -> Unit,
+    onValueSelected: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.DarkGray)
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("過往趨勢圖表", style = MaterialTheme.typography.titleLarge, color = Color.White)
+            ChartFilterMenus(
+                timeUnitOptions = data.timeUnitOptions,
+                selectedTimeUnit = data.selectedTimeUnit,
+                valueOptions = data.valueOptions,
+                selectedValue = data.selectedValue,
+                onTimeUnitSelected = onTimeUnitSelected,
+                onValueSelected = onValueSelected
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TrendChart(
+                data = data.chartData,
+                labels = data.chartLabels,
+                modifier = Modifier.fillMaxWidth().height(200.dp)
+            )
+        }
+    }
+}

@@ -3,12 +3,28 @@ package com.example.mdgapp.data.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mdgapp.data.model.*
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.random.Random
+
+// ✅ 1. 在 DrivingReport 中新增 startLocation 和 endLocation
+data class DrivingReport(
+    val date: LocalDate,
+    val totalScore: Int,
+    val scoreRating: String,
+    val comparisonWithAverage: Int,
+    val geminiFeedback: String,
+    val tripInfo: TripInfo,
+    val performanceMetrics: PerformanceMetrics,
+    val events: List<DangerousEventItem>,
+    val startLocation: String,
+    val endLocation: String
+)
 
 class ReportViewModel : ViewModel() {
 
@@ -36,7 +52,6 @@ class ReportViewModel : ViewModel() {
         }
     }
 
-    // ✅ 修正點：優化模擬資料的生成邏輯
     private fun createMockReportForDate(date: LocalDate): DrivingReport {
         val baseScore = 100
         val generatedEvents = createMockEvents()
@@ -50,26 +65,22 @@ class ReportViewModel : ViewModel() {
             else -> "危險"
         }
 
-        val geminiFeedback = if (generatedEvents.isEmpty()) {
-            "駕駛行為良好，無明顯危險事件，請繼續保持。"
-        } else {
-            "偵測到 ${generatedEvents.first().eventType} 事件，請特別注意${generatedEvents.first().suggestion.substring(2)}。"
-        }
+        val geminiFeedback = if (generatedEvents.isEmpty()) "駕駛行為良好，無明顯危險事件。" else "偵測到 ${generatedEvents.first().eventType} 事件，請特別注意。"
+
+        val locations = listOf("台北" to "台中", "高雄" to "台南", "花蓮" to "宜蘭").random()
 
         return DrivingReport(
             date = date,
             totalScore = finalScore,
             scoreRating = scoreRating,
-            comparisonWithAverage = finalScore - 85, // 假設平均分為85
+            comparisonWithAverage = finalScore - 85,
             geminiFeedback = geminiFeedback,
             tripInfo = TripInfo("08:31", "17:54", Random.nextDouble(80.0, 150.0), Random.nextInt(120, 300)),
-            performanceMetrics = PerformanceMetrics(
-                safety = (95 - totalDeduction * 0.5).toInt().coerceIn(60, 100),
-                behavior = (92 - totalDeduction * 0.8).toInt().coerceIn(60, 100),
-                compliance = (98 - totalDeduction * 1.2).toInt().coerceIn(60, 100),
-                efficiency = Random.nextInt(85, 99)
-            ),
-            events = generatedEvents
+            performanceMetrics = PerformanceMetrics( (95 - totalDeduction * 0.5).toInt().coerceIn(60, 100), (92 - totalDeduction * 0.8).toInt().coerceIn(60, 100), (98 - totalDeduction * 1.2).toInt().coerceIn(60, 100), Random.nextInt(85, 99) ),
+            events = generatedEvents,
+            // ✅ 2. 產生模擬資料時加入地點
+            startLocation = locations.first,
+            endLocation = locations.second
         )
     }
 
@@ -80,9 +91,23 @@ class ReportViewModel : ViewModel() {
             DangerousEventItem("急煞車", "10:55", "中", 4, "請與前車保持安全距離。"),
             DangerousEventItem("超速", "16:20", "高", 10, "請注意道路速限。")
         )
-        // 50% 的機率沒有任何事件
-        if (Random.nextBoolean()) return emptyList()
-
+        if (Random.nextDouble() > 0.5) return emptyList()
         return allEvents.shuffled().take(Random.nextInt(1, 3))
     }
+}
+
+// ✅ 3. 新增一個擴充函式，用於將 DrivingReport 轉換為 LastTripInfo
+fun DrivingReport.toLastTripInfo(): LastTripInfo {
+    return LastTripInfo(
+        startTime = this.date.atTime(8, 31), // 簡化範例
+        endTime = this.date.atTime(17, 54),  // 簡化範例
+        duration = Duration.ofMinutes(this.tripInfo.totalDurationMinutes.toLong()),
+        startLocation = this.startLocation,
+        endLocation = this.endLocation,
+        mileage = this.tripInfo.totalDistanceKm,
+        totalScore = this.totalScore,
+        improvementPercentage = this.comparisonWithAverage,
+        violations = this.events.map { Violation(it.eventType, it.deductionPoints) },
+        aiSuggestion = this.geminiFeedback
+    )
 }
