@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/chat.css') }}" />
 {% endblock %}
 
@@ -15,16 +16,12 @@
         <h3>MDG智慧交通系統 - 線上客服</h3>
         <div class="status-indicator">
           <span class="dot"></span>
-          <span class="online">線上</span>
+          <span>線上</span>
         </div>
       </header>
 
       <main class="messages-area" id="messagesArea">
-        <div class="msg-bubble is-admin">
-          <div class="author-name">吾仙</div>
-          <div class="text">您好！我是吾駕仙 AI 客服，請問有什麼可以為您服務的嗎？</div>
-        </div>
-      </main>
+        </main>
 
       <footer class="composer-area">
         <textarea id="messageInput" placeholder="請在此輸入您的問題..." rows="1"></textarea>

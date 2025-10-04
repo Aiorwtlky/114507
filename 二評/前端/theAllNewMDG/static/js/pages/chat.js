@@ -1,68 +1,124 @@
+// static/js/pages/chat.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const messagesArea = document.getElementById('messagesArea');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
 
-    // 傳送訊息的函式
-    function sendMessage() {
+    let chatHistory = [];
+
+    const initialGreeting = "您好！我是吾駕仙 AI 客服，請問有什麼可以為您服務的嗎？";
+    appendMessage(initialGreeting, 'is-admin');
+    chatHistory.push({ role: 'assistant', content: initialGreeting });
+
+    async function sendMessage() {
         const text = messageInput.value.trim();
+        if (text === '') return;
 
-        if (text === '') {
-            return; // 不傳送空訊息
-        }
-
-        // 1. 建立並顯示使用者自己的訊息泡泡
+        chatHistory.push({ role: 'user', content: text });
         appendMessage(text, 'is-user');
-
-        // 2. 清空輸入框
+        
         messageInput.value = '';
-        messageInput.style.height = 'auto'; // 將高度重設
+        messageInput.style.height = 'auto';
+        sendBtn.disabled = true;
+        const thinkingBubble = appendMessage("吾仙思考中...", 'is-admin', { isTemporary: true });
 
-        // 3. 模擬 AI 客服在短暫延遲後回覆
-        setTimeout(() => {
-            const replyText = `您好，關於「${text}」，我們的專員正在處理中，請稍候。`;
-            appendMessage(replyText, 'is-admin');
-        }, 1000); // 延遲 1 秒
+        try {
+            const response = await fetch('/api/proxy/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: chatHistory }),
+            });
+
+            thinkingBubble.remove();
+
+            if (!response.ok) throw new Error(`伺服器錯誤: ${response.statusText}`);
+
+            const data = await response.json();
+            const aiReply = data.reply;
+
+            chatHistory.push({ role: 'assistant', content: aiReply });
+            appendMessage(aiReply, 'is-admin');
+
+        } catch (error) {
+            thinkingBubble.remove();
+            console.error('Error:', error);
+            appendMessage('抱歉，通訊時發生錯誤，請稍後再試。', 'is-admin');
+        } finally {
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
     }
 
-    // 將訊息泡泡加到畫面的函式
-    function appendMessage(text, type) {
+    function appendMessage(text, type, options = {}) {
+        const { isTemporary = false } = options;
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('msg-bubble', type);
 
-        // 如果是管理員訊息，就加上名字的 div
         if (type === 'is-admin') {
             const authorDiv = document.createElement('div');
             authorDiv.classList.add('author-name');
             authorDiv.textContent = '吾仙';
             messageDiv.appendChild(authorDiv);
         }
-
         const textDiv = document.createElement('div');
         textDiv.classList.add('text');
         textDiv.textContent = text;
-
         messageDiv.appendChild(textDiv);
+
+        if (type === 'is-admin' && !isTemporary) {
+            const feedbackContainer = document.createElement('div');
+            feedbackContainer.className = 'feedback-controls';
+
+            const likeBtn = document.createElement('button');
+            likeBtn.className = 'feedback-btn like-btn';
+            likeBtn.title = '喜歡這則回應';
+            likeBtn.innerHTML = '<i class="fa-regular fa-thumbs-up"></i>';
+
+            const dislikeBtn = document.createElement('button');
+            dislikeBtn.className = 'feedback-btn dislike-btn';
+            dislikeBtn.title = '不喜歡這則回應';
+            dislikeBtn.innerHTML = '<i class="fa-regular fa-thumbs-down"></i>';
+            
+            feedbackContainer.appendChild(likeBtn);
+            feedbackContainer.appendChild(dislikeBtn);
+            messageDiv.appendChild(feedbackContainer);
+
+            likeBtn.addEventListener('click', () => handleFeedback(1, text, likeBtn, dislikeBtn));
+            dislikeBtn.addEventListener('click', () => handleFeedback(-1, text, likeBtn, dislikeBtn));
+        }
+
         messagesArea.appendChild(messageDiv);
-
-        // 讓捲軸自動滾動到最下方
         messagesArea.scrollTop = messagesArea.scrollHeight;
-    } // <-- 就是在這裡補上缺少的右大括號
+        return messageDiv;
+    }
 
-    // --- 事件監聽 ---
+    function handleFeedback(feedbackType, aiResponse, likeBtn, dislikeBtn) {
+        likeBtn.disabled = true;
+        dislikeBtn.disabled = true;
 
-    // 點擊傳送按鈕
+        if (feedbackType === 1) {
+            console.log("使用者「喜歡」了回應:", aiResponse);
+            likeBtn.classList.add('selected');
+            likeBtn.innerHTML = '<i class="fa-solid fa-thumbs-up"></i>';
+        } else {
+            console.log("使用者「不喜歡」了回應:", aiResponse);
+            dislikeBtn.classList.add('selected');
+            dislikeBtn.innerHTML = '<i class="fa-solid fa-thumbs-down"></i>';
+            const reason = prompt("感謝您的回饋，請問您不喜歡這則回應的原因是？(選填)");
+            if (reason) {
+                console.log("使用者留下的原因:", reason);
+            }
+        }
+    }
+
     sendBtn.addEventListener('click', sendMessage);
-
-    // 在輸入框按 Enter 鍵 (Shift+Enter 可換行)
     messageInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault(); // 防止預設的換行行為
+            event.preventDefault();
             sendMessage();
         }
     });
-
-    // 讓 textarea 高度可以自動增長
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
         messageInput.style.height = `${messageInput.scrollHeight}px`;

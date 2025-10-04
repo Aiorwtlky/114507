@@ -39,6 +39,7 @@ from .views import (
     InvitationCodeCreateAPIView, 
     GroupMemberRoleAPIView,
     GroupMemberDeleteAPIView,
+    ChatbotFeedbackAPIView,
 )
 
 urlpatterns = [
@@ -82,6 +83,7 @@ urlpatterns = [
     
     # AI 與系統狀態 API
     path('chatbot/', ChatbotAPIView.as_view(), name='chatbot'),
+    path('chatbot/feedback/', ChatbotFeedbackAPIView.as_view(), name='chatbot-feedback'),
     path('health/', health_check, name='health-check'),
     path('system/stats/', system_stats, name='system-stats'),
 ]

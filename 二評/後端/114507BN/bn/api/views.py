@@ -16,14 +16,15 @@ import logging
 
 from .models import (
     Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile,
-    GroupAnnouncement, InvitationCode, GroupMember
+    GroupAnnouncement, InvitationCode, GroupMember , ChatbotFeedback
 )
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
     TripDetailSerializer, VehicleDeviceSerializer, TripStartSerializer,
     AiVisionLogCreateSerializer, VideoRecordCreateSerializer, TripEndSerializer,
     UserRegisterSerializer, PersonnelProfileSerializer, GroupMemberSerializer,
-    GroupAnnouncementSerializer, VideoRecordSerializer, InvitationCodeSerializer
+    GroupAnnouncementSerializer, VideoRecordSerializer, InvitationCodeSerializer,
+    ChatbotFeedbackSerializer
 )
 from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPublisherOrAdmin
@@ -323,6 +324,16 @@ class ChatbotAPIView(views.APIView):
         logger.info(f"Chatbot request from user {request.user.username}")
         ai_reply = get_chatbot_response(chat_history)
         return Response({"reply": ai_reply}, status=status.HTTP_200_OK)
+    
+class ChatbotFeedbackAPIView(generics.CreateAPIView):
+    """【新增】接收前端傳來的 AI 客服回饋並存入資料庫"""
+    queryset = ChatbotFeedback.objects.all()
+    serializer_class = ChatbotFeedbackSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # 自動將當前登入的使用者設定為回饋者
+        serializer.save(user=self.request.user)
 
 class UserTrendsAPIView(views.APIView):
     """使用者駕駛分數趨勢 API (月平均)"""

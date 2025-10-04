@@ -240,3 +240,24 @@ class InvitationCode(models.Model):
     class Meta:
         verbose_name = "群組邀請碼"
         verbose_name_plural = "12. 群組邀請碼"
+
+class ChatbotFeedback(models.Model):
+    """【新增】用於儲存使用者對 AI 客服回應的回饋"""
+    FEEDBACK_CHOICES = [
+        (1, '喜歡'),
+        (-1, '不喜歡'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="回饋使用者")
+    chat_history = models.JSONField(verbose_name="完整對話歷史")
+    ai_response = models.TextField(verbose_name="AI 的回應")
+    feedback_type = models.IntegerField(choices=FEEDBACK_CHOICES, verbose_name="回饋類型")
+    comment = models.TextField(blank=True, null=True, verbose_name="使用者評論")
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="回饋時間")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_feedback_type_display()} on {self.timestamp.strftime('%Y-%m-%d')}"
+
+    class Meta:
+        verbose_name = "AI客服回饋"
+        verbose_name_plural = "13. AI客服回饋"

@@ -20,7 +20,7 @@ def make_api_request(method, endpoint, **kwargs):
     headers['Authorization'] = f'Bearer {session["access_token"]}'
     kwargs['headers'] = headers
     try:
-        response = requests.request(method, url, timeout=10, **kwargs)
+        response = requests.request(method, url, timeout=30, **kwargs)
         if response.status_code == 401 and 'refresh_token' in session:
             refresh_response = requests.post(f"{API_BASE_URL}/token/refresh/", json={'refresh': session['refresh_token']})
             if refresh_response.status_code == 200:
@@ -30,7 +30,7 @@ def make_api_request(method, endpoint, **kwargs):
                     session['refresh_token'] = new_tokens['refresh']
                 headers['Authorization'] = f'Bearer {session["access_token"]}'
                 kwargs['headers'] = headers
-                response = requests.request(method, url, timeout=10, **kwargs)
+                response = requests.request(method, url, timeout=30, **kwargs)
             else:
                 session.clear()
                 return None, 'Refresh Failed'
@@ -65,26 +65,38 @@ def home():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if 'access_token' in session:
-        profile_response, _ = make_api_request('GET', '/auth/profile/')
-        if profile_response and profile_response.json().get('is_group_leader'):
-            return redirect(url_for('admin_logic_redirect'))
+        # 如果已登入，直接導向儀表板
         return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        
+        # 【新增】從 URL 中獲取 'next' 參數
+        next_url = request.args.get('next')
+
         if not username or not password:
             flash('帳號和密碼為必填欄位。', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('login', next=next_url)) # 保持 next 參數
+
         try:
             response = requests.post(f"{API_BASE_URL}/token/", json={"username": username, "password": password})
             if response.status_code == 200:
                 tokens = response.json()
                 session['access_token'], session['refresh_token'] = tokens['access'], tokens['refresh']
                 session.permanent = True
+
+                # --- ▼▼▼ 【關鍵修改】登入成功後的跳轉邏輯 ▼▼▼ ---
+                if next_url:
+                    flash('登入成功！', 'success')
+                    return redirect(next_url) # 如果有 next 參數，就跳轉到該網址
+
+                # 如果沒有 next 參數，才執行原本的判斷
                 profile_response, error = make_api_request('GET', '/auth/profile/')
                 if error or not profile_response.ok:
                     flash('登入成功，但無法獲取使用者身份。', 'warning')
                     return redirect(url_for('dashboard')) 
+                
                 profile_data = profile_response.json()
                 if profile_data.get('is_group_leader', False):
                     flash('歡迎回來，組長！', 'success')
@@ -92,14 +104,16 @@ def login():
                 else:
                     flash('登入成功！', 'success')
                     return redirect(url_for('dashboard'))
+                # --- ▲▲▲ 修改結束 ▲▲▲ ---
+
             else:
                 flash('帳號或密碼錯誤。', 'error')
-                return redirect(url_for('login'))
+                return redirect(url_for('login', next=next_url))
         except requests.exceptions.RequestException:
             flash('無法連接後端伺服器。', 'error')
-            return redirect(url_for('login'))
-    return render_template("login.html")
+            return redirect(url_for('login', next=next_url))
 
+    return render_template("login.html")
 @app.route('/logout')
 def logout():
     session.clear()
@@ -518,6 +532,39 @@ def group_detail(group_id):
     flash(f'群組詳細資料頁面 (ID: {group_id}) 尚在開發中。', 'info')
     return redirect(url_for('dashboard'))
 
+@app.route("/chat")
+def chat():
+    """渲染 AI 智慧客服的頁面"""
+    if 'access_token' not in session:
+        flash('請先登入才能使用 AI 客服。', 'warning')
+        # 【修改】告訴登入頁面，成功後要跳轉回現在這個 chat 頁面
+        return redirect(url_for('login', next=request.path))
+        
+    return render_template("chat.html")
+
+# 【新增】作為前端 JS 和後端 API 之間安全橋樑的代理路由
+@app.route('/api/proxy/chatbot', methods=['POST'])
+def chatbot_proxy():
+    """
+    代理前端對 Chatbot API 的請求。
+    這樣做可以避免將 access_token 暴露在瀏覽器端，更安全。
+    """
+    if 'access_token' not in session:
+        return jsonify({'error': 'Not Authenticated'}), 401
+
+    # 從前端 JS 獲取對話歷史
+    messages = request.json.get('messages', [])
+    if not messages:
+        return jsonify({'error': 'Messages are required'}), 400
+
+    # 使用伺服器端的 make_api_request 函式來安全地呼叫後端
+    response, error = make_api_request('POST', '/chatbot/', json={'messages': messages})
+
+    if error or not response.ok:
+        return jsonify({'error': 'Failed to get response from AI service'}), 502 # Bad Gateway
+
+    # 將後端 API 的真實回應直接回傳給前端 JS
+    return jsonify(response.json())
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

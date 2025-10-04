@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import (
     PersonnelProfile, Group, Trip, ScoringStandard,
     AiVisionLog, VideoRecord, VehicleDevice, GroupAnnouncement,
-    InvitationCode, GroupMember
+    InvitationCode, GroupMember, ChatbotFeedback
 )
 
 # =============================================================================
@@ -286,3 +286,8 @@ class VideoRecordCreateSerializer(serializers.ModelSerializer):
         model = VideoRecord
         fields = ['video_number', 'trip', 'start_time', 'end_time', 'location', 'file_size']
 
+class ChatbotFeedbackSerializer(serializers.ModelSerializer):
+    """【新增】用於接收前端傳來的 AI 客服回饋"""
+    class Meta:
+        model = ChatbotFeedback
+        fields = ['chat_history', 'ai_response', 'feedback_type', 'comment']
