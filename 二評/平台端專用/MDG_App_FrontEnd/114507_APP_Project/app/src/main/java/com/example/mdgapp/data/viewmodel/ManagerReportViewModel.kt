@@ -1,5 +1,5 @@
 package com.example.mdgapp.data.viewmodel
-
+/*
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -125,4 +125,4 @@ class ManagerReportViewModel : ViewModel() {
         )
         return allEvents.shuffled().take(Random.nextInt(1, 4))
     }
-}
+}*/

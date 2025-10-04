@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
+import com.example.mdgapp.data.model.toLastTripInfo
 import java.time.LocalDateTime
 import kotlin.random.Random
 

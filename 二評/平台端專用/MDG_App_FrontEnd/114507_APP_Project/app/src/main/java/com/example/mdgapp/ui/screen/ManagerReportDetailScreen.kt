@@ -1,5 +1,5 @@
 package com.example.mdgapp.ui.screen
-
+/*
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -95,4 +95,4 @@ fun ManagerReportDetailScreen(
             CircularProgressIndicator()
         }
     }
-}
+}*/
