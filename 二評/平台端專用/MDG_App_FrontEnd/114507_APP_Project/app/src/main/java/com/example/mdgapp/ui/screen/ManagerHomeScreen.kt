@@ -24,7 +24,7 @@ import com.example.mdgapp.ui.component.InfoCard
 import com.example.mdgapp.ui.component.TopMenuBar
 import com.example.mdgapp.ui.component.TrendChart
 import kotlinx.coroutines.CoroutineScope
-
+/*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagerHomeScreen(
@@ -180,4 +180,4 @@ fun ManagerMainContent(
             }
         }
     }
-}
+}*/

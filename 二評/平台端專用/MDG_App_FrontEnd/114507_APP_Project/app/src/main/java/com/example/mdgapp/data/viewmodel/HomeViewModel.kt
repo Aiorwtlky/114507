@@ -3,18 +3,17 @@ package com.example.mdgapp.data.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mdgapp.data.model.DrivingReport
-import kotlinx.coroutines.delay
+import com.example.mdgapp.data.model.toLastTripInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
-import com.example.mdgapp.data.model.toLastTripInfo
 import java.time.LocalDateTime
 import kotlin.random.Random
 
-// Data Class 定義
+// Data Class 定義 (保持不變)
 data class LastTripInfo(
     val startTime: LocalDateTime,
     val endTime: LocalDateTime,
@@ -63,6 +62,7 @@ class HomeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    // ✅ ViewModel 初始化時只載入圖表
     init {
         initializeCharts()
     }
@@ -70,21 +70,20 @@ class HomeViewModel : ViewModel() {
     private fun initializeCharts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            delay(100) // 縮短延遲，因為只載入圖表
             onAverageTimeUnitSelected("月")
             onTrendTimeUnitSelected("月")
             _uiState.update { it.copy(isLoading = false) }
         }
     }
 
-    // 新增一個公開函式，用於接收外部傳來的最新報表
+    // ✅ 這個函式現在是從外部接收資料的唯一入口
     fun setLastTrip(report: DrivingReport) {
         _uiState.update {
             it.copy(lastTrip = report.toLastTripInfo())
         }
     }
 
-    // --- 圖表相關函式 ---
+    // --- 圖表相關函式 (保持不變) ---
     fun onAverageTimeUnitSelected(timeUnit: String) {
         val newValueOptions = generateValueOptions(timeUnit)
         val selectedValue = newValueOptions.firstOrNull() ?: ""

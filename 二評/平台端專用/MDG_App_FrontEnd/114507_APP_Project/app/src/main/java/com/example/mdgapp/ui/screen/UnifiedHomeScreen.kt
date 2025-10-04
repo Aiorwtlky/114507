@@ -38,8 +38,16 @@ fun UnifiedHomeScreen(
     reportViewModel: ReportViewModel = viewModel()
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
+    val reports by reportViewModel.reports.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+
+    // ✅ 當 ReportViewModel 的資料載入後，自動更新 HomeViewModel
+    LaunchedEffect(reports) {
+        if (reports.isNotEmpty()) {
+            homeViewModel.setLastTrip(reports.first())
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -58,13 +66,13 @@ fun UnifiedHomeScreen(
         DashboardContent(
             uiState = uiState,
             homeViewModel = homeViewModel,
-            reportViewModel = reportViewModel,
             navController = navController,
             modifier = Modifier.padding(paddingValues)
         )
     }
 }
 
+// ... HomeTopBar 和 AppBottomBar 保持不變 ...
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeTopBar(
@@ -147,11 +155,11 @@ fun AppBottomBar(navController: NavController) {
     }
 }
 
+
 @Composable
 private fun DashboardContent(
     uiState: HomeUiState,
     homeViewModel: HomeViewModel,
-    reportViewModel: ReportViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
@@ -165,7 +173,8 @@ private fun DashboardContent(
                 .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            uiState.lastTrip?.let { LastTripCard(it, navController = navController, reportViewModel = reportViewModel) }
+            // ✅ LastTripCard 不再需要 reportViewModel
+            uiState.lastTrip?.let { LastTripCard(it, navController = navController) }
             PastAverageCard(
                 data = uiState.pastAverage,
                 onTimeUnitSelected = homeViewModel::onAverageTimeUnitSelected,
@@ -183,11 +192,8 @@ private fun DashboardContent(
 @Composable
 fun LastTripCard(
     lastTrip: LastTripInfo,
-    navController: NavController,
-    reportViewModel: ReportViewModel
+    navController: NavController
 ) {
-    val reports by reportViewModel.reports.collectAsState()
-
     Card(
         modifier = Modifier.padding(horizontal = 16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -218,10 +224,9 @@ fun LastTripCard(
             Text("AI 行車建議: ${lastTrip.aiSuggestion}", style = MaterialTheme.typography.bodySmall, color = Color.LightGray)
             Button(
                 onClick = {
-                    val latestReportDate = reports.firstOrNull()?.date
-                    if (latestReportDate != null) {
-                        navController.navigate("reportDetail/${latestReportDate}")
-                    }
+                    // ✅ 直接使用 lastTrip 的日期來導航，確保資料一致
+                    val reportDate = lastTrip.startTime.toLocalDate().toString()
+                    navController.navigate("reportDetail/${reportDate}")
                 },
                 modifier = Modifier.align(Alignment.End),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
@@ -232,6 +237,7 @@ fun LastTripCard(
     }
 }
 
+// ... PastAverageCard 和 PastTrendCard 保持不變 ...
 @Composable
 fun PastAverageCard(
     data: PastAverageData,

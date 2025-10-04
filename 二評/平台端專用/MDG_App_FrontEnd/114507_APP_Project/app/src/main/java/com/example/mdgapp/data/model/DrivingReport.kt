@@ -11,7 +11,10 @@ data class DrivingReport(
     val geminiFeedback: String,
     val tripInfo: TripInfo,
     val performanceMetrics: PerformanceMetrics,
-    val events: List<DangerousEventItem>
+    val events: List<DangerousEventItem>,
+    // ✅ 新增欄位
+    val startLocation: String,
+    val endLocation: String
 )
 
 // 行程基本資訊
