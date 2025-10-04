@@ -92,21 +92,6 @@ fun ProfileScreen(
                 }
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 多帳號驗證
-                ProfileSection(title = "已連結的帳號") {
-                    profile.linkedAccounts.forEach { account ->
-                        LinkedAccountRow(account = account)
-                        HorizontalDivider(color = Color(0xFF424242))
-                    }
-                    TextButton(
-                        onClick = { Toast.makeText(context, "新增帳號", Toast.LENGTH_SHORT).show() },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("新增其他平台帳號")
-                    }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-
                 // App 設定
                 ProfileSection(title = "App 設定") {
                     SettingsSwitchRow(

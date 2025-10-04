@@ -81,13 +81,6 @@ private fun HomeTopBar(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
-                    onClick = { navController.navigate("announcementList") },
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) { Text("公告") }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(
                     onClick = { navController.navigate("downloadFileList") },
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),

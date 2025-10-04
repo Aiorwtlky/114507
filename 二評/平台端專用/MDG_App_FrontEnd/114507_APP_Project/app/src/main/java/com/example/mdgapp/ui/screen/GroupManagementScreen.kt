@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,8 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+// ✅ 1. 導入 GroupMember 和 GroupInfo
+import com.example.mdgapp.data.model.GroupInfo
+import com.example.mdgapp.data.model.GroupMember
 import com.example.mdgapp.data.viewmodel.GroupManagementViewModel
-import com.example.mdgapp.data.viewmodel.GroupMember
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,10 +46,19 @@ fun GroupManagementScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                     }
                 },
+                actions = {
+                    IconButton(onClick = { navController.navigate("announcementList") }) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "公告"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Black,
                     titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White // 確保 actions 中的圖示也是白色
                 )
             )
         },
@@ -62,7 +75,6 @@ fun GroupManagementScreen(
             items(members, key = { it.id }) { member ->
                 MemberCard(
                     member = member,
-                    // ✅ 修正點：將原本的導航事件改為空事件
                     onClick = {
                         // 不執行任何操作
                     }
