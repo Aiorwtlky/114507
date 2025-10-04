@@ -1,26 +1,38 @@
 /* ===== 頁面主容器 ===== */
 .coach-wrap {
-    max-width: 1400px; /* 與 dashboard.html 寬度一致 */
+    max-width: 1400px;
+    /* 與 dashboard.html 寬度一致 */
     margin: 30px auto;
     padding: 0 24px;
     font-family: 'Noto Sans TC', sans-serif;
 }
 
-/* ===== 頁面主標題 ===== */
+/* ===== 頁面主標題 (恢復原始白色文字，透明背景) ===== */
 .coach-title {
     font-size: 2rem;
     font-weight: 700;
-    color: #1a2a5f; /* 主要藍色 */
+    color: white;
+    /* 確保為白色 */
+    -webkit-text-fill-color: white;
+    /* 確保文字填滿顏色 */
+    background: none;
+    /* 移除任何可能覆蓋的背景 */
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    /* 增加文字陰影，提升立體感 */
     margin: 0 0 24px 0;
     padding-bottom: 12px;
-    border-bottom: 2px solid #1a2a5f;
+    border-bottom: none;
+    /* 移除底線 */
 }
 
 /* ===== 左右兩欄佈局 ===== */
 .coach-grid {
     display: grid;
-    grid-template-columns: 2fr 3fr; /* 維持 2:3 比例 */
+    grid-template-columns: 2fr 3fr;
+    /* 維持 2:3 比例 */
     gap: 24px;
+    align-items: stretch;
+    /* 【修正】讓兩邊的卡片高度保持一致 */
 }
 
 /* 在小螢幕上變為單欄 */
@@ -30,7 +42,7 @@
     }
 }
 
-/* ===== 卡片基礎樣式 (完全仿照 dashboard) ===== */
+/* ===== 卡片基礎樣式 (恢復原始樣式) ===== */
 .coach-card {
     background-color: #ffffff;
     color: #000000;
@@ -41,13 +53,18 @@
     flex-direction: column;
 }
 
-/* ===== 卡片內的通用元素 ===== */
+/* ===== 卡片內的通用元素 (確保在白色背景上可見) ===== */
 .coach-h3 {
     margin: 0 0 16px;
     padding-bottom: 12px;
     border-bottom: 2px solid #1a2a5f;
     font-size: 1.4rem;
     color: #1a2a5f;
+    /* 確保在白底上為深藍色 */
+    background: none;
+    /* 移除任何可能覆蓋的背景 */
+    -webkit-text-fill-color: initial;
+    text-shadow: none;
 }
 
 .coach-h4 {
@@ -62,6 +79,7 @@
     font-size: 0.9rem;
     margin: 0 0 16px;
 }
+
 .coach-muted b {
     color: #1a2a5f;
 }
@@ -69,14 +87,21 @@
 .coach-p {
     margin: 8px 0;
     font-weight: 600;
+    color: #343a40;
 }
 
+/* 確保段落文字顏色 */
 .coach-ul {
     margin: 8px 0 0 20px;
     padding: 0;
     line-height: 1.8;
 }
 
+.coach-card .coach-ul li {
+    color: #343a40;
+}
+
+/* 確保列表文字顏色 */
 .coach-divider {
     border: none;
     height: 1px;
@@ -85,9 +110,12 @@
 }
 
 .coach-actions {
-    margin-top: auto; /* 將按鈕推到卡片底部 */
+    margin-top: auto;
     padding-top: 20px;
+    text-align: center;
 }
+
+/* 返回按鈕置中 */
 
 
 /* ===== 右側每日行程列表 ===== */
@@ -107,7 +135,8 @@
     display: inline-block;
     padding: 6px 12px;
     border-radius: 20px;
-    background: #e7f0ff; /* 淡藍色背景 */
+    background: #e7f0ff;
+    /* 淡藍色背景 */
     border: 1px solid #b3cfff;
     font-size: 0.9rem;
     font-weight: 600;
@@ -117,23 +146,74 @@
 
 .coach-tags {
     margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
+/* 【修正】讓標籤自動換行 */
+
+/* 違規標籤樣式 */
 .coach-tag {
-    display: inline-block;
-    margin: 0 6px 6px 0;
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    /* width: 100%; 【移除】不強制佔滿寬度 */
+    box-sizing: border-box;
+    /* margin: 0 0 6px 0; 【修正】使用外層的 gap 來控制間距 */
     padding: 4px 10px;
     border-radius: 8px;
     background: #f1f3f5;
     font-size: 0.85rem;
-    color: #555;
+    /* color: #000000; 【移除】靠 .violation-text 強制設定 */
+    flex-grow: 1;
+    /* 【新增】讓標籤能稍微伸展 */
+    max-width: fit-content;
+    /* 【新增】讓標籤不會無限伸展超過內容 */
 }
 
-/* 「需要注意」的特殊樣式 */
 .coach-tag.coach-attn {
     background: #fff5f5;
     color: #c92a2a;
     font-weight: 600;
+}
+
+.coach-tag .violation-text {
+    color: #000000 !important;
+}
+
+/* 強制文字為黑色 */
+
+
+/* 讚/倒讚圖示 */
+.feedback-icons {
+    display: flex;
+    gap: 12px;
+    margin-left: 16px;
+    flex-shrink: 0;
+}
+
+.feedback-icons i {
+    font-size: 1.1rem;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.feedback-icons i:hover {
+    color: #495057;
+}
+
+.feedback-icons i.active {
+    transform: scale(1.2);
+}
+
+.feedback-icons i.active.like {
+    color: #28a745;
+}
+
+.feedback-icons i.active.dislike {
+    color: #dc3545;
 }
 
 .coach-score {
@@ -143,36 +223,17 @@
 }
 
 .coach-score.bad {
-    color: #e03131; /* 紅色 */
+    color: #e03131;
 }
 
 .coach-score.good {
-    color: #2f9e44; /* 綠色 */
+    color: #2f9e44;
 }
 
-/* ===== 返回儀表板按鈕 (沿用 dashboard 的樣式) ===== */
-.custom-btn.primary-btn {
-    display: inline-block;
-    width: auto;
-    font-size: 1rem;
-    padding: 10px 20px;
-    border-radius: 6px;
-    text-decoration: none;
-    text-align: center;
-    background-color: #1a2a5f;
-    color: white;
-    border: 1px solid #1a2a5f;
-    transition: background-color 0.2s, color 0.2s;
-}
-.custom-btn.primary-btn:hover {
-    background-color: #0d1530;
-}
-
-
-/* ===== 分頁按鈕 (Segmented Toggle) 新樣式 ===== */
+/* ===== 分頁按鈕 ===== */
 .seg-toggle {
     display: inline-flex;
-    background: #f1f3f5; /* 淺灰色背景 */
+    background: #f1f3f5;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 5px;
@@ -185,7 +246,7 @@
     padding: 8px 16px;
     border-radius: 6px;
     font-weight: 600;
-    color: #495057; /* 預設文字顏色 */
+    color: #495057;
     background: transparent;
     cursor: pointer;
     transition: all .2s ease;
@@ -200,44 +261,166 @@
     box-shadow: 0 0 0 2px #b1d3ff;
 }
 
-/* 啟用中的外觀：白色背景 + 陰影 */
 .seg-option.is-active {
-    color: #1a2a5f; /* 啟用時的藍色文字 */
+    color: #1a2a5f;
     background: #ffffff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 「只看需要注意」的啟用中外觀：改為淡紅色系 */
 #tab-attn.is-active {
     background: #fff5f5;
     color: #c92a2a;
 }
 
- /* 修正1：讓頁面主標題更清晰 */
-  .coach-title {
-    background: none; /* 移除舊的漸層背景 */
-    -webkit-text-fill-color: #FFFFFF; /* 設定為純白色 */
-    color: #FFFFFF; /* 設定為純白色 */
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* 增加文字陰影，提升立體感 */
-    border-bottom: none; /* 移除與儀表板風格不符的底線 */
-  }
-
-  /* 修正2：讓卡片內的標題在白色背景上可見 */
-  .coach-card .coach-h3,
-  .coach-card .coach-h4 {
-    background: none; /* 移除舊的漸層背景 */
-    -webkit-background-clip: initial; /* 重設文字裁切效果 */
-    -webkit-text-fill-color: initial; /* 重設文字填滿顏色 */
-    color: #1a2a5f; /* 設定為與儀表板風格一致的深藍色 */
-    text-shadow: none; /* 移除在白底上不必要的陰影 */
-  }
-
-.coach-p{
-    color: #fff;
+/* ===== 彈出式回饋表單 (Modal) ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-/* 修正3：強制讓卡片內的段落和列表文字變成深色 */
-.coach-card .coach-p,
-.coach-card .coach-ul li {
-    color: #343a40; /* 設定為清晰的深灰色 */
+.modal-overlay:not(.hidden) {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay:not(.hidden) .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header .coach-h3 {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #888;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px 0;
+    color: #333;
+}
+
+.modal-body textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+    box-sizing: border-box;
+    color: #000000;
+}
+
+/* --- 【全新】Modal 彈窗按鈕樣式 --- */
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* 按鈕基礎樣式 (圓角、大小、字體) */
+.modal-footer .btn {
+    padding: 12px 30px; /* 調整大小 */
+    border: 2px solid transparent;
+    border-radius: 50px; /* 膠囊形狀 */
+    font-size: 0.95rem;  /* 調整字體大小 */
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.modal-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 主要按鈕 (提交回饋) - 淺灰色填滿樣式 */
+.modal-footer .btn-primary {
+    background-color: #f0f2f5;
+    border-color: #f0f2f5;
+    color: #0c0c0c;
+}
+.modal-footer .btn-primary:hover {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+}
+
+/* 次要按鈕 (取消) - 外框樣式 */
+.modal-footer .btn-secondary {
+    background-color: #ffffff;
+    border-color: #dee2e6; /* 淺灰色邊框 */
+    color: #495057;        /* 深灰色文字 */
+}
+.modal-footer .btn-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.form-group-modal {
+    margin-bottom: 16px;
+}
+
+.form-group-modal label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group-modal input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+
+/* --- 新增：修正 Modal 內的文字顏色 --- */
+
+/* 修正「您為什麼不喜歡...」這行 p 標籤的顏色 */
+.modal-body p {
+    color: #000000;
+}
+
+/* 修正 Email 輸入框的 label 標籤顏色 */
+.modal-body .form-group-modal label {
+    color: #000000;
 }
