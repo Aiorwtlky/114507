@@ -111,15 +111,11 @@ def register():
     if request.method == "POST":
         form_data = request.form
         files_data = request.files
-
-        # --- ▼▼▼ 【關鍵修改】將資料分為 files 和 data 兩部分 ▼▼▼ ---
         
-        # 1. 準備檔案部分
         files = {}
         if 'photo' in files_data and files_data['photo'].filename != '':
             files['avatar'] = (files_data['photo'].filename, files_data['photo'].read(), files_data['photo'].content_type)
 
-        # 2. 準備文字資料部分 (key 必須與 Serializer 中的欄位名完全對應)
         data = {
             "username": form_data.get('username'),
             "password": form_data.get('password'),
@@ -131,10 +127,8 @@ def register():
             "license_type": form_data.get('license'),
             "driving_experience": form_data.get('experience'),
         }
-        # --- ▲▲▲ 修改結束 ▲▲▲ ---
 
         try:
-            # 【關鍵修改】不再使用 json=，而是使用 files= 和 data=
             response = requests.post(
                 f"{API_BASE_URL}/auth/register/",
                 files=files,
@@ -144,7 +138,6 @@ def register():
                 flash('註冊成功！請登入。', 'success')
                 return redirect(url_for('login'))
             else:
-                # 讓錯誤訊息更好看
                 error_data = response.json()
                 error_messages = []
                 for field, messages in error_data.items():
@@ -161,19 +154,40 @@ def register():
 def edit_profile():
     if request.method == 'POST':
         form_data = request.form
-        api_payload = { "first_name": form_data.get('name'), "email": form_data.get('email'), "personnelprofile": { "phone": form_data.get('phone'), "license_type": form_data.get('license'), "driving_experience": form_data.get('experience'), } }
-        if form_data.get('password'): api_payload['password'] = form_data.get('password')
-        response, error = make_api_request('PATCH', '/auth/profile/', json=api_payload)
-        if error or not response.ok: flash('更新個人資料失敗。', 'error')
-        else: flash('個人資料更新成功！', 'success')
-        return redirect(url_for('edit_profile'))
+        files_data = request.files
+
+        files = {}
+        if 'photo' in files_data and files_data['photo'].filename != '':
+            files['avatar'] = (files_data['photo'].filename, files_data['photo'].read(), files_data['photo'].content_type)
+        
+        data = {
+            "first_name": form_data.get('name'),
+            "email": form_data.get('email'),
+            "phone": form_data.get('phone'),
+            "license_type": form_data.get('license'),
+            "driving_experience": form_data.get('experience'),
+        }
+
+        if form_data.get('password'):
+            data['password'] = form_data.get('password')
+
+        response, error = make_api_request('PATCH', '/auth/profile/', files=files, data=data)
+
+        if error or not response.ok:
+            flash(f"更新個人資料失敗: {response.text}", 'error')
+            return redirect(url_for('edit_profile'))
+        else:
+            flash('個人資料更新成功！', 'success')
+            return redirect(url_for('dashboard'))
     
     response, error = make_api_request('GET', '/auth/profile/')
-    if error:
+    if error or not response.ok:
         flash('無法讀取您的資料，請重新登入。', 'error')
         return redirect(url_for('login'))
-    profile_data = response.json() if response and response.ok else {}
+        
+    profile_data = response.json()
     return render_template("edit_profile.html", user_data=profile_data)
+
 
 @app.route("/dashboard")
 def dashboard():
@@ -191,9 +205,6 @@ def dashboard():
     profile_data = api_calls['profile'][0].json()
     my_groups_data = api_calls['my_groups'][0].json().get('results', [])
     trends_data = api_calls['trends'][0].json()
-
-    print(f"DEBUG: 準備傳給樣板的 my_groups 資料: {my_groups_data}")
-
 
     return render_template('dashboard.html', trips=trips_data, profile=profile_data, my_groups=my_groups_data, trends_data=trends_data)
 
@@ -218,7 +229,6 @@ def admin_logic_redirect():
 
 @app.route('/group_leader_view/<int:group_id>')
 def group_leader_view(group_id):
-    # 【新增】'profile' API 請求，來獲取您自己的個人資料
     api_calls = {
         'managed_groups': make_api_request('GET', '/me/groups/'),
         'group': make_api_request('GET', f'/groups/{group_id}/'),
@@ -234,10 +244,8 @@ def group_leader_view(group_id):
     group_data = api_calls['group'][0].json()
     members_data = api_calls['members'][0].json().get('results', [])
     announcements_data = api_calls['announcements'][0].json().get('results', [])
-    # 【新增】解析 profile 資料
     profile_data = api_calls['profile'][0].json()
     
-    # 【新增】將 profile 傳給樣板
     return render_template('group_leader_view.html', 
                            group=group_data, 
                            members=members_data, 
@@ -254,87 +262,162 @@ def invite_member(group_id):
         return redirect(url_for('dashboard'))
     group_data = group_res.json()
 
-    # 在 GET 請求中，從 URL 參數獲取 next_page
-    next_page = request.args.get('next_page', 'leader_view') # 預設返回組長儀表板
+    next_page = request.args.get('next_page', 'leader_view')
 
     if request.method == 'POST':
-        # 在 POST 請求後，從表單的隱藏欄位中獲取 next_page
         next_page = request.form.get('next_page', 'leader_view')
 
         response, error = make_api_request('POST', f'/groups/{group_id}/invitations/')
         if error or not response.ok:
             flash(f"生成邀請碼失敗: {response.json() if response and response.text else '網路錯誤'}", 'error')
-            # 即使失敗，也要把 next_page 傳回樣板
             return render_template("invite_member.html", group=group_data, invite_code=None, next_page=next_page)
         
         invite_data = response.json()
         flash('邀請碼已成功生成！', 'success')
-        # 成功後，也要把 next_page 傳回樣板
         return render_template("invite_member.html", group=group_data, invite_code=invite_data, next_page=next_page)
 
-    # 初始 GET 請求，也要把 next_page 傳給樣板
     return render_template("invite_member.html", group=group_data, invite_code=None, next_page=next_page)
 
-# --- (此處省略其他您已有的頁面路由，如 all_reports, trip_report, chat 等，請保留您檔案中的版本) ---
-@app.route("/all_reports")
-def all_reports():
-    # ...
-    return "Not Implemented Yet"
 @app.route("/trip_report/<int:trip_id>")
 def trip_report(trip_id):
-    # ...
     return "Not Implemented Yet"
-@app.route("/coaching")
-def coaching():
-    # ...
-    return "Not Implemented Yet"
-@app.route("/group_detail/<int:group_id>")
-def group_detail(group_id):
-    # ...
-    return "Not Implemented Yet"
-@app.route("/chat")
-def chat():
-    return render_template("chat.html")
-@app.route("/my_groups_standalone")
-def my_groups_standalone():
-    # ...
-    return "Not Implemented Yet"
-@app.route("/past_average_standalone")
-def past_average_standalone():
-    # ...
-    return "Not Implemented Yet"
-# 修正您現有的 group_settings，讓它能接收 group_id
-@app.route("/group_settings/<int:group_id>")
-def group_settings(group_id):
-    # 未來我們會在這裡實作群組設定功能
-    return f"這裡是群組 {group_id} 的設定頁面 (尚未實作)"
 
-# 這個路由就是解決您目前錯誤的關鍵
+@app.route("/group_settings/<int:group_id>", methods=['GET', 'POST'])
+def group_settings(group_id):
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'update':
+            # 處理更新邏輯
+            payload = {
+                "name": request.form.get('group_name'),
+                "description": request.form.get('description')
+            }
+            response, error = make_api_request('PATCH', f'/groups/{group_id}/', json=payload)
+            if error or not response.ok:
+                flash('群組資訊更新失敗！', 'error')
+            else:
+                flash('群組資訊已更新。', 'success')
+            return redirect(url_for('group_settings', group_id=group_id))
+
+        elif action == 'delete':
+            # 處理刪除邏輯
+            response, error = make_api_request('DELETE', f'/groups/{group_id}/')
+            if error or not response.ok:
+                flash('刪除群組失敗！', 'error')
+                return redirect(url_for('group_settings', group_id=group_id))
+            else:
+                flash('群組已成功刪除。', 'success')
+                return redirect(url_for('admin_logic_redirect'))
+
+    # GET 請求：獲取群組資料並顯示頁面
+    group_res, error = make_api_request('GET', f'/groups/{group_id}/')
+    if error or not group_res.ok:
+        flash('無法讀取群組資料。', 'error')
+        return redirect(url_for('dashboard'))
+    
+    return render_template("group_settings.html", group=group_res.json())
+
 @app.route("/member_dashboard/<int:member_id>")
 def member_dashboard(member_id):
-    # 現在先回傳一個簡單的訊息，確保頁面不會崩潰
     return f"這裡是成員 {member_id} 的儀表板 (尚未實作)"
 
-# 這是樣板中用到的另一個路由，也需要補上
 @app.route("/member_videos/<int:member_id>")
 def member_videos(member_id):
-    # 未來用來顯示特定成員的行車影片列表
     return f"這裡是成員 {member_id} 的影片列表 (尚未實作)"
 
-@app.route("/print_report/<int:trip_id>")
-def print_report(trip_id):
-    # ...
-    return "Not Implemented Yet"
+
+# --- ▼▼▼ 【最終修正版】公告相關路由 ▼▼▼ ---
 
 @app.route("/create_announcement/<int:group_id>", methods=['GET', 'POST'])
 def create_announcement(group_id):
+    """處理「建立」新公告的請求。"""
     if request.method == 'POST':
-        # ... (這裡先省略 POST 的邏輯) ...
-        flash('公告已成功發布！', 'success')
+        content = request.form.get('content')
+        if not content:
+            flash('公告內容不得為空。', 'error')
+            # 重新導向回建立頁面，並附帶 group_id
+            return redirect(url_for('create_announcement', group_id=group_id))
+
+        response, error = make_api_request('POST', f'/groups/{group_id}/announcements/', json={'content': content})
+
+        if error or not response.ok:
+            flash('新增公告失敗！', 'error')
+        else:
+            flash('公告已成功發布！', 'success')
         return redirect(url_for('group_leader_view', group_id=group_id))
+
+    # GET 請求：獲取必要的資料以渲染頁面
+    group_res, err_g = make_api_request('GET', f'/groups/{group_id}/')
+    profile_res, err_p = make_api_request('GET', '/auth/profile/')
+    if err_g or not group_res.ok or err_p or not profile_res.ok:
+        flash('無法讀取資料，或您沒有權限。', 'error')
+        return redirect(request.referrer or url_for('dashboard'))
+        
+    # 傳遞 is_edit=False 來告訴樣板這是「建立」模式
+    return render_template('create_announcement.html', 
+                           group=group_res.json(), 
+                           profile=profile_res.json(), 
+                           is_edit=False,
+                           announcement=None) # 建立模式下沒有舊公告資料
+
+@app.route('/edit_announcement/<int:announcement_id>', methods=['GET', 'POST'])
+def edit_announcement(announcement_id):
+    """處理「編輯」現有公告的請求。"""
+    if request.method == 'POST':
+        content = request.form.get('content')
+        group_id = request.form.get('group_id')
+        if not content:
+            flash('公告內容不得為空。', 'error')
+            return redirect(url_for('edit_announcement', announcement_id=announcement_id))
+
+        response, error = make_api_request('PUT', f'/announcements/{announcement_id}/', json={'content': content})
+        
+        if error or not response.ok:
+            flash('更新公告失敗！', 'error')
+        else:
+            flash('公告已成功更新。', 'success')
+        return redirect(url_for('group_leader_view', group_id=group_id))
+
+    # GET 請求：獲取公告現有內容，並顯示編輯頁面
+    ann_res, error = make_api_request('GET', f'/announcements/{announcement_id}/')
+    if error or not ann_res.ok:
+        flash('無法讀取公告資料。', 'error')
+        return redirect(request.referrer or url_for('dashboard'))
     
-    # 暫時先只回傳一個簡單的頁面
-    return f"<h1>為群組 {group_id} 新增公告</h1><form method='post'><textarea name='content'></textarea><button type='submit'>送出</button></form>"
+    announcement_data = ann_res.json()
+    group_id = announcement_data.get('group')
+
+    # 同時獲取群組和個人資料
+    group_res, _ = make_api_request('GET', f'/groups/{group_id}/')
+    profile_res, _ = make_api_request('GET', '/auth/profile/')
+
+    # 傳遞 is_edit=True 來告訴樣板這是「編輯」模式
+    return render_template('create_announcement.html', 
+                           group=group_res.json(), 
+                           profile=profile_res.json(), 
+                           is_edit=True,
+                           announcement=announcement_data)
+
+@app.route('/delete_announcement/<int:announcement_id>', methods=['POST'])
+def delete_announcement(announcement_id):
+    """代理前端請求，刪除一則公告"""
+    ann_res, err = make_api_request('GET', f'/announcements/{announcement_id}/')
+    if err or not ann_res.ok:
+        flash('找不到該公告或權限不足。', 'error')
+        return redirect(request.referrer or url_for('dashboard'))
+    
+    group_id = ann_res.json().get('group')
+
+    response, error = make_api_request('DELETE', f'/announcements/{announcement_id}/')
+    if error or not response.ok:
+        flash('刪除公告失敗！', 'error')
+    else:
+        flash('公告已成功刪除。', 'success')
+    
+    return redirect(url_for('group_leader_view', group_id=group_id))
+
+# --- ▲▲▲ 公告路由結束 ▲▲▲ ---
 
 
 @app.route("/create_group", methods=['GET', 'POST'])
@@ -348,9 +431,6 @@ def create_group():
         }
         response, error = make_api_request('POST', '/groups/', json=api_payload)
 
-        if response is not None:
-            print(f"後端回應狀態碼: {response.status_code}")
-            print(f"後端回應內容: {response.text}")
         if error or not response.ok:
             flash(f"建立群組失敗：{response.json() if response else error}", 'error')
             return redirect(url_for('create_group'))
@@ -364,43 +444,6 @@ def create_group():
 def not_found(_):
     return render_template('404.html'), 404
 
-@app.route("/debug/my_groups")
-def debug_my_groups():
-    """
-    這個頁面的唯一目的，就是呼叫 /api/me/groups/
-    並將後端回傳的原始 JSON 資料直接顯示在畫面上。
-    """
-    # 使用我們現有的 make_api_request 函式，它會自動處理認證
-    response, error = make_api_request('GET', '/me/groups/')
-
-    # 處理可能的錯誤
-    if error or not response.ok:
-        error_content = response.text if response is not None else "No response"
-        return f"""
-            <h1>API 請求失敗</h1>
-            <p><b>錯誤訊息:</b> {error}</p>
-            <p><b>狀態碼:</b> {response.status_code if response is not None else 'N/A'}</p>
-            <p><b>後端回應內容:</b></p>
-            <pre>{error_content}</pre>
-        """
-    
-    # 如果成功，直接回傳後端給的 JSON 資料
-    return jsonify(response.json())
-
-@app.route("/debug/profile")
-def debug_profile():
-    """
-    呼叫 /api/auth/profile/ 並將後端回傳的原始 JSON 顯示在畫面上。
-    """
-    response, error = make_api_request('GET', '/auth/profile/')
-
-    if error or not response.ok:
-        # (錯誤處理的部分省略，與之前的 debug 路由相同)
-        return f"<h1>API 請求失敗: {error or response.status_code}</h1>"
-    
-    # 如果成功，直接回傳後端給的 JSON 資料
-    return jsonify(response.json())
-
 @app.route('/promote_member/<int:group_id>/<int:user_id>', methods=['POST'])
 def promote_member(group_id, user_id):
     """代理前端請求，呼叫後端 API 來提升成員權限"""
@@ -410,12 +453,72 @@ def promote_member(group_id, user_id):
         json={'role': 'ADMIN'}
     )
     if error or not response.ok:
-        flash('權限更新失敗！', 'error')
+        flash('權限更新失敗！請確認您的權限。', 'error')
     else:
         flash('成員權限已成功提升為管理員！', 'success')
     
     return redirect(url_for('group_leader_view', group_id=group_id))
 
+@app.route('/remove_member/<int:group_id>/<int:user_id>', methods=['POST'])
+def remove_member(group_id, user_id):
+    """代理前端請求，呼叫後端 API 來移除成員"""
+    response, error = make_api_request('DELETE', f'/groups/{group_id}/members/{user_id}/')
+
+    if error or not response.ok:
+        error_msg = '移除成員失敗！'
+        if response is not None and response.status_code == 403:
+            error_msg = f"移除失敗：{response.json().get('error', '權限不足')}"
+        flash(error_msg, 'error')
+    else:
+        flash('成員已成功移除。', 'success')
+    
+    return redirect(url_for('group_leader_view', group_id=group_id))
+
+@app.route("/my_groups")
+def my_groups_standalone():
+    """
+    獨立的「我的群組」頁面，讓使用者可以查看所有已加入的群組。
+    """
+    response, error = make_api_request('GET', '/me/groups/')
+
+    if error or not response.ok:
+        flash('無法讀取您的群組列表，請稍後再試。', 'error')
+        return redirect(url_for('dashboard'))
+    
+    my_groups_data = response.json().get('results', [])
+    
+    return render_template('my_groups_standalone.html', my_groups=my_groups_data)
+
+@app.route("/all_reports")
+def all_reports():
+    """
+    【新增】獲取使用者所有過往行程並顯示頁面。
+    """
+    # 呼叫後端 API 獲取行程列表
+    response, error = make_api_request('GET', '/trips/')
+
+    if error or not response.ok:
+        flash('無法讀取您的過往行程，請稍後再試。', 'error')
+        return redirect(url_for('dashboard'))
+    
+    # 從 API 回應中解析出行程列表 (後端預設有分頁，我們先取第一頁的結果)
+    trips_data = response.json().get('results', [])
+    
+    # 將行程資料傳遞給範本進行渲染
+    return render_template('all_reports.html', trips=trips_data)
+
+
+@app.route("/group_detail/<int:group_id>")
+def group_detail(group_id):
+    """
+    【新增】顯示單一群組的詳細資訊頁面 (待辦)。
+    這是一個暫存的路由，避免啟動時出錯。
+    """
+    # 這裡的邏輯未來需要擴充，例如呼叫 API 獲取群組資料
+    flash(f'群組詳細資料頁面 (ID: {group_id}) 尚在開發中。', 'info')
+    return redirect(url_for('dashboard'))
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
+

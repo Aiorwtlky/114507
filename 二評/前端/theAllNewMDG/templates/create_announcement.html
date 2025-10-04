@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}
-  發布新公告 · My Driving God
+  {% if is_edit %}
+    編輯公告 · My Driving God
+  {% else %}
+    發布新公告 · My Driving God
+  {% endif %}
 {% endblock %}
 
 {% block extra_css %}
@@ -12,91 +16,61 @@
   <div class="form-container">
     <div class="d-card">
       <div class="d-card-body">
-        <form class="announcement-form">
+        
+        {# 【修改】根據是「編輯」還是「新增」，決定表單要提交到哪裡 #}
+        {% if is_edit %}
+          <form class="announcement-form" method="post" action="{{ url_for('edit_announcement', announcement_id=announcement.id) }}">
+            <input type="hidden" name="group_id" value="{{ group.id }}">
+        {% else %}
+          <form class="announcement-form" method="post" action="{{ url_for('create_announcement', group_id=group.id) }}">
+        {% endif %}
+
           <header class="form-header">
             <div class="info-card">
+              {# 【動態化】顯示真實的群組名稱和建立者 #}
               <p>
-                <strong>所屬單位:</strong> 台灣北大物流股份有限公司萬華分公司
+                <strong>發布於群組:</strong> {{ group.name }}
               </p>
               <p>
-                <strong>群組組長:</strong> 江澤民, 胡錦濤
+                <strong>群組建立者:</strong> {{ group.created_by }}
               </p>
             </div>
-            <h1 class="page-title">公告發佈</h1>
+            
+            {# 【動態化】根據模式顯示不同標題 #}
+            <h1 class="page-title">
+                {% if is_edit %}編輯公告{% else %}公告發佈{% endif %}
+            </h1>
+
             <div class="info-card publisher-card">
-              <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="江澤民" class="publisher-avatar" />
+              {# 【動態化】顯示當前登入使用者的頭像和姓名 #}
+              <img src="{{ profile.personnelprofile.avatar or url_for('static', filename='images/1.jpg') }}" alt="{{ profile.first_name }}" class="publisher-avatar" />
               <div class="publisher-details">
                 <span class="publisher-title">發布者</span>
-                <span class="publisher-name">江澤民</span>
-                <span class="publisher-role">組長</span>
+                <span class="publisher-name">{{ profile.first_name or profile.username }}</span>
+                <span class="publisher-role">管理者</span>
               </div>
             </div>
           </header>
 
           <main class="form-main">
-            <div class="form-column-left">
-              <div class="form-group">
-                <label for="subject">主旨</label>
-                <input type="text" id="subject" name="subject" rows="10" placeholder="請輸入公告主旨..." />
-              </div>
-              <div class="form-group">
-                <label>發佈日期</label>
-                <div class="radio-group">
-                  <label class="radio-label">
-                    <input type="radio" name="publish_time" value="now" checked />
-                    <span>即時</span>
-                  </label>
-                  <label class="radio-label">
-                    <input type="radio" name="publish_time" value="scheduled" />
-                    <span>排定日程</span>
-                  </label>
-                </div>
-                <div id="scheduled_time" class="datetime-picker hidden">
-                  <div class="date-input-group">
-                    <input type="number" name="year" placeholder="YYYY" min="2025" max="2035" />
-                    <span>年</span>
-                  </div>
-                  <div class="date-input-group">
-                    <input type="number" name="month" placeholder="MM" min="1" max="12" />
-                    <span>月</span>
-                  </div>
-                  <div class="date-input-group">
-                    <input type="number" name="day" placeholder="DD" min="1" max="31" />
-                    <span>日</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-column-right">
-              <div class="form-group">
-                <label for="content">內容</label>
-                <textarea id="content" name="content" rows="15" placeholder="請輸入公告內容..."></textarea>
-              </div>
+            {# 【修改】將左右兩欄合併，簡化為一個內容輸入框 #}
+            <div class="form-group full-width">
+              <label for="content">公告內容</label>
+              {# 【動態化】name 屬性設為 "content" 以對應後端 #}
+              {# 如果是編輯模式，則填入舊的公告內容 #}
+              <textarea id="content" name="content" rows="10" placeholder="請輸入公告內容...">{{ announcement.content if is_edit else '' }}</textarea>
             </div>
           </main>
 
           <div class="form-actions">
-            <a href="{{ url_for('group_leader_view') }}" class="custom-btn primary-btn">取消</a>
-            <a type="submit" class="custom-btn primary-btn">發佈公告</a>
+            {# 【修正】取消按鈕的連結，確保能正確返回組長儀表板 #}
+            <a href="{{ url_for('group_leader_view', group_id=group.id) }}" class="custom-btn primary-btn">取消</a>
+            <button type="submit" class="custom-btn primary-btn">
+                {% if is_edit %}儲存變更{% else %}發佈公告{% endif %}
+            </button>
           </div>
         </form>
       </div>
     </div>
   </div>
-{% endblock %}
-
-{% block extra_js %}
-  <script>
-    document.querySelectorAll('input[name="publish_time"]').forEach((radio) => {
-      radio.addEventListener('change', function () {
-        const dateTimePicker = document.getElementById('scheduled_time')
-        if (this.value === 'scheduled') {
-          dateTimePicker.classList.remove('hidden')
-        } else {
-          dateTimePicker.classList.add('hidden')
-        }
-      })
-    })
-  </script>
 {% endblock %}

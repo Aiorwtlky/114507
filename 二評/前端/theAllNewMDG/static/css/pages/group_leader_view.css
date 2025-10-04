@@ -1,404 +1,208 @@
-/* 引用儀表板的基礎卡片樣式 */
-@import url('dashboard.css');
+/* static/css/pages/group_leader_view.css -- Light Theme Version */
 
-/* ===== 主容器與佈局 ===== */
-.group-detail-container {
-    display: grid;
-    grid-template-areas:
-        "header-left header-center members"
-        "announcements announcements members";
-    grid-template-columns: 2fr 1fr 2fr;
-    grid-template-rows: auto 1fr;
-    gap: 24px;
-    padding: 24px;
-    max-width: 1600px;
-    margin: 30px auto;
-    font-family: 'Noto Sans TC', sans-serif;
-}
-
-/* --- 將各卡片分配到指定的網格區域 --- */
-.group-header-card {
-    grid-area: header-left;
-}
-
-.identity-card {
-    grid-area: header-center;
-    height: 100%;
-}
-
-/* 確保中間卡片填滿高度 */
-.announcements-card {
-    grid-area: announcements;
-}
-
-.group-members-card {
-    grid-area: members;
-}
-
-/* ===== RWD ===== */
-@media (max-width: 992px) {
-    .group-detail-container {
-        grid-template-areas:
-            "header-left"
-            "header-center"
-            "members"
-            "announcements";
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-    }
-}
-
-/* ===== 各卡片詳細樣式 ===== */
-.announcements-card,
-.group-members-card {
-    display: flex;
-    flex-direction: column;
-}
-
-.announcements-card .d-card-body,
-.group-members-card .d-card-body {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-/* --- 左上角 --- */
-.group-header-card .d-card-body {
-    position: relative;
-}
-
-
-
-.group-header-card .group-title {
-    font-size: 2.2rem;
-    color: #1a2a5f;
-    margin-bottom: 16px;
-}
-
-.group-header-card .group-meta {
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-/* --- 左下角 --- */
-.announcements-card .d-card-body {
-    padding: 0 20px 20px;
-}
-
-.announcement-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.announcement-item {
-    display: grid;
-    grid-template-columns: 3fr 1fr 1fr 40px;
-    gap: 10px;
-    padding: 12px 0;
-    border-bottom: 1px dashed #ccc;
-    font-size: 0.95rem;
-    align-items: center;
-}
-
-.announcement-actions {
-    display: flex;
-    gap: 8px;
-    color: #aaa;
-}
-
-.announcement-actions i {
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.announcement-actions i:hover {
-    color: #1a2a5f;
-}
-
-/* --- 中間 --- */
-.identity-card .d-card-body {
-    padding: 10px;
-}
-
-.member-item {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-radius: 6px;
-}
-
-.member-item.self {
-    background-color: #e6edff;
-    border: 1px solid #1a2a5f;
-    height: 100%;
-}
-
-.member-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 12px;
-}
-
-.member-details {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.member-name {
-    font-weight: bold;
-}
-
-.member-role {
-    font-size: 0.85rem;
-    color: #555;
-}
-
-/* --- 右欄 --- */
-.group-members-card .d-card-body {
-    padding: 0;
-}
-
-.member-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.member-table th,
-.member-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.member-table thead {
-    background-color: #f8f9fa;
-    position: sticky;
-    top: 0;
-}
-
-.member-table .avatar-col {
-    width: 50px;
-}
-
-.table-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    vertical-align: middle;
-}
-
-/* --- 顏色修正 --- */
-.group-header-card .group-meta,
-.group-header-card .group-meta strong {
-    color: #333;
-}
-
-.announcement-item .poster,
-.announcement-item .date {
-    color: #555;
-    text-align: right;
-}
-
-.announcement-item .subject {
-    color: #000000;
-}
-
-.member-name {
-    color: #000000;
-}
-
-.member-table th,
-.member-table td {
-    color: #000000;
-}
-
-.member-table .actions-col {
-    width: 70px;
-    text-align: center;
-    /* 讓圖示置中 */
-}
-
-.member-table .actions-col i {
-    color: #1a2a5f;
-    /* 設定圖示顏色 */
-    cursor: pointer;
-}
-
-.custom-btn.primary-btn {
-    display: block;
-    margin: 40px auto 60px auto;
-    /* 自動置中 */
-    font-size: 24px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    text-align: center;
-    width: fit-content;
-    /* 寬度剛好包文字 */
-
-    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
-    background-color: #1a2a5f;
-    color: white;
-    border: 1px solid #1a2a5f;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.custom-btn.primary-btn:hover {
-    background-color: #ffffff;
-    color: #1a2a5f;
-}
-
-/* --- 左上角：新增設定按鈕 --- */
-.group-header-card .d-card-body {
-    position: relative;
-}
-
-/* 新的 settings-link 樣式，定位在右下角 */
-/* 新的 settings-link 樣式，定位在右下角 */
-
-.settings-link {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    font-size: 1.5rem;
-    color: #6c757d;
-    /* 顏色維持深灰色 */
-    z-index: 2;
-    /* <<< 新增這一行，把圖示的圖層拉到最上面 */
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.settings-link:hover {
-    color: #1a2a5f;
-    transform: rotate(360deg);
-}
-
-/* --- 新增：讓表格中可點擊的列有互動效果 --- */
-.member-table tbody tr[data-href] {
-    cursor: pointer; /* 顯示手形游標 */
-    transition: background-color 0.2s ease;
-}
-
-.member-table tbody tr[data-href]:hover {
-    background-color: #f0f4ff; /* 滑鼠移上去時變淺藍色 */
-}
-/* static/css/pages/group_leader_view.css */
-
-/* --- 【請將以下樣式貼到檔案最下方】 --- */
-
-/* ===== 全新：組長儀表板佈局 ===== */
+/* --- 整體佈局 --- */
 .leader-view-layout {
-    display: flex;
-    gap: 24px;
-    padding: 24px;
-    max-width: 1800px;
-    margin: 30px auto;
-    align-items: flex-start; /* 讓側邊欄和主內容區頂部對齊 */
+  display: grid;
+  grid-template-columns: 260px 1fr; /* 側邊欄固定寬度，主內容區域自適應 */
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1800px;
+  margin: 0 auto;
+  align-items: flex-start;
 }
 
+/* --- 左側邊欄 --- */
 .leader-sidebar {
-    flex: 0 0 280px; /* 側邊欄固定寬度 280px */
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 20px;
-    position: sticky; /* 讓側邊欄在滾動時固定 */
-    top: 100px; /* 距離頂部的距離 (80px header + 20px margin) */
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  position: sticky; /* 滾動時固定位置 */
+  top: 100px; /* 距離頂部 (Header底下) 的距離 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-
-.leader-sidebar .sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #1a2a5f;
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #1a2a5f;
 }
-.leader-sidebar .sidebar-header h4 {
-    margin: 0;
-    color: #1a2a5f;
-    font-size: 1.2rem;
+.sidebar-header h4 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #1a2a5f;
 }
 .btn-create-group {
-    background-color: #1a2a5f; color: white; width: 28px; height: 28px;
-    border-radius: 50%; text-decoration: none; display: grid; place-items: center;
-    font-size: 1.5rem; line-height: 1; transition: transform 0.2s;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background-color: #1a2a5f;
+  color: #fff;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 300;
+  transition: all 0.2s ease-in-out;
 }
-.btn-create-group:hover { transform: scale(1.1); }
-
+.btn-create-group:hover {
+  transform: scale(1.1) rotate(90deg);
+  background-color: #4a69bd;
+}
 .group-nav-list {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 .group-nav-item {
-    display: block;
-    padding: 10px 15px;
-    text-decoration: none;
-    color: #333;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: background-color 0.2s, color 0.2s;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: #343a40;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+  border-left: 3px solid transparent;
 }
 .group-nav-item:hover {
-    background-color: #e9ecef;
+  background-color: #f1f3f5;
 }
 .group-nav-item.active {
-    background-color: #1a2a5f;
-    color: white;
-    font-weight: bold;
+  background-color: #1a2a5f;
+  color: #fff;
+  font-weight: 600;
+  border-left: 3px solid #4facfe;
 }
 
+/* --- 主內容區域 --- */
 .leader-main-content {
-    flex: 1; /* 主內容區佔滿剩餘空間 */
-    min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 三欄佈局 */
+  gap: 1.5rem;
 }
 
-/* RWD for layout */
-@media (max-width: 1200px) {
-    .leader-view-layout {
-        flex-direction: column;
-    }
-    .leader-sidebar {
-        width: 100%;
-        position: static; /* 在小螢幕上取消固定 */
-    }
+/* --- 卡片通用樣式 --- */
+.d-card {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.d-card-header {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.d-card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #212529;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.d-card-body {
+  padding: 1.5rem;
+  flex-grow: 1; /* 讓 body 填滿卡片剩餘空間 */
+}
+.action-button {
+  background-color: #1a2a5f;
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #1a2a5f;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+.action-button:hover {
+  background-color: #fff;
+  color: #1a2a5f;
 }
 
-button.promote-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    margin: 0;
-    color: #1a2a5f; /* 與其他圖示顏色一致 */
-    font-size: 1em; /* 與其他圖示大小一致 */
-    vertical-align: middle; /* 確保與旁邊的影片圖示對齊 */
-}
+/* --- 卡片佈局 --- */
+.group-header-card { grid-column: 1 / 2; }
+.identity-card { grid-column: 2 / 3; }
+.announcements-card { grid-column: 3 / 4; grid-row: 1 / 3; } /* 公告卡片佔滿右邊兩行 */
+.group-members-card { grid-column: 1 / 3; grid-row: 2 / 3; } /* 成員卡片佔左邊和中間 */
 
-button.promote-btn:hover {
-    opacity: 0.7;
+/* --- 成員表格樣式 --- */
+.member-table {
+  width: 100%;
+  border-collapse: collapse;
 }
-
-/* 【新增】成員列表頭像樣式 */
-.member-table th.avatar-col,
-.member-table td.avatar-col {
-    width: 60px;
-    padding-left: 15px;
-    padding-right: 0;
-    text-align: center;
+.member-table th, .member-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
 }
-
-.member-table .table-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover; /* 確保圖片不變形 */
+.member-table th {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  background-color: #f8f9fa;
 }
+.member-table td { color: #212529; }
+.member-table tr { transition: background-color 0.2s; }
+.member-table tr[data-href]:hover {
+  background-color: #f1f3f5;
+  cursor: pointer;
+}
+.table-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.actions-col { width: 150px; text-align: right; }
+.actions-col > * { margin-left: 0.5rem; }
 
-/* 修正您自己頭像的 object-fit */
-.member-avatar {
-    object-fit: cover;
+/* --- 操作按鈕 --- */
+.action-btn, .action-btn-danger {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.action-btn:hover { color: #1a2a5f; background-color: #e9ecef; }
+.action-btn-danger:hover { color: #dc3545; background-color: #f8d7da; }
+.action-btn-icon { background: none; border: none; cursor: pointer; color: #6c757d; }
+.action-btn-icon:hover { color: #dc3545; }
+
+/* --- 公告列表 --- */
+.announcement-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; height: 100%; }
+.announcement-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+.announcement-item:last-child { border-bottom: none; }
+.announcement-content { flex-grow: 1; }
+.announcement-content .subject { color: #212529; display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.announcement-content .meta { font-size: 0.8rem; color: #6c757d; }
+.announcement-actions { display: flex; gap: 0.75rem; }
+.announcement-actions a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+.announcement-actions a:hover { color: #1a2a5f; }
+
+/* --- 響應式設計 --- */
+@media (max-width: 1400px) {
+  .leader-main-content { grid-template-columns: repeat(2, 1fr); }
+  .announcements-card { grid-column: 1 / 3; grid-row: 3 / 4; }
+}
+@media (max-width: 992px) {
+  .leader-view-layout { grid-template-columns: 1fr; }
+  .leader-sidebar { position: static; margin-bottom: 1.5rem; }
+  .leader-main-content { grid-template-columns: 1fr; }
+  .group-header-card, .identity-card, .announcements-card, .group-members-card {
+    grid-column: auto; grid-row: auto;
+  }
 }

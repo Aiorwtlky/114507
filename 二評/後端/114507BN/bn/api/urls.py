@@ -38,6 +38,7 @@ from .views import (
     UserTrendsAPIView,
     InvitationCodeCreateAPIView, 
     GroupMemberRoleAPIView,
+    GroupMemberDeleteAPIView,
 )
 
 urlpatterns = [
@@ -54,6 +55,7 @@ urlpatterns = [
     path('groups/<int:pk>/', GroupDetailAPIView.as_view(), name='group-detail'),
     path('groups/<int:pk>/members/', GroupMembersListAPIView.as_view(), name='group-members-list'),
     path('groups/<int:group_pk>/members/<int:user_pk>/role/', GroupMemberRoleAPIView.as_view(), name='group-member-role-update'),
+    path('groups/<int:group_pk>/members/<int:user_pk>/', GroupMemberDeleteAPIView.as_view(), name='group-member-delete'),
 
     
     # 公告管理 API

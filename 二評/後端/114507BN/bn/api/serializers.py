@@ -42,13 +42,13 @@ class PersonnelProfileSerializer(serializers.ModelSerializer):
         # 如果使用者沒有上傳頭像，則回傳 null。
         return None
 
+
 class UserSerializer(serializers.ModelSerializer):
     """
-    序列化「使用者」基本資料，並巢狀包含其詳細資料 (PersonnelProfile)。
-    同時動態計算 'is_group_leader' 和 'administered_groups' 兩個欄位。
+    【最終修正版】
+    序列化使用者資料，並確保巢狀的 personnelprofile 能接收到 request context。
     """
-    # 【關鍵修正 B】將 personnelprofile 從直接宣告改為 SerializerMethodField。
-    # 這樣可以確保我們在序列化 Profile 時，能手動傳遞 'request' context，解決圖片 URL 的問題。
+    # 【關鍵修正】將 personnelprofile 改為 SerializerMethodField
     personnelprofile = serializers.SerializerMethodField()
     
     is_group_leader = serializers.SerializerMethodField()
@@ -59,28 +59,24 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile', 'administered_groups']
 
     def get_is_group_leader(self, obj):
-        """判斷 obj (使用者) 是否為任何群組的 created_by。"""
         return Group.objects.filter(created_by=obj).exists()
     
     def get_administered_groups(self, obj):
-        """找出 obj (使用者) 是管理員 (role='ADMIN') 的所有群組 ID。"""
         admin_memberships = GroupMember.objects.filter(user=obj, role='ADMIN')
         return [membership.group.id for membership in admin_memberships]
 
     def get_personnelprofile(self, obj):
         """
-        自訂取得 personnelprofile 的方法。
-        - obj: User 的實例。
+        【新增】手動序列化 Profile 的方法。
+        這能確保 request context 被正確傳遞，以便 PersonnelProfileSerializer 產生頭像的完整 URL。
         """
         try:
-            # 取得關聯的 profile 物件
             profile = obj.personnelprofile
-            # 從父層的 context 中獲取 request 物件
             request = self.context.get('request')
-            # 實例化 PersonnelProfileSerializer，並手動傳入 context
-            # 這樣 PersonnelProfileSerializer 內部的 get_avatar 才能建立絕對 URL
+            # 呼叫 PersonnelProfileSerializer 並手動傳入 context，這是產生完整 URL 的關鍵
             return PersonnelProfileSerializer(profile, context={'request': request}).data
         except PersonnelProfile.DoesNotExist:
+            # 如果使用者因故沒有 Profile，回傳 null
             return None
 
 class GroupMemberSerializer(serializers.ModelSerializer):
@@ -144,8 +140,7 @@ class GroupAnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupAnnouncement
         fields = ['id', 'announcement_number', 'content', 'publish_date', 'is_active', 'publisher', 'group']
-        # 'publisher' 和 'group' 在建立時由 View 自動設定，因此設為唯讀。
-        read_only_fields = ['publisher', 'group']
+        read_only_fields = ['publisher', 'group', 'announcement_number']
 
 class VehicleDeviceSerializer(serializers.ModelSerializer):
     """序列化「車機設備」。"""

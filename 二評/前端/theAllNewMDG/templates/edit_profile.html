@@ -8,15 +8,25 @@
 
 {% block content %}
 <section class="register-page">
-    {# 注意：action 已改為指向新的 'edit_profile' 路由 #}
     <form class="register-form" method="post" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
+        
+        {# 【新增】用來顯示來自 app.py 的成功或失敗訊息 #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages-small" style="margin-bottom: 2rem; text-align: center;">
+              {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
         <div class="form-header">
-            {# 標題已修改 #}
             <h2 class="mega-title gradient-text">編輯個人資料</h2>
             <div class="photo-upload">
                 <label for="photo" class="upload-label">
-                    {# 未來可以從後端傳入使用者現有的照片路徑 #}
-                    <img id="photoPreview" src="{{ url_for('static', filename='images/1.jpg') }}" alt="預覽">
+                    {# 【修改】動態載入使用者目前的頭像，如果沒有則顯示預設圖片 #}
+                    <img id="photoPreview" src="{{ user_data.personnelprofile.avatar or url_for('static', filename='images/1.jpg') }}" alt="預覽">
                     <span>更換照片</span>
                 </label>
                 <input type="file" id="photo" name="photo" accept="image/*" hidden>
@@ -26,33 +36,38 @@
         <div class="form-grid">
             <div class="form-group">
                 <label for="name">姓名</label>
-                {# 未來可以從後端傳入 user.name 預先填入 #}
-                <input type="text" id="name" name="name" placeholder="請輸入真實姓名" required value="黃仁勳">
+                {# 【修改】預先填入使用者目前的姓名 #}
+                <input type="text" id="name" name="name" placeholder="請輸入真實姓名" required value="{{ user_data.first_name }}">
             </div>
             <div class="form-group">
-                <label for="username">使用者名稱</label>
-                <input type="text" id="username" name="username" placeholder="例如 driver123" required value="jensen_huang">
+                <label for="username">使用者名稱 (不可修改)</label>
+                {# 【修改】預先填入使用者名稱，並設為唯讀 #}
+                <input type="text" id="username" name="username" placeholder="例如 driver123" required value="{{ user_data.username }}" readonly style="background-color: #555; cursor: not-allowed;">
             </div>
             <div class="form-group">
                 <label for="email">電子郵件</label>
-                <input type="email" id="email" name="email" placeholder="example@email.com" required value="j.huang@example.com">
+                {# 【修改】預先填入使用者目前的電子郵件 #}
+                <input type="email" id="email" name="email" placeholder="example@email.com" required value="{{ user_data.email }}">
             </div>
             <div class="form-group">
                 <label for="phone">聯絡電話</label>
-                <input type="tel" id="phone" name="phone" placeholder="09xxxxxxxx" required pattern="^09\d{8}$" value="0912345678">
+                {# 【修改】預先填入使用者目前的電話 #}
+                <input type="tel" id="phone" name="phone" placeholder="09xxxxxxxx" required pattern="^09\d{8}$" value="{{ user_data.personnelprofile.phone }}">
             </div>
             <div class="form-group">
                 <label for="license">駕照等級</label>
                 <select id="license" name="license" required>
                     <option value="">請選擇</option>
-                    <option value="A" selected>普通小型車</option> {# 假設使用者目前是這個等級 #}
-                    <option value="B">大客車</option>
-                    <option value="C">大貨車</option>
+                    {# 【修改】根據使用者目前的駕照等級，自動選中對應的選項 #}
+                    <option value="普通小型車" {% if user_data.personnelprofile.license_type == '普通小型車' %}selected{% endif %}>普通小型車</option>
+                    <option value="大客車" {% if user_data.personnelprofile.license_type == '大客車' %}selected{% endif %}>大客車</option>
+                    <option value="大貨車" {% if user_data.personnelprofile.license_type == '大貨車' %}selected{% endif %}>大貨車</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="experience">駕駛年資</label>
-                <input type="number" id="experience" name="experience" placeholder="以年為單位" required min="0" value="20">
+                {# 【修改】預先填入使用者目前的駕駛年資 #}
+                <input type="number" id="experience" name="experience" placeholder="以年為單位" required min="0" value="{{ user_data.personnelprofile.driving_experience }}">
             </div>
             <div class="form-group full">
                 <label for="password">更新密碼 (留白則不變更)</label>
@@ -60,17 +75,39 @@
             </div>
         </div>
 
-        {# 編輯頁面不需要同意條款，所以已移除 #}
-
         <div class="form-footer">
-            {# 按鈕文字已修改 #}
-            <button class="btn" id="submitBtn">儲存變更</button>
+            <button type="submit" class="btn" id="submitBtn">儲存變更</button>
         </div>
     </form>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-{# 同樣沿用註冊頁面的 JS，主要用於照片預覽功能 #}
-<script src="{{ url_for('static', filename='js/pages/register.js') }}" defer></script>
+{# 我們需要 JS 來處理照片預覽功能 #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const photoInput = document.getElementById('photo');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoUpload = document.querySelector('.photo-upload');
+
+    // 初始載入時，如果已有圖片，就顯示圖片
+    if (photoPreview.src && !photoPreview.src.includes('1.jpg')) {
+        photoPreview.style.display = 'block';
+        photoUpload.classList.add('has-image');
+    }
+
+    photoInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.src = e.target.result;
+                photoPreview.style.display = 'block';
+                photoUpload.classList.add('has-image');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
 {% endblock %}

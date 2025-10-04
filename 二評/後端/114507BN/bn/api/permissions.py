@@ -1,8 +1,7 @@
 # api/permissions.py
 
 from rest_framework.permissions import BasePermission, SAFE_METHODS
-from .models import GroupMember # 【新增】
-
+from .models import GroupMember
 class IsOwnerOrAdmin(BasePermission):
     """
     Custom permission to only allow owners of an object or admin staff to view/edit it.
@@ -42,15 +41,27 @@ class IsGroupOwnerOrAdmin(BasePermission):
         # --- ▲▲▲ 修改結束 ▲▲▲ ---
 
 
-# --- 【新增這個 Class】 ---
 class IsAnnouncementPublisherOrAdmin(BasePermission):
     """
-    自訂權限：只允許公告的發布者 (publisher) 或管理員 (admin) 進行編輯或刪除。
+    【修正後】
+    自訂權限：允許公告的發布者、群組管理員(role='ADMIN')或網站管理員(admin)進行編輯或刪除。
     """
     def has_object_permission(self, request, view, obj):
-        # 讀取權限開放給所有人 (因為查看群組時就會看到公告)
         if request.method in SAFE_METHODS:
             return True
         
-        # 寫入權限只開放給發布者或管理員
-        return obj.publisher == request.user or request.user.is_staff
+        if not request.user.is_authenticated:
+            return False
+
+        # 檢查是否為公告發布者
+        is_publisher = (obj.publisher == request.user)
+        # 檢查是否為網站管理員
+        is_staff = request.user.is_staff
+        # 【新增】檢查是否為該公告所屬群組的管理員
+        is_group_admin = GroupMember.objects.filter(
+            group=obj.group, 
+            user=request.user, 
+            role='ADMIN'
+        ).exists()
+
+        return is_publisher or is_staff or is_group_admin

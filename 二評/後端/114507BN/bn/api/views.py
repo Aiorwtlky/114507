@@ -50,40 +50,47 @@ class UserRegisterAPIView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 class UserProfileAPIView(generics.RetrieveUpdateAPIView):
-    """讓用戶查看和更新自己的個人資料 (User + PersonnelProfile)"""
+    """
+    【修正後】
+    讓用戶查看(GET)和更新(PATCH)自己的個人資料。
+    """
     permission_classes = [permissions.IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            return PersonnelProfileSerializer
-        return UserSerializer
+    
+    # 【修改】統一使用 UserSerializer
+    serializer_class = UserSerializer
 
     def get_object(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            profile, created = PersonnelProfile.objects.get_or_create(user=self.request.user)
-            return profile
+        # 無論 GET 或 PATCH，操作的對象都是當前登入的 user
         return self.request.user
 
-    def update(self, request, *args, **kwargs):
-        user = request.user
-        profile = self.get_object()
-        data = request.data
-        user_fields = ['username', 'email', 'first_name', 'last_name']
-        user_data_to_update = {key: data[key] for key in user_fields if key in data}
+    def partial_update(self, request, *args, **kwargs):
+        """
+        覆寫 partial_update (PATCH) 方法來同時處理 User 和 PersonnelProfile 的更新。
+        """
+        user = self.get_object()
+        profile_data = request.data.copy() # 先複製一份請求資料
 
-        if 'password' in data and data['password']:
-            user.set_password(data['password'])
+        # --- 更新 User 模型的欄位 ---
+        user_serializer = self.get_serializer(user, data=profile_data, partial=True)
+        user_serializer.is_valid(raise_exception=True)
 
-        for key, value in user_data_to_update.items():
-            setattr(user, key, value)
-        user.save()
+        # 處理密碼
+        password = profile_data.pop('password', None)
+        if password:
+            user.set_password(password)
+        
+        # 更新 UserSerializer 中定義的其他 User 欄位
+        user_serializer.save()
 
-        profile_serializer = self.get_serializer(profile, data=data, partial=True)
+        # --- 更新 PersonnelProfile 模型的欄位 ---
+        # PersonnelProfileSerializer 只需要 profile 相關的資料
+        profile = user.personnelprofile
+        profile_serializer = PersonnelProfileSerializer(profile, data=profile_data, partial=True, context=self.get_serializer_context())
         profile_serializer.is_valid(raise_exception=True)
         profile_serializer.save()
 
-        final_user_serializer = UserSerializer(user, context=self.get_serializer_context())
-        return Response(final_user_serializer.data, status=status.HTTP_200_OK)
+        # 回傳包含完整巢狀資料的最新 User
+        return Response(UserSerializer(user, context=self.get_serializer_context()).data)
 
 # =============================================================================
 # 群組與成員管理 API
@@ -440,3 +447,31 @@ class GroupMemberRoleAPIView(views.APIView):
             target_member_profile.role = new_role
             target_member_profile.save()
             return Response({"success": f"使用者 {target_member_profile.user.username} 的角色已更新為 {new_role}"}, status=status.HTTP_200_OK)
+    
+
+class GroupMemberDeleteAPIView(views.APIView):
+    """【新增】從群組中移除一名成員"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, group_pk, user_pk):
+        group = get_object_or_404(Group, pk=group_pk)
+        target_user = get_object_or_404(User, pk=user_pk)
+        membership = get_object_or_404(GroupMember, group=group, user=target_user)
+
+        # 權限檢查：只有群組建立者或管理員可以移除成員
+        is_owner = (group.created_by == request.user)
+        is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
+        
+        if not (is_owner or is_group_admin or request.user.is_staff):
+            raise PermissionDenied("您沒有權限移除成員。")
+        
+        # 限制：不能移除群組建立者
+        if group.created_by == target_user:
+            return Response({"error": "不能移除群組的建立者。"}, status=status.HTTP_403_FORBIDDEN)
+        
+        # 限制：管理員不能移除其他管理員 (只有建立者可以)
+        if membership.role == 'ADMIN' and not is_owner:
+             return Response({"error": "管理員之間不能互相移除。"}, status=status.HTTP_403_FORBIDDEN)
+
+        membership.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

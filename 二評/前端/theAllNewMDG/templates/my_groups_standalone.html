@@ -48,39 +48,23 @@
 {% block content %}
     <div class="standalone-card-container">
     
-        {# --- 這是您原本的「我的群組」卡片 HTML --- #}
-        <div class="d-card my-group-card">
-            <div class="d-card-header">
-                <h3><i class="fas fa-users group-icon"></i> 我的群組</h3>
+    <div class="d-card my-group-card">
+        <div class="d-card-header">
+            <h3><i class="fas fa-users group-icon"></i> 我的群組</h3>
+            {% if session.get('is_group_leader') %}
                 <a href="{{ url_for('create_group') }}" class="action-button">+ 建立</a>
-            </div>
-            <ul class="group-list">
-                <li>
-                    <a href="{{ url_for('group_detail') }}">北大物流 C 組</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('group_detail') }}">2024雙十一宅配臨時</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('group_detail') }}">北大物流職訓23A</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('group_detail') }}">南區配送 B 隊</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('group_detail') }}">企業客戶專送組</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('group_detail') }}">花花粉絲後援會</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('group_detail') }}">睿軒行物流 YI 組</a>
-                </li>
-            </ul>
-            <div class="card-actions-center">
-                <a href="#" class="btn-view-more">查看更多</a>
-            </div>
+            {% endif %}
         </div>
+        <ul class="group-list">
+            {% for group in my_groups %}
+                <li>
+                    <a href="#">{{ group.name }}</a>
+                </li>
+            {% else %}
+                <li>您尚未加入任何群組。</li>
+            {% endfor %}
+        </ul>
+    </div>
 
     </div>
     <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>

@@ -116,12 +116,20 @@ class SystemAnnouncement(models.Model):
         
 class GroupAnnouncement(models.Model):
     id = models.BigAutoField(primary_key=True)
-    announcement_number = models.CharField(max_length=50, unique=True)
+    announcement_number = models.CharField(max_length=50, unique=True, blank=True) 
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     publisher = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     publish_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.announcement_number:
+            # 如果這是一則新公告 (沒有編號)，就自動生成一個
+            # 格式：ANN-{群組ID}-{8位隨機碼}
+            self.announcement_number = f"ANN-{self.group.id}-{secrets.token_hex(4).upper()}"
+        super().save(*args, **kwargs)
+
     class Meta:
         db_table = 'group_announcement'
         verbose_name = "群組公告"

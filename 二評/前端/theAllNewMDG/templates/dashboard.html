@@ -13,19 +13,25 @@
   <div class="d-card profile-card">
     <div class="d-card-body">
       <div class="profile-header">
-        <img src="{{ profile.personnelprofile.avatar or url_for('static', filename='images/1.jpg') }}" alt="User Avatar" class="profile-avatar">
+        {# 【修正】確保無論資料庫存的是什麼，都能生成正確的頭像 URL #}
+        {% set default_avatar = url_for('static', filename='images/1.jpg') %}
+        {% set user_avatar_path = profile['personnelprofile']['avatar'] if profile['personnelprofile'] else None %}
+        {% set avatar_url = url_for('static', filename=user_avatar_path) if user_avatar_path else default_avatar %}
+        <img src="{{ avatar_url }}" alt="User Avatar" class="profile-avatar">
         <div class="profile-info">
-          {# 從後端 profile 物件中取得使用者名稱 #}
           <h2 class="profile-name">{{ profile.first_name or profile.username }}</h2>
-          <p class="profile-id">ID: {{ profile.personnelprofile.personnel_number }}</p>
+          {# 【修正】同樣使用 `[]` 語法並加上 if 判斷 #}
+          <p class="profile-id">ID: {{ profile['personnelprofile']['personnel_number'] if profile['personnelprofile'] else 'N/A' }}</p>
         </div>
         <a href="{{ url_for('edit_profile') }}" class="btn-edit-profile" title="編輯個人資料"><i class="fa-solid fa-pencil"></i></a>
       </div>
       <div class="profile-details">
-        <div class="detail-item"><i class="fa-solid fa-envelope"></i> <span>{{ profile.email }}</span></div>
-        <div class="detail-item"><i class="fa-solid fa-phone"></i> <span>{{ profile.personnelprofile.phone or '未提供' }}</span></div>
-        <div class="detail-item"><i class="fa-solid fa-id-card"></i> <span>駕照: {{ profile.personnelprofile.license_type or '未提供' }}</span></div>
-        <div class="detail-item"><i class="fa-solid fa-calendar-days"></i> <span>年資: {{ profile.personnelprofile.driving_experience }} 年</span></div>
+        {# --- ▼▼▼ 【關鍵修正】以下所有欄位都改用 `[]` 語法，並加上 if 判斷 --- ▼▼▼ #}
+        <div class="detail-item"><i class="fa-solid fa-envelope"></i> <span>{{ profile.email or '未提供' }}</span></div>
+        <div class="detail-item"><i class="fa-solid fa-phone"></i> <span>{{ profile['personnelprofile']['phone'] if profile['personnelprofile'] else '未提供' }}</span></div>
+        <div class="detail-item"><i class="fa-solid fa-id-card"></i> <span>駕照: {{ profile['personnelprofile']['license_type'] if profile['personnelprofile'] else '未提供' }}</span></div>
+        <div class="detail-item"><i class="fa-solid fa-calendar-days"></i> <span>年資: {{ (profile['personnelprofile']['driving_experience'] ~ ' 年') if profile['personnelprofile'] and profile['personnelprofile']['driving_experience'] is not none else '未提供' }}</span></div>
+        {# --- ▲▲▲ 修正結束 ▲▲▲ --- #}
       </div>
     </div>
   </div>
@@ -37,7 +43,6 @@
     </div>
     <div class="d-card-body">
       <ul class="group-list">
-        {# 使用 for 迴圈遍歷後端傳來的 my_groups 列表 #}
         {% for group in my_groups %}
           <li class="group-item">
             <i class="fa-solid fa-truck-fast group-icon"></i>
@@ -61,7 +66,6 @@
     <div class="d-card-body">
       <table class="trip-table">
         <tbody>
-          {# 使用 for 迴圈遍歷後端傳來的 trips 列表 #}
           {% for trip in trips %}
           <tr onclick="window.location.href='{{ url_for('trip_report', trip_id=trip.id) }}'">
             <td>{{ trip.start_time | format_date }}</td>
@@ -88,24 +92,21 @@
     </div>
   </div>
 
-  {# --- 【全新功能】卡片五：管理員專用通道 (已串接) --- #}
+  {# --- 卡片五：管理員專用通道 (已串接) --- #}
   {% if profile.administered_groups %}
   <div class="d-card admin-panel-card">
     <div class="d-card-header">
       <h3><i class="fa-solid fa-user-shield"></i> 群組管理面板</h3>
     </div>
     <div class="d-card-body">
-      {# 遍歷使用者有管理權限的每一個群組 #}
       {% for group in my_groups %}
         {% if group.id in profile.administered_groups %}
           <div class="admin-group-section">
             <h4 class="admin-group-name">{{ group.name }}</h4>
             <div class="admin-group-actions">
-              {# 新增公告的按鈕 #}
               <a href="{{ url_for('create_announcement', group_id=group.id) }}" class="admin-action-btn">
                 <i class="fa-solid fa-bullhorn"></i> 發布公告
               </a>
-              {# 邀請成員的按鈕 #}
               <a href="{{ url_for('invite_member', group_id=group.id, next_page='dashboard') }}" class="admin-action-btn">
                 <i class="fa-solid fa-user-plus"></i> 邀請成員
               </a>
@@ -121,13 +122,10 @@
 {% endblock %}
 
 {% block extra_js %}
-  {# 引入 Chart.js 函式庫 #}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // 從後端獲取趨勢數據 (安全地轉換為 JSON)
       const trendsData = JSON.parse('{{ trends_data | tojson | safe }}');
-      
       const labels = trendsData.map(item => item.month);
       const scores = trendsData.map(item => item.average_score);
 
