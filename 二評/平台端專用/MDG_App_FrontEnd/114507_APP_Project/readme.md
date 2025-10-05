@@ -283,3 +283,11 @@ Content-Type: multipart/form-data
 通知系統: 透過 WebSocket 或 Firebase Cloud Messaging (FCM) 實現即時推播，例如：危險駕駛警告、公告通知。
 
 多語系支援: API 建議保留多語系欄位（如公告 subject_en, subject_zh），前端可根據使用者語系切換。
+
+13. 資料安全性
+
+使用 HTTPS (TLS 1.2 以上) 加密所有傳輸。
+
+密碼需經過雜湊 (建議 bcrypt 或 Argon2)，不可明碼存放。
+
+重要隱私資料（如駕照號碼、電話）需有存取權限控管。
