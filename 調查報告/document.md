@@ -1,121 +1,123 @@
-# 專案交接文件：吾駕仙智慧交通系統
 
-**文件版本**：2.2
-**更新日期**：2025-10-04
+---
 
-## 1. 專案總覽
+## **吾駕仙智慧交通系統 - 專案交接文件**
 
-[cite_start]「吾駕仙」是一套專注於駕駛行為的智慧分析系統，旨在透過即時監控、數據分析與 AI 回饋，提升職業駕駛員的行車安全 。
+**文件版本**: 4.0 (後端 API 開發完成版)
+**更新日期**: 2025-10-05
 
-[cite_start]本專案採用前後端分離的架構 ：
--   [cite_start]**後端 (Backend)**：使用 **Django REST Framework** 開發，負責處理所有商業邏輯、資料庫互動、使用者認證、權限管理以及與 AI 服務的溝通 。
--   [cite_start]**前端 (Frontend)**：使用 **Flask** 框架作為伺服器，負責渲染使用者介面 (UI) 和處理與後端 API 的通訊 。
+### 1. 專案總覽
 
-## 2. 技術棧
+「吾駕仙」是一套專注於駕駛行為的智慧分析系統，旨在透過即時監控、數據分析與 AI 回饋，提升職業駕駛員的行車安全。
+
+本專案採用前後端分離的架構：
+* **後端 (Backend)**：使用 **Django REST Framework** 開發，負責處理所有商業邏輯、資料庫互動、使用者認證、權限管理以及與外部 AI 服務的溝通。
+* **前端 (Frontend)**：使用 **Flask** 框架作為伺服器，負責渲染使用者介面 (UI) 和處理與後端 API 的通訊。
+
+### 2. 技術棧
 
 | 類別 | 技術/函式庫 | 用途 |
 | :--- | :--- | :--- |
-| **後端** | Django, Django REST Framework | [cite_start]核心框架，建構 RESTful API  |
-| | djangorestframework-simplejwt | [cite_start]使用者認證 (JWT Token)  |
-| | MySQL / PostgreSQL | [cite_start]資料庫 (由 `.env` 設定)  |
-| | django-environ | [cite_start]環境變數管理  |
-| | Hugging Face InferenceClient | [cite_start]AI 聊天與建議生成服務  |
-| | WeasyPrint | [cite_start]動態生成 PDF 安全報告  |
-| | Pillow | [cite_start]圖片處理 (用於頭像上傳)  |
-| **前端** | Flask | [cite_start]網頁伺服器與模板渲染  |
-| | Jinja2 | [cite_start]模板引擎  |
-| | requests | [cite_start]與後端 API 通訊  |
-| | HTML5 / CSS3 / JavaScript | [cite_start]使用者介面  |
-| | Chart.js | [cite_start]數據視覺化圖表  |
-| **環境** | Python (venv) | [cite_start]虛擬環境  |
-| | pip | [cite_start]套件管理  |
+| **後端** | Django, Django REST Framework | 核心框架，建構 RESTful API |
+| | djangorestframework-simplejwt | 使用者認證 (JWT Token) |
+| | MySQL / PostgreSQL | 資料庫 (由 `.env` 設定) |
+| | django-environ | 環境變數管理 |
+| | Hugging Face InferenceClient | AI 聊天與建議生成服務 |
+| | WeasyPrint | 動態生成 PDF 安全報告 |
+| | Pillow | 圖片處理 (用於頭像上傳) |
+| **前端** | Flask | 網頁伺服器與模板渲染 |
+| | Jinja2 | 模板引擎 |
+| | requests | 與後端 API 通訊 |
+| | HTML5 / CSS3 / JavaScript | 使用者介面 |
+| | Chart.js | 數據視覺化圖表 |
+| **環境** | Python (venv) | 虛擬環境 |
+| | pip | 套件管理 |
 
-## 3. 後端 (Django) 架構與現況
+### 3. 後端 (Django) 最終狀態
 
-### 3.1. 資料庫模型 (`api/models.py`)
+#### 3.1. 資料庫模型 (`api/models.py`)
 
-[cite_start]核心資料庫結構如下 ：
+所有資料庫模型皆已設計並遷移完成。關鍵模型與欄位包含：
+* `PersonnelProfile`: 新增 `nfc_card_id` 欄位，用於綁定駕駛員的 NFC 卡。
+* `Trip`: 新增 `in_car_score` 和 `out_car_score` 欄位，用以儲存獨立的車內/車外評分。
+* `VideoRecord`: 新增 `video_url` 欄位，用於儲存影片在雲端儲存上的網址。
+* `TripSuggestionFeedback`: 新增的模型，用於儲存駕駛員對 AI 行程建議的回饋。
+* `ScoringStandard`: 沿用 `event_number` 欄位的前綴（'A'/'B'）來區分車內/車外事件。
 
--   **使用者與權限**：
-    -   [cite_start]`User`: Django 內建使用者模型 。
-    -   [cite_start]`PersonnelProfile`: 一對一擴充 `User`，包含頭像 (`avatar`)、電話、駕照等級等 。
--   **群組與角色**：
-    -   [cite_start]`Group`: 定義一個群組，包含 `created_by` 欄位來標示「群組建立者」。
-    -   [cite_start]`GroupMember`: 作為 `User` 和 `Group` 之間的多對多關聯橋樑。**擁有 `role` 欄位**，區分 `MEMBER` (一般成員) 和 `ADMIN` (群組管理員) 。
-    -   [cite_start]`InvitationCode`: 用於儲存有時效性、一次性的群組邀請碼 。
--   **核心數據**：
-    -   [cite_start]`Trip`: 記錄每一趟行程的完整資訊 。
-    -   [cite_start]`AiVisionLog`: 記錄行程中的 AI 視覺偵測事件 。
-    -   [cite_start]`VideoRecord`: 記錄影片相關資訊 。
--   **其他**：
-    -   [cite_start]`GroupAnnouncement`: 儲存群組內的公告 。
+#### 3.2. 核心評分邏輯 (`api/services.py`)
 
-### 3.2. 核心 API 端點 (`api/urls.py` & `api/views.py`)
+`calculate_trip_score` 函式已升級為全新的計分機制：
+1.  **時間區間化**: 將整趟行程切分為數個 15 分鐘的區間。
+2.  **事件分類**: 根據事件編號 (`event_number`) 的 'A' 或 'B' 前綴，將違規事件歸類為「車內」或「車外」。
+3.  **區間計分**: 為每個 15 分鐘區間，獨立計算其車內與車外分數（從 100 分開始扣）。
+4.  **最終計分**:
+    * 若某類別（如車內）的所有區間分數都 `>= 60`，則該類別的最終分數為**所有區間的平均值**。
+    * 若某類別有**任何一個**區間分數 `< 60`，則該類別的最終分數為**所有區間中的最低分**。
+5.  **儲存**: 最終的 `in_car_score`, `out_car_score` 及兩者的平均 `score` 會一併存入 `Trip` 模型。
 
-| 功能模組 | HTTP 方法 | 端點 | 說明與權限 |
-| :--- | :--- | :--- | :--- |
-| **認證** | `POST` | `/api/token/` | [cite_start]使用者登入，獲取 JWT Token 。 |
-| | `POST` | `/api/auth/register/` | [cite_start]註冊新使用者，支援**頭像上傳**與**邀請碼** 。 |
-| | `GET`, `PATCH` | `/api/auth/profile/` | [cite_start]讀取/更新個人資料。回傳包含 `is_group_leader` 和 `administered_groups` 列表 。 |
-| **群組管理** | `POST` | `/api/groups/` | [cite_start]建立新群組，會自動將建立者設為第一位成員 。 |
-| | `GET` | `/api/me/groups/` | [cite_start]獲取當前使用者**所屬或建立**的所有群組列表 。 |
-| | `GET` | `/api/groups/<id>/members/` | [cite_start]獲取群組成員列表 (含平均分、**角色**與**頭像**路徑) 。 |
-| | `POST` | `/api/groups/<id>/invitations/` | [cite_start]**群組建立者或管理員**可為群組生成邀請碼 。 |
-| | `PATCH` | `/api/groups/<gid>/members/<uid>/role/` | [cite_start]**群組建立者或管理員**可變更成員角色 。 |
-| **公告管理**| `GET` | `/api/groups/<id>/announcements/` | 獲取特定群組的公告列表。 |
-| | `POST` | `/api/groups/<id>/announcements/` | [cite_start]**群組建立者或管理員**可發布公告 。 |
-| | `GET`, `PUT`, `DELETE`| `/api/announcements/<id>/` | 讀取、更新、刪除單則公告。 |
-| **數據查詢** | `GET` | `/api/trips/`, `/api/videos/` | [cite_start]獲取行程/影片列表 (支援 `?user_id=` 參數) 。 |
-| **AI 功能** | `POST` | `/api/chatbot/` | [cite_start]AI 智慧客服 。 |
+#### 3.3. API 開發現況
 
-## 4. 前端 (Flask) 架構與現況
+**所有後端 API 功能均已開發完畢**。API 功能涵蓋使用者、群組、公告、行程、NFC 綁定與識別、AI 互動與回饋等所有規劃中的功能。詳細列表請參考下方的 Postman 測試指南。
 
-### 4.1. 核心邏輯 (`app.py`)
+### 4. 核心資料流程：車機端互動 (混合模式)
 
--   [cite_start]**`make_api_request()`**: 作為 API 請求的統一出口，自動處理 `Authorization` 標頭和 JWT Token 的過期刷新 。
--   **登入與跳轉邏輯**:
-    -   [cite_start]**群組建立者** (`is_group_leader: true`) 登入後，會被 `admin_logic_redirect` 直接導向到功能最完整的 `group_leader_view` 。
-    -   [cite_start]**被指派的管理員** (`role: 'ADMIN'`) 登入後進入個人 `dashboard`，儀表板上會額外顯示「群組管理面板」，提供管理功能的快速入口 。
-    -   [cite_start]**一般使用者** (`role: 'MEMBER'`) 登入後一律進入 `dashboard` 。
+車機端與後端的互動採用「小資料即時傳輸，大檔案上雲」的混合模式。
 
-### 4.2. 已完成的主要功能與使用者流程
+1.  **行程開始**:
+    * 駕駛員掃描 NFC 卡/手機，車機讀取 NFC ID。
+    * 車機呼叫 `GET /api/users/by-nfc/`，用 NFC ID 換取 `user_id`。
+    * 車機呼叫 `POST /api/trips/start/`，傳入 `user_id` 等資訊，正式開始行程並獲取 `trip_id`。
+2.  **行程中**:
+    * 車機偵測到危險事件時，即時呼叫 `POST /api/events/` 回報。
+3.  **行程結束**:
+    * 車機呼叫 `PATCH /api/trips/<trip_id>/end/`，後端自動觸發計分與 AI 建議生成。
+4.  **影片上傳**:
+    * 行程結束後，車機將影片檔**直接上傳至 Google Cloud Storage (GCS)**。
+    * 上傳成功後，車機呼叫 `POST /api/videos/register/`，將 `trip_id` 和影片在 GCS 上的 `video_url` 告知後端，由後端寫入資料庫。
 
--   [cite_start]**使用者註冊**：支援包含頭像上傳的完整註冊流程 。
--   **登入/登出**：基於 JWT 的完整認證機制。
--   **雙層級權限系統**：
-    1.  [cite_start]**群組建立者 (`created_by`)**：擁有群組的最高權限 。
-    2.  [cite_start]**群組管理員 (`ADMIN`)**：由建立者指派，擁有大部分管理權限（如邀請成員、發布/刪除公告）。
--   **群組管理**：
-    -   [cite_start]群組建立者可以建立群組、指派管理員 。
-    -   [cite_start]建立者與管理員可以生成邀請碼邀請新成員 。
--   **儀表板 (`dashboard` & `group_leader_view`)**:
-    -   [cite_start]使用者登入後可查看個人資料、所屬群組、行程記錄等 。
-    -   [cite_start]組長與管理員有各自的管理入口與介面 。
-    -   [cite_start]所有頁面的**頭像皆已動態化**，可正確顯示使用者上傳的圖片 。
+### 5. 前端 (Flask) 現況與剩餘整合任務
 
-## 5. 待辦事項 (下一步開發計畫)
+#### 5.1. 已完成的整合
 
-### **計畫一：完成個人資料編輯**
--   **目標**: 讓使用者可以修改自己的個人資料，並上傳新的頭像來覆蓋舊的。
--   **前端串接 (`edit_profile.html`)**:
-    -   **GET**: 實作 `edit_profile` 路由，載入頁面時呼叫 `GET /api/auth/profile/` API，將使用者當前的資料預先填入表單。
-    -   **POST**: 當使用者提交表單時，收集所有文字資料和**可能上傳的新頭像檔案**，以 `multipart/form-data` 格式 `PATCH` 到 `/api/auth/profile/` 端點。
--   **後端測試**:
-    -   後端 `UserProfileAPIView` 已具備接收 `PATCH` 請求的功能，主要任務是配合前端進行串接測試，確保能正確處理包含圖片的更新請求。
+* **核心功能**: 使用者註冊、登入/登出、個人資料編輯、儀表板 (`dashboard`) 皆已完成串接。
+* **群組管理**: 組長儀表板 (`group_leader_view`) 的核心功能，包含成員列表、公告管理、邀請成員、權限變更、移除成員等，皆已完成串接。
+* **AI 客服**: 聊天室 (`chat`) 頁面已能與後端 AI 進行即時、有上下文的對話，並包含回饋按鈕的初步 UI。
 
-### **計畫二：完成公告管理功能**
--   **目標**: 讓組長與管理員可以「編輯」與「刪除」已發布的公告。
--   **前端串接 (`group_leader_view.html` & `create_announcement.html`)**:
-    -   **刪除功能**: 為「垃圾桶」圖示加上 JavaScript 事件或表單，點擊後跳出確認對話框，確認後呼叫後端 `DELETE /api/announcements/<id>/`。
-    -   **編輯功能**: 將「鉛筆」圖示改為連結，點擊後跳轉到公告編輯頁面 (`create_announcement.html`)，並預先填入該公告的現有內容。提交後呼叫後端 `PUT /api/announcements/<id>/`。
--   **後端測試**:
-    -   後端 `GroupAnnouncementDetailAPIView` 已提供 `PUT` 和 `DELETE` 方法，且權限已設定為允許組長與管理員操作。主要任務是配合前端進行串接測試。
+#### 5.2. **待辦事項：** 剩餘頁面串接
 
-### **其他待辦事項**
--   **前端**:
-    -   [cite_start]實現 `dashboard.html` 中「近期行程」的點擊跳轉功能 (連到 `trip_report` 路由) 。
-    -   [cite_start]完成 `member_dashboard.html` 等使用者詳情頁面的開發 。
--   **後端**:
-    -   [cite_start]為刪除成員等敏感操作增加後端 API 。
--   **測試**:
-    -   [cite_start]為後端的 `api/` app 編寫單元測試與整合測試 (`tests.py` 目前為空) 。
+以下是前端需要完成的主要整合任務，對應的後端 API 都已準備就緒。
+
+* **任務一：單趟行程詳細報告**
+    * **目標頁面**: `safety_report.html`
+    * **前端路由**: 需實作 `app.py` 中的 `trip_report(trip_id)` 函式。
+    * **需呼叫 API**: `GET /api/trips/<trip_id>/`
+    * **任務描述**: 呼叫 API 獲取單趟行程的完整資料（包含新的 `in_car_score`, `out_car_score`），並動態渲染到頁面中。同時，需在 AI 建議 (`ai_suggestion`) 旁加上「有幫助/沒幫助」的回饋按鈕，並將點擊事件串接到 `POST /api/trips/feedback/` API。
+
+* **任務二：成員儀表板**
+    * **目標頁面**: `member_dashboard.html`
+    * **前端路由**: 需實作 `app.py` 中的 `member_dashboard(member_id)` 函式。
+    * **需呼叫 API**:
+        * `GET /api/trips/?user_id=<member_id>` (獲取該成員所有行程)
+        * `GET /api/statistics/trends/?user_id=<member_id>` (獲取該成員分數趨勢)
+    * **任務描述**: 獲取特定成員的駕駛數據總覽並渲染到頁面中。
+
+* **任務三：行車影片頁面**
+    * **目標頁面**: `member_videos.html`
+    * **前端路由**: 需實作 `app.py` 中的 `member_videos(member_id)` 函式。
+    * **需呼叫 API**: `GET /api/videos/?user_id=<member_id>`
+    * **任務描述**: 呼叫 API 獲取特定成員的影片紀錄列表，並將 `video_url` 欄位作為影片播放器或下載按鈕的連結。
+
+### 6. Postman 測試指南
+
+為確保後端功能正常，可依循以下流程使用 Postman 進行測試。
+
+1.  **建立環境**: 建立 Postman 環境，並設定變數 `base_url` 為 `http://127.0.0.1:8000`。
+2.  **註冊與登入**:
+    * **註冊**: `POST {{base_url}}/api/auth/register/` (使用 `form-data`，可選傳 `avatar` 檔案)。
+    * **登入**: `POST {{base_url}}/api/token/` (使用 `raw(JSON)`，傳入 `username` 和 `password`)。在 "Tests" 頁籤加入腳本，可自動儲存回傳的 `access_token`。
+3.  **測試授權API**:
+    * 建立新請求，例如 `GET {{base_url}}/api/auth/profile/`。
+    * 在 "Authorization" 頁籤，選擇 Type 為 `Bearer Token`，並在 Token 欄位填入 `{{access_token}}`。
+    * 發送請求，應可看到 `200 OK` 及個人資料。後續所有需要登入的 API 皆採用此授權方式。
+
+---

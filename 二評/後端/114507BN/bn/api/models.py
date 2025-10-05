@@ -147,6 +147,8 @@ class Trip(models.Model):
     device = models.ForeignKey(VehicleDevice, on_delete=models.CASCADE)
     personnel = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    in_car_score = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="車內評分")
+    out_car_score = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="車外評分")
     ai_suggestion = models.TextField(blank=True, null=True)
     start_time = models.DateTimeField(blank=True, null=True)
     end_time = models.DateTimeField(blank=True, null=True)
