@@ -291,3 +291,11 @@ Content-Type: multipart/form-data
 密碼需經過雜湊 (建議 bcrypt 或 Argon2)，不可明碼存放。
 
 重要隱私資料（如駕照號碼、電話）需有存取權限控管。
+
+14. 檔案上傳規範
+
+上傳檔案格式：.jpg, .png, .mp4。
+
+單檔大小上限：影像 20MB，圖片 5MB。
+
+檔案需存放至 CDN 或雲端儲存，API 回傳檔案 URL。
