@@ -1,0 +1,165 @@
+# MDG 車機介面專案結構
+
+```
+mdg_car_interface/
+│
+├── 📱 核心應用
+│   ├── app.py                          # Flask 主程式入口
+│   ├── config.py                       # 統一設定檔
+│   ├── models.py                       # 資料庫模型（已擴充 AI 相關表）
+│   ├── requirements.txt                # Python 依賴套件
+│   └── mdg_car.db                      # SQLite 資料庫
+│
+├── 🎯 藍圖模組 (blueprints/)
+│   ├── __init__.py
+│   ├── main.py                         # 主頁面
+│   ├── trip.py                         # 行程管理
+│   ├── gpio.py                         # GPIO 硬體輸入
+│   ├── gps.py                          # GPS 定位
+│   ├── camera.py                       # 攝影機串流
+│   ├── video.py                        # 影片管理
+│   ├── device_info.py                  # 裝置資訊
+│   └── ai_service.py                   # 🆕 AI 服務 API（待建立）
+│
+├── 🤖 AI 核心引擎 (ai_core/)
+│   ├── __init__.py
+│   ├── camera_manager.py               # 🆕 雙鏡頭管理器（多執行緒）
+│   ├── frame_processor.py              # 🆕 影像幀處理器（控制 FPS）
+│   └── event_dispatcher.py             # 🆕 事件分發器（批次寫入資料庫）
+│
+├── 🔍 AI 偵測器 (detectors/)
+│   ├── __init__.py
+│   ├── base_detector.py                # 🆕 偵測器基類（待建立）
+│   │
+│   ├── inside/                         # 內鏡頭偵測器
+│   │   ├── __init__.py
+│   │   ├── drowsiness_detector.py     # 🆕 A01/A02 疲勞偵測（待建立）
+│   │   ├── phone_detector.py          # 🆕 A03 手機偵測（待建立）
+│   │   └── attention_detector.py      # 🆕 A04 注意力偵測（待建立）
+│   │
+│   └── outside/                        # 外鏡頭偵測器
+│       ├── __init__.py
+│       ├── lane_detector.py           # 🆕 B01/B02 車道偵測（待建立）
+│       └── distance_detector.py       # 🆕 B03 距離偵測（待建立）
+│
+├── 📊 評分系統 (scoring/)
+│   ├── __init__.py
+│   ├── interval_manager.py            # 🆕 15分鐘區間管理（待建立）
+│   └── score_calculator.py            # 🆕 評分計算邏輯（待建立）
+│
+├── ⚙️ AI 服務層 (services/)
+│   ├── __init__.py
+│   ├── ai_service.py                  # 🆕 統一 AI 服務（待建立）
+│   └── detection_service.py           # 🆕 偵測服務管理（待建立）
+│
+├── 🧠 AI 模型檔案 (ai_models/)
+│   ├── yolov8n.pt                     # YOLOv8 輕量模型
+│   ├── yolov8n_int8.onnx              # 量化模型（for Pi）
+│   └── mediapipe_models/              # MediaPipe 模型
+│
+├── 🎨 前端模板 (templates/)
+│   ├── base.html                       # 基礎模板
+│   ├── index.html                      # 首頁
+│   ├── trip/                           # 行程相關頁面
+│   │   ├── start.html
+│   │   ├── monitor.html               # 🆕 即時監控頁面（建議新增）
+│   │   ├── history.html
+│   │   └── info.html
+│   ├── device_info/
+│   │   └── info.html
+│   ├── gps/
+│   │   └── status.html
+│   ├── gpio/
+│   │   └── test.html
+│   └── video/
+│       └── manage.html
+│
+├── 📁 靜態資源 (static/)
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   ├── main.js
+│   │   └── ai_monitor.js              # 🆕 AI 監控前端（建議新增）
+│   └── images/
+│       └── logo.png
+│
+├── 💾 行程資料 (trip_data/)
+│   ├── TRIP-20250101120000-ABC123/    # 各行程資料夾
+│   │   ├── videos/                    # 影片檔案
+│   │   │   ├── inside_20250101_120000.mp4
+│   │   │   └── outside_20250101_120000.mp4
+│   │   ├── events/                    # 事件截圖
+│   │   │   ├── A01_20250101_120530.jpg
+│   │   │   └── B03_20250101_121200.jpg
+│   │   ├── gps_log.json              # GPS 軌跡
+│   │   └── ai_log.json               # 🆕 AI 偵測詳細記錄
+│   └── ...
+│
+├── 🔧 工具程式 (utils/)
+│   ├── __init__.py
+│   ├── server.py                      # 伺服器同步工具
+│   └── performance_monitor.py         # 🆕 效能監控（建議新增）
+│
+├── 📚 校準資料 (calibrations/)
+│   └── driver_*.json                  # 駕駛員個人校準資料
+│
+└── 📄 文件與設定
+    ├── README.md                      # 專案說明
+    ├── INSTALL.md                     # 安裝指南
+    ├── .gitignore
+    └── systemd/                       # 系統服務設定
+        └── mdg_car.service
+```
+
+## 已完成功能
+
+✅ **基礎架構**
+- Flask 藍圖架構設置 (Port: 5003)
+- 統一設定檔管理
+- 科技感 UI 設計
+- 響應式佈局
+
+✅ **首頁**
+- MDG 標題
+- 三個按鈕：開始行程、過往行程、本機資訊
+- 開始行程按鈕可點擊，其他兩個預留
+
+✅ **硬體輸入**
+- GPIO 狀態讀取 (方向燈、倒車檔)
+- Mac/Raspberry Pi 自動平台檢測
+- API 端點：/api/gpio_status, /api/test_connection
+
+✅ **伺服器設定**
+- 伺服器 URL: http://172.20.10.3:307
+- HTTPS 遷移預留設定
+
+## 預留功能
+🔄 過往行程
+🔄 本機資訊
+🔄 開始行程的具體功能
+🔄 伺服器 API 對接
+
+## API 端點
+- `GET /api/gpio_status` - 取得硬體狀態
+- `GET /api/test_connection` - 測試硬體連線
+
+## AI辨識需求及評分項目
+- 內鏡頭(A01-A04)
+- A01: 駕駛疲勞重度疲勞（重度疲勞＝眼睛閉眼5秒以上）-40分
+- A02: 駕駛疲勞中度疲勞（重度疲勞＝眼睛閉眼3-5秒以上）-30分
+- A03: 使用手機（新加入的辨識邏輯）-15分
+- A04: 駕駛注意力分散（臉部離開畫面）-40分
+
+- 外鏡頭(B01-B03)
+- B01: 切換車道未打方向燈 -15分
+- B02: 轉彎未打方向燈 -15分
+- B03: 未保持適當行車距離 -15分
+
+## 評分邏輯
+每15分鐘結算一次分數區間
+車內車外先分開算
+若皆未低於60分以
+平均值（區間的平均值）計算
+若有低於60分的區間
+則將以該區間作為單項（車內/車外）評分計算。
+若行車總分低於80分(即車內、外有任一項分數為60分)則視為該趟成績不及格
