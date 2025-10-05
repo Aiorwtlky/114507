@@ -5,16 +5,12 @@ package com.example.mdgapp.ui.screen
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,7 +28,7 @@ fun LoginScreen(
     LaunchedEffect(uiState.isLoginSuccess, uiState.loginError) {
         if (uiState.isLoginSuccess) {
             Toast.makeText(context, "登入成功！", Toast.LENGTH_SHORT).show()
-            // 登入成功後，跳轉到主頁面，並清除所有舊頁面
+            // ✅ 登入成功後，跳轉到主頁面，並清除所有舊頁面
             navController.navigate("home") {
                 popUpTo(0)
             }
@@ -81,16 +77,17 @@ fun LoginScreen(
             ) {
                 Text("登入", fontSize = 20.sp)
             }
-            Spacer(modifier = Modifier.height(16.dp))
 
-            ClickableText(
-                text = AnnotatedString("還沒有帳號？點此註冊"),
-                onClick = { navController.navigate("register") },
-                style = TextStyle(
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline
-                )
-            )
+            // ✅ 移除註冊連結
+            // Spacer(modifier = Modifier.height(16.dp))
+            // ClickableText(
+            //     text = AnnotatedString("還沒有帳號？點此註冊"),
+            //     onClick = { navController.navigate("register") },
+            //     style = TextStyle(
+            //         color = MaterialTheme.colorScheme.primary,
+            //         textDecoration = TextDecoration.Underline
+            //     )
+            // )
         }
 
         if (uiState.isLoading) {

@@ -20,7 +20,7 @@ import androidx.navigation.NavController
 import com.example.mdgapp.data.model.DriverInfo
 import com.example.mdgapp.data.viewmodel.ManagerHistoryViewModel
 import com.example.mdgapp.ui.component.HistorySection
-
+/*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagerHistoryScreen(
@@ -120,4 +120,4 @@ fun DriverRankRow(driver: DriverInfo, rankColor: Color) {
             Text(driver.latestScore.toString(), color = rankColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
     }
-}
+}*/

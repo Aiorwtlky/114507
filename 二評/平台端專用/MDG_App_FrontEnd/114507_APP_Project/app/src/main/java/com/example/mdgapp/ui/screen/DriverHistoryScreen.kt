@@ -1,10 +1,12 @@
 package com.example.mdgapp.ui.screen
 
 import android.graphics.Paint
+import android.graphics.RectF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,8 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -22,10 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mdgapp.data.viewmodel.DriverHistoryUiState
 import com.example.mdgapp.data.viewmodel.DriverHistoryViewModel
 import com.example.mdgapp.ui.component.HistorySection
-import com.example.mdgapp.ui.component.ChartFilterMenus
+import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +55,7 @@ fun DriverHistoryScreen(
         },
         containerColor = Color.Black
     ) { paddingValues ->
-        if (uiState.isLoading && uiState.totalTrips == 0) {
+        if (uiState.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
@@ -66,7 +68,7 @@ fun DriverHistoryScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // 核心數據卡片
+                // 核心數據卡片 (保持不變)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -82,32 +84,22 @@ fun DriverHistoryScreen(
                     MetricCard("生涯平均分數", uiState.lifetimeAverageScore.toString(), "分", Modifier.weight(1f))
                 }
 
-                // 分數趨勢分析
-                // ✅ 同樣改為呼叫新的通用 ChartFilterMenus
-                HistorySection(title = "分數趨勢分析") {
-                    ChartFilterMenus(
-                        timeUnitOptions = uiState.timeUnitOptions,
-                        selectedTimeUnit = uiState.selectedTimeUnit,
-                        valueOptions = uiState.valueOptions,
-                        selectedValue = uiState.selectedValue,
-                        onTimeUnitSelected = { viewModel.onTimeUnitSelected(it) },
-                        onValueSelected = { viewModel.onValueSelected(it) }
-                    )
-
-                    if(uiState.isLoading) {
-                        Box(Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center){
-                            CircularProgressIndicator()
-                        }
+                // ✅ 1. 將「分數趨勢分析」替換為「主要違規分佈」
+                HistorySection(title = "主要違規分佈") {
+                    if (uiState.topEvents.isEmpty()) {
+                        Text("無違規紀錄", color = Color.Green, modifier = Modifier.padding(16.dp))
                     } else {
-                        TrendChart(
-                            data = uiState.chartData,
-                            labels = uiState.chartXAxisLabels,
-                            modifier = Modifier.fillMaxWidth().height(200.dp).padding(top = 8.dp)
+                        PieChart(
+                            data = uiState.topEvents,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp)
+                                .padding(top = 8.dp)
                         )
                     }
                 }
 
-                // 駕駛行為分析
+                // 駕駛行為分析 (保持不變)
                 HistorySection(title = "駕駛行為分析") {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(
@@ -130,88 +122,7 @@ fun DriverHistoryScreen(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ChartFilterMenus(
-    uiState: DriverHistoryUiState,
-    onTimeUnitSelected: (String) -> Unit,
-    onValueSelected: (String) -> Unit
-) {
-    var isTimeUnitExpanded by remember { mutableStateOf(false) }
-    var isValueExpanded by remember { mutableStateOf(false) }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // ... (下拉式選單的程式碼不變)
-        ExposedDropdownMenuBox(
-            expanded = isTimeUnitExpanded,
-            onExpandedChange = { isTimeUnitExpanded = it },
-            modifier = Modifier.weight(1f)
-        ) {
-            OutlinedTextField(
-                value = uiState.selectedTimeUnit,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isTimeUnitExpanded) },
-                modifier = Modifier.menuAnchor(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
-                )
-            )
-            ExposedDropdownMenu(
-                expanded = isTimeUnitExpanded,
-                onDismissRequest = { isTimeUnitExpanded = false }
-            ) {
-                uiState.timeUnitOptions.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            onTimeUnitSelected(option)
-                            isTimeUnitExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-        ExposedDropdownMenuBox(
-            expanded = isValueExpanded,
-            onExpandedChange = { isValueExpanded = it },
-            modifier = Modifier.weight(1f)
-        ) {
-            OutlinedTextField(
-                value = uiState.selectedValue,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isValueExpanded) },
-                modifier = Modifier.menuAnchor(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
-                )
-            )
-            ExposedDropdownMenu(
-                expanded = isValueExpanded,
-                onDismissRequest = { isValueExpanded = false }
-            ) {
-                uiState.valueOptions.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            onValueSelected(option)
-                            isValueExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-// ✅ 這才是正確的 MetricCard 函式定義
+// ... MetricCard 和 EventStatRow 保持不變 ...
 @Composable
 fun MetricCard(title: String, value: String, unit: String, modifier: Modifier = Modifier) {
     Card(
@@ -246,67 +157,50 @@ fun EventStatRow(event: String, count: Int) {
     }
 }
 
+// ✅ 2. 新增一個 PieChart Composable 函式
 @Composable
-fun TrendChart(data: List<Int>, labels: List<String>, modifier: Modifier = Modifier) {
-    // ... (TrendChart 的程式碼不變)
-    if (data.isEmpty() || labels.isEmpty()) return
-    val density = LocalDensity.current
-    val textPaint = remember {
-        Paint().apply {
-            color = android.graphics.Color.WHITE
-            textAlign = Paint.Align.CENTER
-            textSize = density.run { 12.sp.toPx() }
-        }
-    }
-    val maxValue = 100
-    val minValue = 60
-    Canvas(modifier = modifier.background(Color(0xFF2A2A2E))) {
-        val yAxisPadding = 40.dp.toPx()
-        val xAxisPadding = 30.dp.toPx()
-        val chartWidth = size.width - yAxisPadding
-        val chartHeight = size.height - xAxisPadding
-        (0..4).forEach { i ->
-            val value = minValue + (i * (maxValue - minValue) / 4)
-            val y = chartHeight - (i * chartHeight / 4)
-            drawContext.canvas.nativeCanvas.drawText(
-                value.toString(),
-                0f,
-                y + textPaint.textSize / 2,
-                textPaint
-            )
-            drawLine(
-                color = Color.DarkGray,
-                start = Offset(yAxisPadding, y),
-                end = Offset(size.width, y),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
-            )
-        }
-        val points = data.mapIndexed { index, value ->
-            val x = yAxisPadding + index * chartWidth / (data.size - 1).coerceAtLeast(1)
-            val yValue = if (maxValue == minValue) 0.5f else (value - minValue).toFloat() / (maxValue - minValue)
-            val y = chartHeight - (yValue * chartHeight)
-            Offset(x, y.coerceIn(0f, chartHeight))
-        }
-        points.forEachIndexed { index, offset ->
-            if (index < points.size - 1) {
-                drawLine(
-                    color = Color.Cyan,
-                    start = offset,
-                    end = points[index + 1],
-                    strokeWidth = 5f
-                )
+fun PieChart(
+    data: List<Pair<String, Int>>,
+    modifier: Modifier = Modifier
+) {
+    val colors = listOf(Color(0xFFF44336), Color(0xFFFF9800), Color(0xFF2196F3), Color(0xFF4CAF50))
+    val total = data.sumOf { it.second }.toFloat()
+    if (total == 0f) return
+
+    val angles = data.map { it.second / total * 360f }
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        // 圖例
+        Column(verticalArrangement = Arrangement.Center) {
+            data.forEachIndexed { index, (label, value) ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.size(10.dp).background(colors[index % colors.size], CircleShape))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "$label (${(value/total * 100).toInt()}%)",
+                        color = Color.White,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
-        points.forEachIndexed{ index, offset ->
-            drawCircle(color = Color.White, radius = 8f, center = offset)
-            val labelStep = (labels.size / 7).coerceAtLeast(1)
-            if (index % labelStep == 0) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    labels.getOrElse(index) { "" },
-                    offset.x,
-                    size.height,
-                    textPaint
+
+        // 圓餅圖
+        Canvas(modifier = Modifier.size(150.dp)) {
+            var startAngle = -90f
+            angles.forEachIndexed { index, angle ->
+                drawArc(
+                    color = colors[index % colors.size],
+                    startAngle = startAngle,
+                    sweepAngle = angle,
+                    useCenter = true,
+                    size = Size(size.width, size.height)
                 )
+                startAngle += angle
             }
         }
     }

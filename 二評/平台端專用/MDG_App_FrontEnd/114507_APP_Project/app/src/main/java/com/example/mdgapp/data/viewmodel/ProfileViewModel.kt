@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 class ProfileViewModel : ViewModel() {
 
     private val _userProfile = MutableStateFlow<UserProfile?>(null)
+    // ✅ 修正此處的變數名稱大小寫
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
 
     init {
@@ -20,20 +21,18 @@ class ProfileViewModel : ViewModel() {
     }
 
     private fun loadUserProfile() {
-        // 模擬從網路或資料庫載入資料
         _userProfile.value = UserProfile(
-            fullName = "季博達",
-            employeeId = "EMP-12345",
-            avatarUrl = "...", // 之後可替換為真實圖片
-            currentVehiclePlate = "ABC-1234",
-            groupName = "第一車隊",
-            email = "jbd@example.com",
-            phone = "0912-345-678",
-            licenseNumber = "A123456789",
-            licenseClass = "職業大客車",
+            fullName = "Member 1",
+            employeeId = "MDG-001",
+            avatarUrl = "", // 留空，UI 層將使用預設圖示
+            currentVehiclePlate = "MDG-6688",
+            groupName = "總部第一車隊",
+            email = "MDGDriver@gmail.com",
+            phone = "0988-666-888",
+            licenseNumber = "T123456789",
+            licenseClass = "職業聯結車",
             linkedAccounts = listOf(
-                LinkedAccount("Google", "jbd.work@google.com", R.drawable.ic_google), // 假設您有這些圖示
-                LinkedAccount("Apple", "jbd.personal@icloud.com", R.drawable.ic_apple)
+                LinkedAccount("Google", "MDGDriver@gmail.com", R.drawable.ic_google)
             ),
             notificationSettings = NotificationSettings(
                 receiveDangerousEvent = true,
@@ -43,7 +42,7 @@ class ProfileViewModel : ViewModel() {
         )
     }
 
-    // 更新通知設定的方法
+    // 更新通知設定的方法 (保持不變)
     fun onSettingChanged(
         event: Boolean? = null,
         announcement: Boolean? = null,

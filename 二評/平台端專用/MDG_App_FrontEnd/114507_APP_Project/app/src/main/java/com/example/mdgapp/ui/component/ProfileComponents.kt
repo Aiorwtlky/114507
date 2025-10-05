@@ -1,13 +1,12 @@
 package com.example.mdgapp.ui.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,10 +17,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mdgapp.R
 import com.example.mdgapp.data.model.LinkedAccount
 
-// ... ProfileHeader, InfoRow, SettingsSwitchRow, LinkedAccountRow 保持不變 ...
+// ✅ 修改後的 ProfileHeader - 使用與首頁相同的預設頭像
 @Composable
 fun ProfileHeader(name: String, employeeId: String) {
     Row(
@@ -30,13 +28,21 @@ fun ProfileHeader(name: String, employeeId: String) {
             .padding(vertical = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.jiboda1), // 使用您現有的圖片
-            contentDescription = "駕駛頭像",
+        // ✅ 使用與首頁相同的預設頭像樣式
+        Box(
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape)
-        )
+                .background(Color(0xFF2A2A2A)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "個人頭像",
+                tint = Color.White,
+                modifier = Modifier.size(48.dp)
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
@@ -45,8 +51,6 @@ fun ProfileHeader(name: String, employeeId: String) {
     }
 }
 
-
-// ✅ 步驟一：將 ProfileSection 恢復成您原本的無邊距版本
 @Composable
 fun ProfileSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -60,13 +64,11 @@ fun ProfileSection(title: String, content: @Composable ColumnScope.() -> Unit) {
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
             modifier = Modifier.fillMaxWidth()
         ) {
-            // 恢復成原本的 Column，沒有額外 Modifier
             Column(content = content)
         }
     }
 }
 
-// ✅ 這是最原始版本的 HistorySection
 @Composable
 fun HistorySection(
     title: String,
@@ -93,7 +95,6 @@ fun HistorySection(
     }
 }
 
-// ✅ 步驟一：將 InfoRow 搬移至此，並移除 private
 @Composable
 fun InfoRow(label: String, value: String, isClickable: Boolean = false, onClick: () -> Unit = {}) {
     Row(
@@ -154,7 +155,7 @@ fun LinkedAccountRow(account: LinkedAccount) {
             painter = painterResource(id = account.iconResId),
             contentDescription = account.platform,
             modifier = Modifier.size(24.dp),
-            tint = Color.Unspecified // 使用圖示原始顏色
+            tint = Color.Unspecified
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {

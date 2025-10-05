@@ -7,12 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.TextStyle
-import java.util.Locale
 import kotlin.random.Random
 
-// UiState 中新增圖表X軸標籤的欄位
+// ✅ 1. 簡化 UiState，移除不再需要的圖表相關欄位
 data class DriverHistoryUiState(
     val totalMileage: Int = 0,
     val totalDurationHours: Int = 0,
@@ -20,14 +17,7 @@ data class DriverHistoryUiState(
     val lifetimeAverageScore: Int = 0,
     val topEvents: List<Pair<String, Int>> = emptyList(),
     val totalEvents: Int = 0,
-    val chartData: List<Int> = emptyList(),
-    // ✅ 優化 3：新增X軸標籤的狀態
-    val chartXAxisLabels: List<String> = emptyList(),
-    val isLoading: Boolean = true,
-    val timeUnitOptions: List<String> = listOf("月", "季", "年", "日"),
-    val selectedTimeUnit: String = "月",
-    val valueOptions: List<String> = emptyList(),
-    val selectedValue: String = ""
+    val isLoading: Boolean = true
 )
 
 class DriverHistoryViewModel : ViewModel() {
@@ -35,83 +25,49 @@ class DriverHistoryViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(DriverHistoryUiState())
     val uiState: StateFlow<DriverHistoryUiState> = _uiState.asStateFlow()
 
-    // ✅ 優化 1：定義一個包含所有時間單位的常數列表
-    private val allTimeUnits = listOf("月", "季", "年", "日")
-
     init {
-        fetchDashboardStats()
-        onTimeUnitSelected("月")
+        // ✅ 2. 初始化時只呼叫一次數據產生函式
+        fetchRealisticDashboardStats()
     }
 
-    // ... fetchDashboardStats 保持不變 ...
-    private fun fetchDashboardStats() {
+    // ✅ 3. 建立一個產生更真實數據的函式
+    private fun fetchRealisticDashboardStats() {
         viewModelScope.launch {
-            val topEventsData = listOf("疲勞駕駛" to 15, "使用手機" to 9, "急加速" to 5)
-            val totalEventsData = topEventsData.sumOf { it.second }
+            _uiState.update { it.copy(isLoading = true) }
+
+            // 模擬一位駕駛員大約一年的數據
+            val totalTrips = Random.nextInt(220, 260) // 一年大約出車 240 趟
+            val averageDistancePerTrip = Random.nextDouble(150.0, 300.0) // 每次長途的平均距離
+            val totalMileage = (totalTrips * averageDistancePerTrip).toInt()
+            val totalDurationHours = (totalMileage / Random.nextDouble(60.0, 75.0)).toInt() // 平均時速在 60-75 之間
+            val lifetimeAverageScore = Random.nextInt(82, 91)
+
+            // 模擬違規事件的分佈
+            val fatigueCount = Random.nextInt(15, 30)
+            val speedingCount = Random.nextInt(10, 25)
+            val phoneUsageCount = Random.nextInt(5, 15)
+            val harshBrakingCount = Random.nextInt(20, 40)
+
+            val topEventsData = listOf(
+                "疲勞駕駛" to fatigueCount,
+                "超速" to speedingCount,
+                "使用手機" to phoneUsageCount,
+                "急煞車" to harshBrakingCount
+            ).sortedByDescending { it.second }.take(3) // 取出前三名
+
+            val totalEventsData = fatigueCount + speedingCount + phoneUsageCount + harshBrakingCount
+
             _uiState.update {
                 it.copy(
-                    totalMileage = 12850,
-                    totalDurationHours = 315,
-                    totalTrips = 241,
-                    lifetimeAverageScore = 88,
+                    totalMileage = totalMileage,
+                    totalDurationHours = totalDurationHours,
+                    totalTrips = totalTrips,
+                    lifetimeAverageScore = lifetimeAverageScore,
                     topEvents = topEventsData,
-                    totalEvents = totalEventsData
+                    totalEvents = totalEventsData,
+                    isLoading = false
                 )
             }
-        }
-    }
-
-    fun onTimeUnitSelected(timeUnit: String) {
-        val now = LocalDate.now()
-        // ✅ 優化 2：更新第二個選單的顯示邏輯
-        val newValueOptions = when (timeUnit) {
-            "年" -> (0..2).map { (now.year - it).toString() } // 只顯示年份數字
-            "季" -> (0..3).map { "第 ${4 - it} 季" }
-            "月" -> (0..5).map { now.minusMonths(it.toLong()).monthValue.toString() + "月" }
-            "日" -> (0..6).map { now.minusDays(it.toLong()).dayOfMonth.toString() + "日" }
-            else -> emptyList()
-        }
-        _uiState.update {
-            it.copy(
-                selectedTimeUnit = timeUnit,
-                valueOptions = newValueOptions,
-                selectedValue = newValueOptions.firstOrNull() ?: "",
-                // ✅ 優化 1：更新第一個選單的選項，移除當前已選中的項目
-                timeUnitOptions = allTimeUnits.filter { option -> option != timeUnit }
-            )
-        }
-        fetchChartData()
-    }
-
-    fun onValueSelected(value: String) {
-        _uiState.update { it.copy(selectedValue = value) }
-        fetchChartData()
-    }
-
-    private fun fetchChartData() {
-        viewModelScope.launch {
-            val currentState = _uiState.value
-
-            // ✅ 優化 3：產生更平滑的模擬數據和對應的X軸標籤
-            var currentScore = (80..90).random()
-            val newChartData = mutableListOf<Int>()
-            val newLabels = mutableListOf<String>()
-
-            val (dataPoints, labels) = when (currentState.selectedTimeUnit) {
-                "年" -> 12 to (1..12).map { "${it}月" }
-                "季" -> 12 to (1..12).map { "W${it}" }
-                "月" -> 30 to (1..30).map { "${it}" }
-                "日" -> 24 to (0..23).map { "${it}h" }
-                else -> 0 to emptyList()
-            }
-
-            repeat(dataPoints) {
-                currentScore += Random.nextInt(-3, 4) // 分數在-3到+3之間隨機波動
-                newChartData.add(currentScore.coerceIn(60, 100)) // 確保分數在60-100之間
-            }
-            newLabels.addAll(labels)
-
-            _uiState.update { it.copy(chartData = newChartData, chartXAxisLabels = newLabels, isLoading = false) }
         }
     }
 }

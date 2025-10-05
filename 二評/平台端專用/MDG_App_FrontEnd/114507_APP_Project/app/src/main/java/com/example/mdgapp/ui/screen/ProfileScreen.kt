@@ -64,7 +64,7 @@ fun ProfileScreen(
                     InfoRow(label = "所屬群組", value = profile.groupName)
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-
+/*
                 // =======================================================
                 // ✅ 新增的「數據分析」區塊，按鈕會出現在這裡
                 // =======================================================
@@ -74,6 +74,7 @@ fun ProfileScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
+ */
                 // =======================================================
 
                 // 個人詳細資料
