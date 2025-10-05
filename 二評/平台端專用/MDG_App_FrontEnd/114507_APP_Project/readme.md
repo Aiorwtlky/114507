@@ -332,3 +332,13 @@ Response Body 範例：
 管理者帳號：manager@test.com / 123456
 
 系統啟動後，預先插入部分測試數據（公告、歷史行程、群組成員）。
+
+18. 部署與環境規劃
+
+開發環境: dev.api.mydrivinggod.com
+
+測試環境: staging.api.mydrivinggod.com
+
+正式環境: api.mydrivinggod.com
+
+建議使用 Docker 與 CI/CD 自動化部署。
