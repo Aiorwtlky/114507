@@ -269,3 +269,17 @@ Mock API 驗證: 後端可先提供 Swagger 或 Postman Collection，讓前端�
 CI/CD 測試環境: 建立測試環境 API，前端能即時驗證功能是否正確。
 
 資料一致性: 前後端以 app/src/main/java/com/example/mdgapp/data/model/ 的資料模型為準，任何異動需同步更新。
+
+12. 未來擴充方向
+
+AI 視覺模組串接: 後端需規劃上傳行車影像與分析結果的 API，例如：
+
+POST /api/driver/events
+Content-Type: multipart/form-data
+
+
+用於上傳危險事件的影像與 AI 偵測結果。
+
+通知系統: 透過 WebSocket 或 Firebase Cloud Messaging (FCM) 實現即時推播，例如：危險駕駛警告、公告通知。
+
+多語系支援: API 建議保留多語系欄位（如公告 subject_en, subject_zh），前端可根據使用者語系切換。
