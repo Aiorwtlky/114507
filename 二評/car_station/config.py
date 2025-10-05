@@ -63,3 +63,36 @@ CAMERA_CONFIG = {
 #     'SSL_CERT': 'path/to/cert.pem',
 #     'SSL_KEY': 'path/to/key.pem'
 # }
+
+
+# config.py 補充
+
+# Demo 模式開關
+DEMO_MODE = True  # 電腦開發時設為 True
+
+# Demo 攝影機設定（電腦開發用）
+if DEMO_MODE:
+    CAMERA_SOURCES = {
+        "inside": 0,  # 筆電內建攝影機
+        "outside": "demo/test_videos/outside_demo.mp4"  # 或用影片檔
+    }
+else:
+    # 正式環境用 RTSP
+    CAMERA_SOURCES = CAMERA_URLS
+
+# Demo GPIO 設定（使用鍵盤模擬）
+DEMO_GPIO_KEYS = {
+    'left_turn': 'a',      # 按 A 鍵 = 左轉燈
+    'right_turn': 'd',     # 按 D 鍵 = 右轉燈
+    'reverse': 's',        # 按 S 鍵 = 倒車
+    'speed_up': 'w',       # 按 W 鍵 = 加速
+    'speed_down': 'x'      # 按 X 鍵 = 減速
+}
+
+# Demo GPS 設定（固定路線）
+DEMO_GPS_ROUTE = [
+    {'lat': 25.033, 'lon': 121.565, 'speed': 40},
+    {'lat': 25.034, 'lon': 121.566, 'speed': 50},
+    {'lat': 25.035, 'lon': 121.567, 'speed': 45},
+    # ... 更多點
+]
