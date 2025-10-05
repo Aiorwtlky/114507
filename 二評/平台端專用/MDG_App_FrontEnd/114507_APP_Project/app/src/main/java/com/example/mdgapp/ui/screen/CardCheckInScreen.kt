@@ -19,7 +19,7 @@ fun CardCheckInScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("感應卡登入") },
+                title = { Text("實體卡片註冊") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")

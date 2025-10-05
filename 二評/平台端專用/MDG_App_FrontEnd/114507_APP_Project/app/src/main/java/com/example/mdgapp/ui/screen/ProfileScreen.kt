@@ -62,20 +62,18 @@ fun ProfileScreen(
                     InfoRow(label = "目前駕駛車輛", value = profile.currentVehiclePlate)
                     HorizontalDivider(color = Color(0xFF424242))
                     InfoRow(label = "所屬群組", value = profile.groupName)
+                    HorizontalDivider(color = Color(0xFF424242))
+                    InfoRow(label = "NFC 卡號", value = profile.nfcCardNumber)
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-/*
-                // =======================================================
-                // ✅ 新增的「數據分析」區塊，按鈕會出現在這裡
-                // =======================================================
-                ProfileSection(title = "數據分析") {
-                    InfoRow(label = "個人歷史數據總覽", value = "", isClickable = true) {
-                        navController.navigate("driverHistory")
-                    }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
- */
-                // =======================================================
+
+                // 數據分析區塊（已註解，保留以備後用）
+                // ProfileSection(title = "數據分析") {
+                //     InfoRow(label = "個人歷史數據總覽", value = "", isClickable = true) {
+                //         navController.navigate("driverHistory")
+                //     }
+                // }
+                // Spacer(modifier = Modifier.height(24.dp))
 
                 // 個人詳細資料
                 ProfileSection(title = "個人詳細資料") {

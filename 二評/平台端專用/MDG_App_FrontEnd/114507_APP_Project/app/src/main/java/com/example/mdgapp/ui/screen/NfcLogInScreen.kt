@@ -15,11 +15,11 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NfcCheckInScreen(navController: NavController) {
+fun NfcLogInScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("手機 NFC 註冊") },
+                title = { Text("手機 NFC 登入") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")

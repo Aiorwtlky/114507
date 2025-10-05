@@ -35,8 +35,8 @@ fun AppNavGraph(navController: NavHostController) {
 
         // ==================== 打卡功能路由 ====================
         // 打卡選項頁面
-        composable("checkIn") {
-            CheckInOptionScreen(navController = navController)
+        composable("NfcLogIn") {
+            NfcLogInScreen(navController = navController)
         }
         // 手機 NFC 註冊
         composable("nfcCheckIn") {

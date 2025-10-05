@@ -1,5 +1,5 @@
 package com.example.mdgapp.data.viewmodel
-
+/*
 import androidx.lifecycle.ViewModel
 import com.example.mdgapp.R
 import com.example.mdgapp.data.model.LinkedAccount
@@ -47,4 +47,4 @@ class ManagerProfileViewModel : ViewModel() {
     fun onSettingChanged(event: Boolean? = null, announcement: Boolean? = null, wifiOnly: Boolean? = null) {
         // TODO: 實作管理者設定變更的邏輯
     }
-}
+}*/

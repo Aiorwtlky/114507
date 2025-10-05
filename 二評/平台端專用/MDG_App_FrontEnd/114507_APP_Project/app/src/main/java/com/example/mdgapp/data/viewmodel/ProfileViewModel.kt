@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.update
 class ProfileViewModel : ViewModel() {
 
     private val _userProfile = MutableStateFlow<UserProfile?>(null)
-    // ✅ 修正此處的變數名稱大小寫
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
 
     init {
@@ -27,7 +26,8 @@ class ProfileViewModel : ViewModel() {
             avatarUrl = "", // 留空，UI 層將使用預設圖示
             currentVehiclePlate = "MDG-6688",
             groupName = "總部第一車隊",
-            email = "MDGDriver@gmail.com",
+            nfcCardNumber = "NFC-123456789", // ✅ 新增 NFC 卡號
+            email = "MDGDriver@example-logistics.com",
             phone = "0988-666-888",
             licenseNumber = "T123456789",
             licenseClass = "職業聯結車",
@@ -42,7 +42,7 @@ class ProfileViewModel : ViewModel() {
         )
     }
 
-    // 更新通知設定的方法 (保持不變)
+    // 更新通知設定的方法
     fun onSettingChanged(
         event: Boolean? = null,
         announcement: Boolean? = null,

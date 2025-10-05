@@ -46,7 +46,7 @@ fun UnifiedHomeScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     IconButton(
-                        onClick = { navController.navigate("nfcCheckIn") },
+                        onClick = { navController.navigate("NfcLogIn") },
                         modifier = Modifier.size(64.dp)
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -123,6 +123,15 @@ fun UnifiedHomeScreen(
                 // 群組
                 Text(
                     text = "群組：${profile.groupName}",
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // NFC 卡號
+                Text(
+                    text = "NFC 卡號：${profile.nfcCardNumber}",
                     fontSize = 16.sp,
                     color = Color.Gray
                 )
