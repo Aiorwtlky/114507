@@ -166,20 +166,6 @@ class Trip(db.Model):
         db.session.commit()
         return trip
 
-class RouteLog(db.Model):
-    """路程記錄模型"""
-    __tablename__ = 'route_log'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
-    latitude = db.Column(db.Float, nullable=False, comment='緯度')
-    longitude = db.Column(db.Float, nullable=False, comment='經度')
-    altitude = db.Column(db.Float, comment='高度')
-    speed = db.Column(db.Float, comment='車速')
-    
-    trip = db.relationship('Trip', backref='route_logs')
-
 class GPIOLog(db.Model):
     """GPIO 記錄模型"""
     __tablename__ = 'gpio_log'

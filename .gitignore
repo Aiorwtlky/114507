@@ -81,6 +81,6 @@ coverage.xml
 .ipynb_checkpoints
 
 # Optional: Documents - uncomment if you don't want to track them
-# *.docx
-# *.pdf
-
+*.docx
+*.pdf
+*.mov

@@ -1,6 +1,6 @@
-# blueprints/trip.py
+# blueprints/trip.py（修正版）
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for
-from models import db, Trip, Personnel, VehicleDevice, RouteLog, GPIOLog, EventLog, VideoRecord
+from models import db, Trip, Personnel, VehicleDevice, GPIOLog, EventLog, VideoRecord  # 移除 RouteLog
 from datetime import datetime
 import os
 import json
@@ -89,6 +89,16 @@ def api_start_trip():
                 recording_threads[camera_position] = thread
                 print(f"📹 啟動 {camera_position} 鏡頭錄影")
         
+        # 🤖 啟動 AI 偵測服務
+        try:
+            from services.detection_service import DetectionService
+            ai_started = DetectionService.start_trip_detection(trip.id)
+            ai_status = "已啟動" if ai_started else "啟動失敗"
+            print(f"🤖 AI 偵測服務: {ai_status}")
+        except Exception as e:
+            print(f"⚠️ AI 服務啟動失敗: {e}")
+            ai_status = f"啟動失敗: {str(e)}"
+        
         return jsonify({
             "status": "success",
             "message": "行程已開始",
@@ -96,7 +106,8 @@ def api_start_trip():
             "trip_number": trip.trip_number,
             "driver_name": test_personnel.name,
             "start_time": trip.start_time.isoformat(),
-            "recording": "已啟動雙鏡頭錄影"
+            "recording": "已啟動雙鏡頭錄影",
+            "ai_detection": ai_status
         })
         
     except Exception as e:
@@ -118,6 +129,14 @@ def api_end_trip():
                 "message": "沒有進行中的行程"
             }), 404
         
+        # 🤖 停止 AI 偵測服務
+        try:
+            from services.detection_service import DetectionService
+            DetectionService.stop_trip_detection(active_trip.id)
+            print(f"🤖 AI 偵測服務已停止")
+        except Exception as e:
+            print(f"⚠️ AI 服務停止失敗: {e}")
+        
         # 結束行程
         active_trip.status = '已完成'
         active_trip.end_time = datetime.now()
@@ -134,11 +153,11 @@ def api_end_trip():
                 stopped_cameras.append(camera_position)
                 print(f"📹 停止 {camera_position} 鏡頭錄影")
         
-        # 🔑 關鍵修正：等待錄影線程完成並強制更新影片狀態
+        # 等待錄影線程完成並強制更新影片狀態
         import time
-        time.sleep(2)  # 等待2秒讓錄影線程完成
+        time.sleep(2)
         
-        # 🔑 強制更新該行程的所有影片記錄狀態
+        # 強制更新該行程的所有影片記錄狀態
         from models import VideoRecord
         incomplete_videos = VideoRecord.query.filter_by(
             trip_id=active_trip.id,
@@ -148,7 +167,6 @@ def api_end_trip():
         for video in incomplete_videos:
             print(f"📄 強制更新影片狀態: {video.video_number}")
             
-            # 檢查檔案是否存在且有內容
             if video.file_path and os.path.exists(video.file_path):
                 file_size = os.path.getsize(video.file_path)
                 video.file_size = file_size
@@ -173,7 +191,7 @@ def api_end_trip():
         else:
             duration = 0
         
-        # 🔑 重要：提交所有變更
+        # 提交所有變更
         db.session.commit()
         
         print(f"✅ 行程完成: {active_trip.trip_number} (時長: {int(duration)}秒)")
@@ -228,15 +246,15 @@ def api_add_event():
         data = request.get_json()
         event_code = data.get('event_code')
         
-        # 事件定義
+        # 事件定義（更新為新的規則）
         event_definitions = {
-            'A01': {'description': '重度疲勞駕駛 (閉眼超過3秒)', 'points': 25},
-            'A02': {'description': '中度疲勞駕駛 (閉眼1-3秒)', 'points': 15},
-            'A03': {'description': '長時間分心 (低頭/轉頭超過5秒)', 'points': 20},
-            'A04': {'description': '駕駛中使用手機', 'points': 20},
-            'B01': {'description': '車道偏離 (未打方向燈)', 'points': 5},
-            'B02': {'description': '前車過近', 'points': 15},
-            'B03': {'description': '行人逼近', 'points': 20}
+            'A01': {'description': '重度疲勞（閉眼5秒以上）', 'points': 40},
+            'A02': {'description': '中度疲勞（閉眼3-5秒）', 'points': 30},
+            'A03': {'description': '使用手機', 'points': 15},
+            'A04': {'description': '注意力分散（臉部離開畫面）', 'points': 40},
+            'B01': {'description': '切換車道未打方向燈', 'points': 15},
+            'B02': {'description': '轉彎未打方向燈', 'points': 15},
+            'B03': {'description': '未保持安全距離', 'points': 15}
         }
         
         if event_code not in event_definitions:
@@ -259,7 +277,7 @@ def api_add_event():
             event_code=event_code,
             event_description=event_definitions[event_code]['description'],
             timestamp=datetime.now(),
-            deduction_points=event_definitions[event_code]['points'],
+            deduction_points=-event_definitions[event_code]['points'],  # 負數表示扣分
             detection_method='manual'
         )
         
@@ -287,20 +305,24 @@ def api_add_event():
 @trip_bp.route('/history')
 def trip_history():
     """過往行程頁面"""
-    # 取得所有已完成的行程，按建立時間降序排列（最新的在前面）
+    # 取得所有已完成的行程，按建立時間降序排列
     completed_trips = Trip.query.filter(
         Trip.status.in_(['已完成', '已上傳'])
-    ).order_by(Trip.created_at.desc()).all()  # 修正：使用 desc() 降序排列
+    ).order_by(Trip.created_at.desc()).all()
     
     # 計算尚未計算分數的行程
     for trip in completed_trips:
         if trip.score is None:
-            # 計算總扣分
-            total_deduction = db.session.query(db.func.sum(EventLog.deduction_points)).filter_by(trip_id=trip.id).scalar() or 0
-            # 計算評分 (假設滿分100分)
-            trip.score = max(0, 100 - total_deduction)
+            # 使用新的評分系統計算
+            try:
+                from scoring.score_calculator import ScoreCalculator
+                score_result = ScoreCalculator.calculate_trip_score(trip.id)
+                trip.score = score_result['total_score']
+            except:
+                # 若評分系統失敗，使用舊方法
+                total_deduction = db.session.query(db.func.sum(EventLog.deduction_points)).filter_by(trip_id=trip.id).scalar() or 0
+                trip.score = max(0, 100 + total_deduction)  # total_deduction 是負數
     
-    # 提交分數更新
     db.session.commit()
     
     return render_template('trip/history.html', trips=completed_trips)
@@ -310,11 +332,17 @@ def api_trip_summary(trip_id):
     """API: 行程總結"""
     trip = Trip.query.get_or_404(trip_id)
     
-    # 計算總扣分
-    total_deduction = db.session.query(db.func.sum(EventLog.deduction_points)).filter_by(trip_id=trip_id).scalar() or 0
-    
-    # 計算評分 (假設滿分100分)
-    score = max(0, 100 - total_deduction)
+    # 使用新的評分系統
+    try:
+        from scoring.score_calculator import ScoreCalculator
+        score_result = ScoreCalculator.calculate_trip_score(trip_id)
+        score = score_result['total_score']
+        intervals = score_result.get('intervals', [])
+    except:
+        # 若評分系統失敗，使用舊方法
+        total_deduction = db.session.query(db.func.sum(EventLog.deduction_points)).filter_by(trip_id=trip_id).scalar() or 0
+        score = max(0, 100 + total_deduction)
+        intervals = []
     
     # 更新行程評分
     trip.score = score
@@ -323,14 +351,14 @@ def api_trip_summary(trip_id):
     # 取得事件記錄
     events = EventLog.query.filter_by(trip_id=trip_id).all()
     
-    # 取得 GPIO 記錄統計（只計算開始使用的次數）
+    # 取得 GPIO 記錄統計
     gpio_stats = {
         'left_turn_count': GPIOLog.query.filter_by(trip_id=trip_id, gpio_type='left_turn', action='on').count(),
         'right_turn_count': GPIOLog.query.filter_by(trip_id=trip_id, gpio_type='right_turn', action='on').count(),
         'reverse_count': GPIOLog.query.filter_by(trip_id=trip_id, gpio_type='reverse', action='on').count()
     }
     
-    # 🎞️ 取得影片資訊
+    # 取得影片資訊
     videos = VideoRecord.query.filter_by(trip_id=trip_id).all()
     video_info = []
     
@@ -347,16 +375,14 @@ def api_trip_summary(trip_id):
             "duration": int(duration),
             "size_mb": round(file_size_mb, 2),
             "exists": file_exists,
-            "path": video.file_path
+            "path": video.file_path,
+            "status": video.recording_status
         })
-    
-    # 取得路線記錄數量
-    route_points = RouteLog.query.filter_by(trip_id=trip_id).count()
     
     return jsonify({
         "trip": trip.to_dict(),
         "score": score,
-        "total_deduction": total_deduction,
+        "intervals": intervals,  # 15分鐘區間評分
         "events": [
             {
                 "code": event.event_code,
@@ -368,6 +394,5 @@ def api_trip_summary(trip_id):
         ],
         "gpio_stats": gpio_stats,
         "videos": video_info,
-        "route_points": route_points,
         "duration_seconds": (trip.end_time - trip.start_time).total_seconds() if trip.end_time and trip.start_time else 0
     })
