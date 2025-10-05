@@ -1,4 +1,4 @@
-o# Django 核心
+# Django 核心
 Django>=5.2.0,<6.0
 djangorestframework>=3.14.0
 django-environ>=0.11.0
