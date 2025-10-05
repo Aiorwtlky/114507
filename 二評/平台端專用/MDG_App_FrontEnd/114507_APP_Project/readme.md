@@ -230,3 +230,16 @@ NOT_FOUND: 找不到指定的資源
 VALIDATION_ERROR: 參數驗證錯誤
 
 SERVER_ERROR: 伺服器內部錯誤
+
+8. 認證與授權
+
+登入機制: 使用 JWT (JSON Web Token)。
+
+Token 傳遞方式: 前端每次呼叫 API 時，需在 Header 中帶入：
+
+Authorization: Bearer <token>
+
+
+Token 有效時間: 例如 2 小時 (由後端設定)。
+
+Refresh 機制: 可規劃 POST /api/refresh 來換取新 Token，避免頻繁登入。
