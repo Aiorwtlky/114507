@@ -208,3 +208,25 @@
 * `app/src/main/java/com/example/mdgapp/ui/screen/`: 存放各個獨立的畫面 (Screen) Composable。
 * `app/src/main/java/com/example/mdgapp/ui/component/`: 存放可在多個畫面間重用的 UI 元件。
 * `app/src/main/java/com/example/mdgapp/navigation/AppNavGraph.kt`: 定義了所有畫面的導覽路徑與流程。
+
+7. API 錯誤回應格式
+
+為了讓前端能一致處理錯誤情境，建議後端所有 API 在發生錯誤時使用統一的錯誤回傳格式：
+
+{
+  "status": "error",
+  "code": "INVALID_TOKEN",
+  "message": "Token 已失效，請重新登入。"
+}
+
+常見錯誤碼範例
+
+INVALID_TOKEN: Token 無效或過期
+
+UNAUTHORIZED: 使用者無權限存取該資源
+
+NOT_FOUND: 找不到指定的資源
+
+VALIDATION_ERROR: 參數驗證錯誤
+
+SERVER_ERROR: 伺服器內部錯誤
