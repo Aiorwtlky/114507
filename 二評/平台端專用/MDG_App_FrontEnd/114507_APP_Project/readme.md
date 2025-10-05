@@ -261,3 +261,11 @@ API Log: 記錄所有 API 呼叫的時間、參數、回應狀態。
 範例：/api/v1/driver/profile
 
 未來若有變動，可新增 /api/v2/...，而不影響舊版本使用者。
+
+11. 前後端協作流程建議
+
+Mock API 驗證: 後端可先提供 Swagger 或 Postman Collection，讓前端驗證資料格式。
+
+CI/CD 測試環境: 建立測試環境 API，前端能即時驗證功能是否正確。
+
+資料一致性: 前後端以 app/src/main/java/com/example/mdgapp/data/model/ 的資料模型為準，任何異動需同步更新。
