@@ -16,264 +16,258 @@ import logging
 
 from .models import (
     Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile,
-    GroupAnnouncement, InvitationCode, GroupMember , ChatbotFeedback
+    GroupAnnouncement, InvitationCode, GroupMember, TripSuggestionFeedback, ScoringStandard
 )
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
     TripDetailSerializer, VehicleDeviceSerializer, TripStartSerializer,
-    AiVisionLogCreateSerializer, VideoRecordCreateSerializer, TripEndSerializer,
+    AiVisionLogCreateSerializer, TripEndSerializer,
     UserRegisterSerializer, PersonnelProfileSerializer, GroupMemberSerializer,
-    GroupAnnouncementSerializer, VideoRecordSerializer, InvitationCodeSerializer,
-    ChatbotFeedbackSerializer
+    GroupAnnouncementSerializer, InvitationCodeSerializer,
+    TripSuggestionFeedbackSerializer, VideoRegisterSerializer, VideoRecordSerializer
 )
 from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPublisherOrAdmin
 
 logger = logging.getLogger(__name__)
 
-# --- Helper Function for Permission Check ---
+# =============================================================================
+# 輔助函式 (Helper Functions)
+# =============================================================================
+
 def is_leader_of(leader, member):
-    """檢查 'leader' 是否為 'member' 的組長 (群組建立者) 或管理員"""
-    if not leader or not member:
-        return False
-    if leader.is_staff:
-        return True
-    # 檢查是否存在一個群組，其成員包含 member 且建立者是 leader
+    """檢查 'leader' 是否為 'member' 的組長 (群組建立者) 或管理員。"""
+    if not leader or not member or not leader.is_authenticated: return False
+    if leader.is_staff: return True
     return Group.objects.filter(members=member, created_by=leader).exists()
 
 # =============================================================================
-# 認證與使用者 Views
+# 1. 認證與使用者 API (Authentication & User APIs)
 # =============================================================================
 
 class UserRegisterAPIView(generics.CreateAPIView):
+    """(公開) 註冊新使用者。"""
     queryset = User.objects.all()
     serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
 
 class UserProfileAPIView(generics.RetrieveUpdateAPIView):
-    """
-    【修正後】
-    讓用戶查看(GET)和更新(PATCH)自己的個人資料。
-    """
+    """(需登入) 讓使用者讀取與更新自己的個人資料。"""
     permission_classes = [permissions.IsAuthenticated]
-    
-    # 【修改】統一使用 UserSerializer
     serializer_class = UserSerializer
 
     def get_object(self):
-        # 無論 GET 或 PATCH，操作的對象都是當前登入的 user
         return self.request.user
 
     def partial_update(self, request, *args, **kwargs):
-        """
-        覆寫 partial_update (PATCH) 方法來同時處理 User 和 PersonnelProfile 的更新。
-        """
+        """覆寫 PATCH 方法以同時處理 User 和 PersonnelProfile 的更新。"""
         user = self.get_object()
-        profile_data = request.data.copy() # 先複製一份請求資料
-
-        # --- 更新 User 模型的欄位 ---
+        profile_data = request.data.copy()
         user_serializer = self.get_serializer(user, data=profile_data, partial=True)
         user_serializer.is_valid(raise_exception=True)
-
-        # 處理密碼
-        password = profile_data.pop('password', None)
-        if password:
+        if password := profile_data.pop('password', None):
             user.set_password(password)
-        
-        # 更新 UserSerializer 中定義的其他 User 欄位
         user_serializer.save()
-
-        # --- 更新 PersonnelProfile 模型的欄位 ---
-        # PersonnelProfileSerializer 只需要 profile 相關的資料
         profile = user.personnelprofile
         profile_serializer = PersonnelProfileSerializer(profile, data=profile_data, partial=True, context=self.get_serializer_context())
         profile_serializer.is_valid(raise_exception=True)
         profile_serializer.save()
-
-        # 回傳包含完整巢狀資料的最新 User
         return Response(UserSerializer(user, context=self.get_serializer_context()).data)
 
 # =============================================================================
-# 群組與成員管理 API
+# 2. 群組與成員管理 API (Group & Member APIs)
 # =============================================================================
 
 class MyGroupsListAPIView(generics.ListAPIView):
-    """獲取當前登入使用者所管理的所有群組列表"""
+    """(需登入) 獲取當前使用者所屬或建立的所有群組。"""
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        # --- ▼▼▼【第二步】將 get_queryset 方法替換為以下內容 ▼▼▼ ---
-        # 查詢條件：群組的成員包含我，或者，群組的建立者是我
-        return Group.objects.filter(
-            Q(members=user) | Q(created_by=user)
-        ).distinct().order_by('-created_at')
-        # --- ▲▲▲ 請將 get_queryset 方法替換為以上內容 ▲▲▲ ---
+        return Group.objects.filter(Q(members=user) | Q(created_by=user)).distinct().order_by('-created_at')
 
 class GroupCreateAPIView(generics.CreateAPIView):
-    """建立新群組"""
+    """(需登入) 建立新群組，並自動將建立者設為成員。"""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
-        group = serializer.instance
-        GroupMember.objects.create(group=group, user=self.request.user)
-
+        group = serializer.save(created_by=self.request.user)
+        GroupMember.objects.create(group=group, user=self.request.user, role='ADMIN') # 建立者預設為管理員
 
 class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """讀取、更新、刪除單一群組"""
+    """(需權限) 讀取、更新、刪除單一群組。"""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated, IsGroupOwnerOrAdmin]
 
 class GroupMembersListAPIView(generics.ListAPIView):
-    """獲取特定群組的成員列表 (包含計算後的平均分數)"""
+    """(需登入) 獲取特定群組的成員列表 (含平均分數)。"""
     serializer_class = GroupMemberSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         group_id = self.kwargs['pk']
-        return User.objects.filter(
-            joined_groups__id=group_id
-        ).annotate(
-            average_score=Avg('trip__score')
-        ).order_by('username')
+        return User.objects.filter(joined_groups__id=group_id).annotate(average_score=Avg('trip__score')).order_by('username')
     
     def get_serializer_context(self):
-        """
-        將 URL 中的 group_id 傳遞給 Serializer。
-        """
         context = super().get_serializer_context()
         context['group_id'] = self.kwargs['pk']
         return context
 
+class GroupMemberRoleAPIView(views.APIView):
+    """(需權限) 更新群組成員的角色 (ADMIN/MEMBER)。"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, group_pk, user_pk):
+        group = get_object_or_404(Group, pk=group_pk)
+        target_member_profile = get_object_or_404(GroupMember, group=group, user__id=user_pk)
+        is_owner = (group.created_by == request.user)
+        is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
+        if not (is_owner or request.user.is_staff or is_group_admin):
+            raise PermissionDenied("您沒有權限變更成員角色。")
+        if group.created_by == target_member_profile.user and request.data.get('role') == 'MEMBER':
+            raise PermissionDenied("不能移除群組建立者的管理員權限。")
+        new_role = request.data.get('role')
+        if new_role not in ['MEMBER', 'ADMIN']:
+            return Response({"error": "無效的角色"}, status=status.HTTP_400_BAD_REQUEST)
+        target_member_profile.role = new_role
+        target_member_profile.save()
+        return Response({"success": f"使用者 {target_member_profile.user.username} 的角色已更新為 {new_role}"}, status=status.HTTP_200_OK)
+
+class GroupMemberDeleteAPIView(views.APIView):
+    """(需權限) 從群組中移除一名成員。"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, group_pk, user_pk):
+        group = get_object_or_404(Group, pk=group_pk)
+        target_user = get_object_or_404(User, pk=user_pk)
+        membership = get_object_or_404(GroupMember, group=group, user=target_user)
+        is_owner = (group.created_by == request.user)
+        is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
+        if not (is_owner or is_group_admin or request.user.is_staff):
+            raise PermissionDenied("您沒有權限移除成員。")
+        if group.created_by == target_user:
+            return Response({"error": "不能移除群組的建立者。"}, status=status.HTTP_403_FORBIDDEN)
+        if membership.role == 'ADMIN' and not is_owner:
+             return Response({"error": "管理員之間不能互相移除。"}, status=status.HTTP_403_FORBIDDEN)
+        membership.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 # =============================================================================
-# 公告管理 API
+# 3. 公告與邀請碼 API (Announcement & Invitation APIs)
 # =============================================================================
 
 class GroupAnnouncementListCreateAPIView(generics.ListCreateAPIView):
-    """讀取特定群組的公告列表 (GET) 或在該群組下建立新公告 (POST)"""
+    """(需權限) 獲取或建立特定群組的公告。"""
     serializer_class = GroupAnnouncementSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # 從 URL 中獲取 group_pk 參數，並篩選出對應的公告
         group_pk = self.kwargs['group_pk']
         return GroupAnnouncement.objects.filter(group__id=group_pk).order_by('-publish_date')
 
     def perform_create(self, serializer):
-            group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
-            
-            # --- ▼▼▼ 修改權限檢查邏輯 ▼▼▼ ---
-            is_owner = (group.created_by == self.request.user)
-            is_staff = self.request.user.is_staff
-            is_group_admin = GroupMember.objects.filter(group=group, user=self.request.user, role='ADMIN').exists()
-
-            if not (is_owner or is_staff or is_group_admin):
-                raise PermissionDenied("您沒有權限在此群組中發布公告。")
-            # --- ▲▲▲ 修改結束 ▲▲▲ ---
-            serializer.save(publisher=self.request.user, group=group)
+        group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
+        is_owner = (group.created_by == self.request.user)
+        is_group_admin = GroupMember.objects.filter(group=group, user=self.request.user, role='ADMIN').exists()
+        if not (is_owner or self.request.user.is_staff or is_group_admin):
+            raise PermissionDenied("您沒有權限在此群組中發布公告。")
+        serializer.save(publisher=self.request.user, group=group)
 
 class GroupAnnouncementDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """讀取、更新、刪除單則公告"""
+    """(需權限) 讀取、更新、刪除單則公告。"""
     queryset = GroupAnnouncement.objects.all()
     serializer_class = GroupAnnouncementSerializer
     permission_classes = [permissions.IsAuthenticated, IsAnnouncementPublisherOrAdmin]
 
+class RecentAnnouncementsAPIView(generics.ListAPIView):
+    """
+    (公開) 獲取最新的 5 則公告，用於網站首頁等公開場合。
+    """
+    # 查詢所有公告，按發布日期倒序排列，只取前 5 筆
+    queryset = GroupAnnouncement.objects.all().order_by('-publish_date')[:5]
+    serializer_class = GroupAnnouncementSerializer
+    # 允許任何人訪問
+    permission_classes = [AllowAny]
+
 class InvitationCodeCreateAPIView(generics.CreateAPIView):
-    """為特定群組建立一個新的邀請碼"""
+    """(需權限) 為特定群組建立一個新的邀請碼。"""
     serializer_class = InvitationCodeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
-
-        # --- ▼▼▼ 修改權限檢查邏輯 ▼▼▼ ---
         is_owner = (group.created_by == self.request.user)
-        is_staff = self.request.user.is_staff
         is_group_admin = GroupMember.objects.filter(group=group, user=self.request.user, role='ADMIN').exists()
-
-        if not (is_owner or is_staff or is_group_admin):
+        if not (is_owner or self.request.user.is_staff or is_group_admin):
             raise PermissionDenied("您沒有權限為此群組生成邀請碼。")
-        # --- ▲▲▲ 修改結束 ▲▲▲ ---
-
         serializer.save(created_by=self.request.user, group=group)
 
 # =============================================================================
-# 數據讀取 API (含查詢擴充)
+# 4. 數據讀取與報表 API (Data & Report APIs)
 # =============================================================================
 
-class PersonnelListAPIView(generics.ListAPIView):
-    serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
-    
-    def get_queryset(self):
-        return User.objects.filter(is_active=True).order_by('username')
-
-class GroupListAPIView(generics.ListAPIView):
-    """(管理員用) 獲取系統內所有群組"""
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [IsAdminUser]
-
-class DeviceListAPIView(generics.ListAPIView):
-    queryset = VehicleDevice.objects.filter(is_active=True)
-    serializer_class = VehicleDeviceSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
 class TripListAPIView(generics.ListAPIView):
-    """行程列表 API，支援 ?user_id=<id> 查詢"""
+    """(需登入) 行程列表 API，管理者可使用 ?user_id=<id> 查詢特定成員。"""
     serializer_class = TripListSerializer
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         user = self.request.user
-        target_user_id = self.request.query_params.get('user_id')
-
-        if target_user_id:
-            # 如果提供了 user_id，表示組長想查詢特定成員
+        if target_user_id := self.request.query_params.get('user_id'):
             target_user = get_object_or_404(User, pk=target_user_id)
-            # 權限檢查：請求者必須是管理員，或是該成員的組長
             if not is_leader_of(user, target_user):
-                raise PermissionDenied("You do not have permission to view this user's trips.")
+                raise PermissionDenied("您沒有權限查看此使用者的行程。")
             return Trip.objects.filter(personnel=target_user).order_by('-start_time')
         else:
-            # 如果沒提供 user_id，維持原有邏輯
             if user.is_staff:
                 return Trip.objects.all().order_by('-start_time')
             return Trip.objects.filter(personnel=user).order_by('-start_time')
 
 class TripDetailAPIView(generics.RetrieveAPIView):
+    """(需權限) 讀取單一行程的完整詳情。"""
     queryset = Trip.objects.all()
     serializer_class = TripDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
 class VideoListAPIView(generics.ListAPIView):
-    """影片列表 API，支援 ?user_id=<id> 查詢"""
+    """(需登入) 影片列表 API，管理者可使用 ?user_id=<id> 查詢特定成員。"""
     serializer_class = VideoRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        target_user_id = self.request.query_params.get('user_id')
-
-        if target_user_id:
+        if target_user_id := self.request.query_params.get('user_id'):
             target_user = get_object_or_404(User, pk=target_user_id)
             if not is_leader_of(user, target_user):
-                raise PermissionDenied("You do not have permission to view this user's videos.")
-            # 透過 trip__personnel 跨模型查詢
+                raise PermissionDenied("您沒有權限查看此使用者的影片。")
             return VideoRecord.objects.filter(trip__personnel=target_user).order_by('-start_time')
         else:
             return VideoRecord.objects.filter(trip__personnel=user).order_by('-start_time')
 
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def generate_trip_report_pdf(request, trip_pk):
+    """(需權限) 根據 trip_pk 動態生成一份 PDF 報告並回傳。"""
+    trip = get_object_or_404(Trip, pk=trip_pk)
+    if trip.personnel != request.user and not request.user.is_staff:
+        raise PermissionDenied("您沒有權限生成此報告。")
+    context = {'trip': trip}
+    html_string = render_to_string('api/report_template.html', context)
+    pdf_file = HTML(string=html_string).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="trip_report_{trip.trip_number}.pdf"'
+    return response
+
 # =============================================================================
-# 樹莓派資料上傳 API
+# 5. 車機端上傳 API (Device Upload APIs)
 # =============================================================================
 
 class TripStartAPIView(generics.CreateAPIView):
+    """(車機用) 開始一趟新行程。"""
     queryset = Trip.objects.all()
     serializer_class = TripStartSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -281,14 +275,12 @@ class TripStartAPIView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         driver = request.user
         if is_driver_on_active_trip(driver):
-            logger.warning(f"User {driver.username} tried to start trip while already on active trip")
-            return Response({"error": "Driver is already on an active trip."}, status=status.HTTP_400_BAD_REQUEST)
-        response = super().create(request, *args, **kwargs)
-        if response.status_code == status.HTTP_201_CREATED:
-            logger.info(f"Trip started successfully by user {driver.username}")
-        return response
+            logger.warning(f"使用者 {driver.username} 試圖在已有進行中行程的狀況下開啟新行程")
+            return Response({"error": "駕駛員已有一趟進行中的行程。"}, status=status.HTTP_400_BAD_REQUEST)
+        return super().create(request, *args, **kwargs)
 
 class TripEndAPIView(generics.UpdateAPIView):
+    """(車機用) 結束一趟行程，並觸發計分。"""
     queryset = Trip.objects.all()
     serializer_class = TripEndSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
@@ -296,99 +288,92 @@ class TripEndAPIView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
-            trip_id = kwargs.get('pk')
-            if trip_id:
+            if trip_id := kwargs.get('pk'):
                 calculate_trip_score(trip_id)
         return response
 
 class AiVisionLogCreateAPIView(generics.CreateAPIView):
+    """(車機用) 上傳一筆 AI 視覺事件紀錄。"""
     queryset = AiVisionLog.objects.all()
     serializer_class = AiVisionLogCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class VideoRecordCreateAPIView(generics.CreateAPIView):
+class VideoRegisterAPIView(generics.CreateAPIView):
+    """(車機用) 註冊一筆已上傳至雲端的影片。"""
     queryset = VideoRecord.objects.all()
-    serializer_class = VideoRecordCreateSerializer
+    serializer_class = VideoRegisterSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        trip = serializer.validated_data['trip']
+        if trip.personnel != self.request.user:
+            raise PermissionDenied("您沒有權限為這趟行程註冊影片。")
+        serializer.save()
+
 # =============================================================================
-# AI、系統狀態與統計 API
+# 6. AI、統計與系統 API (AI, Stats & System APIs)
 # =============================================================================
 
 class ChatbotAPIView(views.APIView):
+    """(需登入) AI 智慧客服對話 API。"""
     permission_classes = [permissions.IsAuthenticated]
     def post(self, request, *args, **kwargs):
         chat_history = request.data.get('messages', [])
         if not isinstance(chat_history, list) or not chat_history:
             return Response({"error": "請求的 'messages' 欄位必須是一個非空的列表。"}, status=status.HTTP_400_BAD_REQUEST)
-        logger.info(f"Chatbot request from user {request.user.username}")
+        logger.info(f"來自使用者 {request.user.username} 的 Chatbot 請求")
         ai_reply = get_chatbot_response(chat_history)
         return Response({"reply": ai_reply}, status=status.HTTP_200_OK)
-    
-class ChatbotFeedbackAPIView(generics.CreateAPIView):
-    """【新增】接收前端傳來的 AI 客服回饋並存入資料庫"""
-    queryset = ChatbotFeedback.objects.all()
-    serializer_class = ChatbotFeedbackSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def perform_create(self, serializer):
-        # 自動將當前登入的使用者設定為回饋者
-        serializer.save(user=self.request.user)
 
 class UserTrendsAPIView(views.APIView):
-    """使用者駕駛分數趨勢 API (月平均)"""
+    """(需登入) 使用者駕駛分數趨勢 API (月平均)。"""
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, *args, **kwargs):
         user = request.user
-        target_user_id = request.query_params.get('user_id')
-
-        if target_user_id:
+        if target_user_id := request.query_params.get('user_id'):
             target_user = get_object_or_404(User, pk=target_user_id)
             if not is_leader_of(user, target_user):
-                raise PermissionDenied("You do not have permission to view this user's stats.")
+                raise PermissionDenied("您沒有權限查看此使用者的統計資料。")
         else:
             target_user = user
-        
-        trends = Trip.objects.filter(
-            personnel=target_user,
-            score__isnull=False
-        ).annotate(
-            month=TruncMonth('start_time')
-        ).values(
-            'month'
-        ).annotate(
-            average_score=Avg('score')
-        ).values(
-            'month', 'average_score'
-        ).order_by('month')
-
-        formatted_trends = [
-            {
-                "month": item['month'].strftime('%Y-%m'),
-                "average_score": round(item['average_score'], 1)
-            } for item in trends
-        ]
-
+        trends = Trip.objects.filter(personnel=target_user, score__isnull=False).annotate(month=TruncMonth('start_time')).values('month').annotate(average_score=Avg('score')).values('month', 'average_score').order_by('month')
+        formatted_trends = [{"month": item['month'].strftime('%Y-%m'), "average_score": round(item['average_score'], 1)} for item in trends]
         return Response(formatted_trends)
+
+class TripSuggestionFeedbackAPIView(generics.CreateAPIView):
+    """(需登入) 接收使用者對 AI 行程建議的回饋。"""
+    queryset = TripSuggestionFeedback.objects.all()
+    serializer_class = TripSuggestionFeedbackSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        trip = serializer.validated_data['trip']
+        user = self.request.user
+        if trip.personnel != user:
+            raise PermissionDenied("您只能對自己的行程提供回饋。")
+        if TripSuggestionFeedback.objects.filter(trip=trip, user=user).exists():
+            raise serializer.ValidationError("您已經對此行程提交過回饋。")
+        serializer.save(user=user)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def health_check(request):
+    """(公開) 系統健康檢查 API。"""
     try:
         from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
+        with connection.cursor() as cursor: cursor.execute("SELECT 1")
         from .services import client
         ai_status = "available" if client else "unavailable"
-        return JsonResponse({'status': 'healthy', 'database': 'connected', 'ai_service': ai_status, 'version': '1.0.0'})
+        return JsonResponse({'status': 'healthy', 'database': 'connected', 'ai_service': ai_status})
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
+        logger.error(f"健康檢查失敗: {e}")
         return JsonResponse({'status': 'unhealthy', 'error': str(e)}, status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def system_stats(request):
+    """(管理者用) 獲取高階系統統計數據。"""
     stats = {
         'total_users': User.objects.count(),
         'total_trips': Trip.objects.count(),
@@ -399,90 +384,68 @@ def system_stats(request):
     return JsonResponse(stats)
 
 # =============================================================================
-# PDF 報表生成 API
+# 7. NFC 相關 API
 # =============================================================================
 
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def generate_trip_report_pdf(request, trip_pk):
-    """根據 trip_pk 動態生成一份 PDF 報告並回傳"""
-    trip = get_object_or_404(Trip, pk=trip_pk)
-    
-    # 權限檢查：確保請求者是該行程的擁有者或管理員
-    if trip.personnel != request.user and not request.user.is_staff:
-        raise PermissionDenied("You do not have permission to generate this report.")
-
-    # 將 trip 物件渲染到 HTML 範本中
-    context = {'trip': trip}
-    html_string = render_to_string('api/report_template.html', context)
-
-    # 使用 WeasyPrint 將 HTML 字串轉換成 PDF
-    html = HTML(string=html_string)
-    pdf_file = html.write_pdf()
-
-    # 建立一個 HTTP Response，並設定正確的 Content-Type
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    
-    # (可選) 設定 Content-Disposition 讓瀏覽器知道檔名
-    response['Content-Disposition'] = f'inline; filename="trip_report_{trip.trip_number}.pdf"'
-
-    return response
-
-
-class GroupMemberRoleAPIView(views.APIView):
-    """更新群組成員的角色"""
+class FindUserByNFCAPIView(views.APIView):
+    """(需登入) (GET) 根據 NFC 卡 ID 查詢對應的使用者。"""
     permission_classes = [permissions.IsAuthenticated]
 
-    def patch(self, request, group_pk, user_pk):
-            group = get_object_or_404(Group, pk=group_pk)
-            target_member_profile = get_object_or_404(GroupMember, group=group, user__id=user_pk)
+    def get(self, request, *args, **kwargs):
+        nfc_id = request.query_params.get('nfc_id')
+        if not nfc_id:
+            return Response({"error": "請提供 nfc_id 查詢參數。"}, status=status.HTTP_400_BAD_REQUEST)
+        profile = get_object_or_404(PersonnelProfile, nfc_card_id=nfc_id)
+        serializer = UserSerializer(profile.user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-            # --- ▼▼▼ 修改權限檢查邏輯 ▼▼▼ ---
-            # 權限檢查：只有群組建立者或其他管理員才能變更角色
-            is_owner = (group.created_by == request.user)
-            is_staff = request.user.is_staff
-            is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
+class BindNFCAPIView(views.APIView):
+    """(管理者用) (PATCH) 為指定的使用者綁定一張 NFC 卡。"""
+    permission_classes = [IsAdminUser]
 
-            if not (is_owner or is_staff or is_group_admin):
-                raise PermissionDenied("您沒有權限變更成員角色。")
-            
-            # 【新增】一個小限制：不能移除群組建立者自己的管理員權限
-            if group.created_by == target_member_profile.user and request.data.get('role') == 'MEMBER':
-                raise PermissionDenied("不能移除群組建立者的管理員權限。")
-            # --- ▲▲▲ 修改結束 ▲▲▲ ---
+    def patch(self, request, user_id, *args, **kwargs):
+        nfc_id = request.data.get('nfc_id')
+        if not nfc_id:
+            return Response({"error": "請在請求內容中提供 nfc_id。"}, status=status.HTTP_400_BAD_REQUEST)
+        if PersonnelProfile.objects.filter(nfc_card_id=nfc_id).exclude(user__id=user_id).exists():
+            return Response({"error": "此 NFC 卡已被其他使用者綁定。"}, status=status.HTTP_409_CONFLICT)
+        profile = get_object_or_404(PersonnelProfile, user__id=user_id)
+        profile.nfc_card_id = nfc_id
+        profile.save()
+        return Response({"success": f"已成功為使用者 {profile.user.username} 綁定 NFC 卡 ID: {nfc_id}"}, status=status.HTTP_200_OK)
 
-            new_role = request.data.get('role')
-            if new_role not in ['MEMBER', 'ADMIN']:
-                return Response({"error": "無效的角色"}, status=status.HTTP_400_BAD_REQUEST)
-
-            target_member_profile.role = new_role
-            target_member_profile.save()
-            return Response({"success": f"使用者 {target_member_profile.user.username} 的角色已更新為 {new_role}"}, status=status.HTTP_200_OK)
-    
-
-class GroupMemberDeleteAPIView(views.APIView):
-    """【新增】從群組中移除一名成員"""
+class UserSelfBindNFCAPIView(views.APIView):
+    """(需登入) (POST) 讓當前登入的使用者自行綁定 NFC 卡。"""
     permission_classes = [permissions.IsAuthenticated]
 
-    def delete(self, request, group_pk, user_pk):
-        group = get_object_or_404(Group, pk=group_pk)
-        target_user = get_object_or_404(User, pk=user_pk)
-        membership = get_object_or_404(GroupMember, group=group, user=target_user)
+    def post(self, request, *args, **kwargs):
+        nfc_id = request.data.get('nfc_id')
+        if not nfc_id:
+            return Response({"error": "請在請求內容中提供 nfc_id。"}, status=status.HTTP_400_BAD_REQUEST)
+        if PersonnelProfile.objects.filter(nfc_card_id=nfc_id).exclude(user=request.user).exists():
+            return Response({"error": "此 NFC 卡已被其他使用者綁定。"}, status=status.HTTP_409_CONFLICT)
+        profile = request.user.personnelprofile
+        profile.nfc_card_id = nfc_id
+        profile.save()
+        return Response({"success": f"您已成功綁定 NFC 卡 ID: {nfc_id}"}, status=status.HTTP_200_OK)
 
-        # 權限檢查：只有群組建立者或管理員可以移除成員
-        is_owner = (group.created_by == request.user)
-        is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
-        
-        if not (is_owner or is_group_admin or request.user.is_staff):
-            raise PermissionDenied("您沒有權限移除成員。")
-        
-        # 限制：不能移除群組建立者
-        if group.created_by == target_user:
-            return Response({"error": "不能移除群組的建立者。"}, status=status.HTTP_403_FORBIDDEN)
-        
-        # 限制：管理員不能移除其他管理員 (只有建立者可以)
-        if membership.role == 'ADMIN' and not is_owner:
-             return Response({"error": "管理員之間不能互相移除。"}, status=status.HTTP_403_FORBIDDEN)
+# =============================================================================
+# (管理員專用) 基礎模型管理 API
+# =============================================================================
 
-        membership.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class PersonnelListAPIView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+    
+    def get_queryset(self):
+        return User.objects.filter(is_active=True).order_by('username')
+
+class GroupListAPIView(generics.ListAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [IsAdminUser]
+
+class DeviceListAPIView(generics.ListAPIView):
+    queryset = VehicleDevice.objects.filter(is_active=True)
+    serializer_class = VehicleDeviceSerializer
+    permission_classes = [permissions.IsAuthenticated]

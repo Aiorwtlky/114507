@@ -2,75 +2,45 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
 from django.conf import settings
-import datetime
-import secrets
 from django.utils import timezone
+import secrets
 from datetime import timedelta
 
 # =============================================================================
-# 1. 人員與群組管理 (User & Group Management)
+# 1. 人員與權限管理 (User & Permission Management)
 # =============================================================================
 
 class PersonnelProfile(models.Model):
+    """人員詳細資料，一對一擴充 Django 內建的 User 模型。"""
     GENDER_CHOICES = [('MALE', '男'), ('FEMALE', '女'), ('UNSPECIFIED', '不願透漏')]
     
-    # 【註解】原有的 RegexValidator 已被移除，因為駕照號碼可能不再是必填或唯一
-    # license_validator = RegexValidator(regex=r'^[A-Z]\d{9}$', message='駕照號碼格式必須為：1位英文大寫字母 + 9位數字。')
-    nfc_card_id = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name="NFC 卡片識別碼")
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, verbose_name="使用者帳號")
     personnel_number = models.CharField(max_length=50, unique=True, verbose_name="人員編號")
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='UNSPECIFIED', verbose_name="性別")
-    
-    # 【修改】放寬駕照號碼的限制，使其非唯一且可為空
     license_number = models.CharField(max_length=20, blank=True, verbose_name="駕照號碼")
-    
-    # --- 【以下為根據前端需求新增的欄位】 ---
-
-    # 【新增】用於儲存使用者頭像
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name="個人頭像")
-
-    # 【新增】用於儲存聯絡電話
     phone = models.CharField(max_length=20, blank=True, verbose_name="聯絡電話")
-
-    # 【新增】用於儲存駕照等級
     license_type = models.CharField(max_length=50, blank=True, verbose_name="駕照等級")
-
-    # 【新增】用於儲存駕駛年資
     driving_experience = models.PositiveIntegerField(default=0, verbose_name="駕駛年資")
-    
+    nfc_card_id = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name="NFC 卡片識別碼")
+
     class Meta:
         db_table = 'personnel_profile' 
         verbose_name = "人員詳細資料"
-        verbose_name_plural = "1. 人員詳細資料"
+        verbose_name_plural = "1. 人員詳細資料" # Admin 後台顯示名稱
     def __str__(self): return self.user.username
 
-# ... (Group 和 GroupMember 模型維持不變) ...
 class Group(models.Model):
+    """群組模型，用於組織使用者。"""
     id = models.BigAutoField(primary_key=True)
     group_number = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # 【新增】記錄群組的建立者，用於權限判斷
-    # on_delete=models.SET_NULL: 如果建立者帳號被刪除，這個欄位會設為 NULL，群組不會被跟著刪除
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='owned_groups'
-    )
-    
-    # 【新增】透過 GroupMember 中介模型建立多對多關聯
-    members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        through='GroupMember',
-        related_name='joined_groups'
-    )
-
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='owned_groups')
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='GroupMember', related_name='joined_groups')
 
     class Meta:
         db_table = 'group'
@@ -79,21 +49,14 @@ class Group(models.Model):
     def __str__(self): return self.name
 
 class GroupMember(models.Model):
+    """群組與使用者之間的多對多中介模型，用於定義角色。"""
+    ROLE_CHOICES = [('MEMBER', '成員'), ('ADMIN', '管理員')]
+    
     id = models.BigAutoField(primary_key=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     joined_at = models.DateTimeField(auto_now_add=True)
-
-    ROLE_CHOICES = [
-        ('MEMBER', '成員'),
-        ('ADMIN', '管理員'),
-    ]
-    role = models.CharField(
-        max_length=10,
-        choices=ROLE_CHOICES,
-        default='MEMBER',
-        verbose_name="群組角色"
-    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='MEMBER', verbose_name="群組角色")
     
     class Meta:
         db_table = 'group_member'
@@ -101,9 +64,12 @@ class GroupMember(models.Model):
         verbose_name = "群組成員"
         verbose_name_plural = "3. 群組成員"
 
+# =============================================================================
+# 2. 系統與公告 (System & Announcement)
+# =============================================================================
 
-# ... (SystemAnnouncement, GroupAnnouncement, VehicleDevice 模型維持不變) ...
 class SystemAnnouncement(models.Model):
+    """系統級公告。"""
     id = models.BigAutoField(primary_key=True)
     announcement_number = models.CharField(max_length=50, unique=True)
     content = models.TextField()
@@ -113,8 +79,9 @@ class SystemAnnouncement(models.Model):
         db_table = 'system_announcement'
         verbose_name = "系統公告"
         verbose_name_plural = "4. 系統公告"
-        
+
 class GroupAnnouncement(models.Model):
+    """群組內部公告，具備自動編號功能。"""
     id = models.BigAutoField(primary_key=True)
     announcement_number = models.CharField(max_length=50, unique=True, blank=True) 
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -125,8 +92,6 @@ class GroupAnnouncement(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.announcement_number:
-            # 如果這是一則新公告 (沒有編號)，就自動生成一個
-            # 格式：ANN-{群組ID}-{8位隨機碼}
             self.announcement_number = f"ANN-{self.group.id}-{secrets.token_hex(4).upper()}"
         super().save(*args, **kwargs)
 
@@ -135,7 +100,33 @@ class GroupAnnouncement(models.Model):
         verbose_name = "群組公告"
         verbose_name_plural = "5. 群組公告"
 
+class InvitationCode(models.Model):
+    """具時效性、一次性的群組邀請碼。"""
+    code = models.CharField(max_length=8, unique=True, verbose_name="邀請碼")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="所屬群組")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="建立者")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="建立時間")
+    expires_at = models.DateTimeField(verbose_name="過期時間")
+    is_used = models.BooleanField(default=False, verbose_name="是否已使用")
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.code = secrets.token_hex(4).upper()
+            self.expires_at = timezone.now() + timedelta(days=1)
+        super().save(*args, **kwargs)
+
+    def __str__(self): return f"{self.group.name} 的邀請碼: {self.code}"
+
+    class Meta:
+        verbose_name = "群組邀請碼"
+        verbose_name_plural = "12. 群組邀請碼"
+
+# =============================================================================
+# 3. 車輛與行程管理 (Vehicle & Trip Management)
+# =============================================================================
+
 class VehicleDevice(models.Model):
+    """車機設備模型。"""
     id = models.BigAutoField(primary_key=True)
     device_number = models.CharField(max_length=50, unique=True)
     vehicle_type = models.CharField(max_length=20)
@@ -147,11 +138,8 @@ class VehicleDevice(models.Model):
         verbose_name = "車機設備"
         verbose_name_plural = "6. 車機設備管理"
 
-# =============================================================================
-# 2. ... 行程管理 (Trip Management) ...
-# =============================================================================
-
 class Trip(models.Model):
+    """核心的行程紀錄模型。"""
     id = models.BigAutoField(primary_key=True)
     trip_number = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=200)
@@ -163,8 +151,6 @@ class Trip(models.Model):
     start_time = models.DateTimeField(blank=True, null=True)
     end_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # 【新增】建議性欄位，用於儲存計算好的總里程以優化效能
     total_mileage = models.FloatField(blank=True, null=True, verbose_name="總里程(KM)")
 
     class Meta:
@@ -172,8 +158,8 @@ class Trip(models.Model):
         verbose_name = "行程"
         verbose_name_plural = "7. 行程管理"
 
-# ... (RouteLog, ScoringStandard, AiVisionLog, VideoRecord 模型維持不變) ...
 class RouteLog(models.Model):
+    """儲存行程中的地理軌跡資料。"""
     id = models.BigAutoField(primary_key=True)
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='route_logs')
     timestamp = models.DateTimeField()
@@ -185,6 +171,7 @@ class RouteLog(models.Model):
         verbose_name_plural = "8. 路程紀錄"
 
 class ScoringStandard(models.Model):
+    """定義危險駕駛事件的評分標準與扣分。"""
     id = models.AutoField(primary_key=True)
     event_number = models.CharField(max_length=50, unique=True)
     description = models.CharField(max_length=255)
@@ -196,6 +183,7 @@ class ScoringStandard(models.Model):
         verbose_name_plural = "9. 評分標準"
 
 class AiVisionLog(models.Model):
+    """儲存行程中由 AI 偵測到的具體駕駛事件。"""
     id = models.BigAutoField(primary_key=True)
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='aivisionlog_set')
     event = models.ForeignKey(ScoringStandard, on_delete=models.CASCADE)
@@ -208,56 +196,43 @@ class AiVisionLog(models.Model):
         verbose_name_plural = "10. AI視覺事件紀錄"
 
 class VideoRecord(models.Model):
+    """儲存與行程關聯的影像紀錄資訊。"""
     id = models.BigAutoField(primary_key=True)
-    video_number = models.CharField(max_length=50, unique=True)
+    video_number = models.CharField(max_length=50, unique=True, blank=True)
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='videorecord_set')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     location = models.CharField(max_length=500)
     file_size = models.BigIntegerField(blank=True, null=True)
+    video_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="影片雲端網址")
+
+    def save(self, *args, **kwargs):
+        if not self.video_number:
+            self.video_number = f"VID-{self.trip.id}-{secrets.token_hex(4).upper()}"
+        super().save(*args, **kwargs)
+
     class Meta:
         db_table = 'video_record'
         verbose_name = "影像紀錄"
         verbose_name_plural = "11. 影像紀錄"
 
-class InvitationCode(models.Model):
-    code = models.CharField(max_length=8, unique=True, verbose_name="邀請碼")
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="所屬群組")
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="建立者")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="建立時間")
-    expires_at = models.DateTimeField(verbose_name="過期時間")
-    is_used = models.BooleanField(default=False, verbose_name="是否已使用")
+# =============================================================================
+# 4. 回饋 (Feedback)
+# =============================================================================
 
-    def save(self, *args, **kwargs):
-        if not self.pk: # 只在第一次建立時執行
-            self.code = secrets.token_hex(4).upper() # 生成一個8位數的隨機碼
-            self.expires_at = timezone.now() + timedelta(days=1) # 設定 24 小時後過期
-        super().save(*args, **kwargs)
+class TripSuggestionFeedback(models.Model):
+    """用於儲存使用者對 AI 行程建議的回饋。"""
+    FEEDBACK_CHOICES = [(1, '有幫助'), (-1, '沒有幫助')]
 
-    def __str__(self):
-        return f"{self.group.name} 的邀請碼: {self.code}"
-
-    class Meta:
-        verbose_name = "群組邀請碼"
-        verbose_name_plural = "12. 群組邀請碼"
-
-class ChatbotFeedback(models.Model):
-    """【新增】用於儲存使用者對 AI 客服回應的回饋"""
-    FEEDBACK_CHOICES = [
-        (1, '喜歡'),
-        (-1, '不喜歡'),
-    ]
-
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, verbose_name="關聯行程")
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="回饋使用者")
-    chat_history = models.JSONField(verbose_name="完整對話歷史")
-    ai_response = models.TextField(verbose_name="AI 的回應")
     feedback_type = models.IntegerField(choices=FEEDBACK_CHOICES, verbose_name="回饋類型")
     comment = models.TextField(blank=True, null=True, verbose_name="使用者評論")
     timestamp = models.DateTimeField(auto_now_add=True, verbose_name="回饋時間")
 
-    def __str__(self):
-        return f"{self.user.username} - {self.get_feedback_type_display()} on {self.timestamp.strftime('%Y-%m-%d')}"
+    def __str__(self): return f"Feedback for Trip {self.trip.id} by {self.user.username}"
 
     class Meta:
-        verbose_name = "AI客服回饋"
-        verbose_name_plural = "13. AI客服回饋"
+        unique_together = ('trip', 'user') # 確保同一使用者對同一行程只能回饋一次
+        verbose_name = "AI行程建議回饋"
+        verbose_name_plural = "13. AI行程建議回饋"
