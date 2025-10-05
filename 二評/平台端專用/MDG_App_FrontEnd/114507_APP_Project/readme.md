@@ -305,3 +305,20 @@ Content-Type: multipart/form-data
 系統統一使用 UTC+8 (台北時區)。
 
 所有時間以 ISO 8601 格式回傳：2025-10-05T14:30:00+08:00。
+
+16. 分頁與查詢
+
+列表型 API 須支援分頁參數：
+
+page: 當前頁數 (預設 1)
+
+pageSize: 每頁筆數 (預設 20, 最大 100)
+
+Response Body 範例：
+
+{
+  "total": 125,
+  "page": 1,
+  "pageSize": 20,
+  "items": [ ... ]
+}
