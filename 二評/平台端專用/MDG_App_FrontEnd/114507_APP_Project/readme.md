@@ -243,3 +243,13 @@ Authorization: Bearer <token>
 Token 有效時間: 例如 2 小時 (由後端設定)。
 
 Refresh 機制: 可規劃 POST /api/refresh 來換取新 Token，避免頻繁登入。
+
+9. 日誌與監控
+
+為了方便後端與運維追蹤系統狀況，建議後端實作以下功能：
+
+API Log: 記錄所有 API 呼叫的時間、參數、回應狀態。
+
+錯誤追蹤: 使用如 Sentry 或 ELK Stack 追蹤異常。
+
+駕駛行為事件紀錄: 除了前端呈現，也應存入資料庫，供日後分析與審查。
