@@ -18,7 +18,7 @@ class PersonnelProfile(models.Model):
     
     # 【註解】原有的 RegexValidator 已被移除，因為駕照號碼可能不再是必填或唯一
     # license_validator = RegexValidator(regex=r'^[A-Z]\d{9}$', message='駕照號碼格式必須為：1位英文大寫字母 + 9位數字。')
-
+    nfc_card_id = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name="NFC 卡片識別碼")
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, verbose_name="使用者帳號")
     personnel_number = models.CharField(max_length=50, unique=True, verbose_name="人員編號")
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='UNSPECIFIED', verbose_name="性別")
