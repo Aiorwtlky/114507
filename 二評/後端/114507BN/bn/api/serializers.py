@@ -120,7 +120,7 @@ class TripListSerializer(serializers.ModelSerializer):
     device = serializers.StringRelatedField()
     class Meta:
         model = Trip
-        fields = ['id', 'trip_number', 'name', 'score', 'start_time', 'end_time', 'personnel', 'group', 'device', 'total_mileage']
+        fields = ['id', 'trip_number', 'name', 'score', 'in_car_score', 'out_car_score', 'start_time', 'end_time', 'personnel', 'group', 'device', 'total_mileage']
 
 class TripDetailSerializer(serializers.ModelSerializer):
     """序列化單一行程的完整詳情，包含所有相關的巢狀資料。"""
@@ -132,7 +132,7 @@ class TripDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trip
         fields = [
-            'id', 'trip_number', 'name', 'score', 'ai_suggestion', 'start_time', 'end_time',
+            'id', 'trip_number', 'name', 'score', 'in_car_score', 'out_car_score', 'ai_suggestion', 'start_time', 'end_time',
             'personnel', 'group', 'device', 'aivisionlog_set', 'videorecord_set', 'total_mileage'
         ]
 
