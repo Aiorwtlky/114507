@@ -27,15 +27,17 @@ GPIO_CONFIG = {
 
 # RTSP 攝影機設定（正式環境）
 CAMERA_URLS = {
-    "inside": "rtsp://admin:123456@192.168.100.10/stream1",
-    "outside": "rtsp://admin:123456@192.168.100.12/stream1"
+    # "inside": "rtsp://admin:123456@192.168.100.10/stream1",
+    # "outside": "rtsp://admin:123456@192.168.100.12/stream1"
+    "inside": 0,  # 筆電攝影機（測試用）
+    "outside": "demo/test_videos/test_outsideCamera.mov"  # 改成正確的檔名
 }
 
 # Demo 攝影機設定
 if DEMO_MODE:
     CAMERA_SOURCES = {
         "inside": 0,  # 筆電攝影機
-        "outside": "demo/test_videos/outside_demo.mp4"  # 測試影片
+        "outside": "demo/test_videos/test_outsideCamera.mov"  # 改成正確的檔名
     }
 else:
     CAMERA_SOURCES = CAMERA_URLS

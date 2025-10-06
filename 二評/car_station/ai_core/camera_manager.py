@@ -1,4 +1,4 @@
-# ai_core/camera_manager.py
+# ai_core/camera_manager.py（完整修正版）
 """
 雙鏡頭管理器
 負責從 RTSP 串流讀取影像，使用多執行緒避免阻塞
@@ -9,27 +9,34 @@ import threading
 import time
 from queue import Queue, Full
 from datetime import datetime
-from config import CAMERA_URLS, CAMERA_CONFIG
 
 class CameraManager:
     """攝影機管理器 - 處理雙鏡頭串流"""
     
-    # 在 camera_manager.py 的 __init__ 中加入：
-
     def __init__(self, camera_type='inside', source=None):
+        """
+        初始化攝影機管理器
+        
+        Args:
+            camera_type: 'inside' 或 'outside'
+            source: 攝影機來源（None 則自動判斷 Demo/正式模式）
+        """
         self.camera_type = camera_type
-    
-        # Demo 模式：支援本地攝影機或影片檔
+        
+        # 自動判斷來源
         if source is not None:
             self.source = source
         else:
-            from config import DEMO_MODE, CAMERA_SOURCES, CAMERA_URLS
+            from config import DEMO_MODE
             if DEMO_MODE:
+                from config import CAMERA_SOURCES
                 self.source = CAMERA_SOURCES.get(camera_type)
             else:
+                from config import CAMERA_URLS
                 self.source = CAMERA_URLS.get(camera_type)
-    
-    # ... 其他初始化代碼
+        
+        if not self.source and self.source != 0:  # 0 是有效的攝影機索引
+            raise ValueError(f"未設定 {camera_type} 攝影機來源")
         
         # 影像佇列（最多保留 30 幀，約 1 秒）
         self.frame_queue = Queue(maxsize=30)
@@ -47,18 +54,22 @@ class CameraManager:
         
         # 重連設定
         self.reconnect_attempts = 0
-        self.max_reconnect_attempts = CAMERA_CONFIG['MAX_RECONNECT_ATTEMPTS']
-        
+        self.max_reconnect_attempts = 3
+    
     def connect(self):
-        """連接到 RTSP 串流"""
+        """連接到攝影機"""
         try:
-            self.cap = cv2.VideoCapture(self.rtsp_url)
-            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, CAMERA_CONFIG['BUFFER_SIZE'])
+            print(f"[{self.camera_type}] 正在連接: {self.source}")
+            
+            self.cap = cv2.VideoCapture(self.source)
+            
+            # 設定緩衝區
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             
             if not self.cap.isOpened():
-                raise ConnectionError(f"無法連接到 {self.camera_type} 攝影機")
+                raise ConnectionError(f"無法開啟攝影機")
             
-            print(f"[{self.camera_type}] 攝影機連接成功: {self.rtsp_url}")
+            print(f"[{self.camera_type}] 攝影機連接成功: {self.source}")
             self.reconnect_attempts = 0
             return True
             
@@ -70,7 +81,7 @@ class CameraManager:
         """啟動攝影機擷取執行緒"""
         if self.is_running:
             print(f"[{self.camera_type}] 攝影機已在運行中")
-            return
+            return True
         
         if not self.connect():
             return False
@@ -111,7 +122,6 @@ class CameraManager:
                 
                 if not ret or frame is None:
                     consecutive_failures += 1
-                    print(f"[{self.camera_type}] 讀取失敗 ({consecutive_failures})")
                     
                     if consecutive_failures >= 10:
                         print(f"[{self.camera_type}] 連續失敗，嘗試重連...")
@@ -158,7 +168,7 @@ class CameraManager:
     def _reconnect(self):
         """重新連接攝影機"""
         if self.reconnect_attempts >= self.max_reconnect_attempts:
-            print(f"[{self.camera_type}] 超過最大重連次數，放棄重連")
+            print(f"[{self.camera_type}] 超過最大重連次數")
             self.is_running = False
             return
         
@@ -168,7 +178,7 @@ class CameraManager:
         if self.cap:
             self.cap.release()
         
-        time.sleep(CAMERA_CONFIG['RECONNECT_TIMEOUT'])
+        time.sleep(2)
         self.connect()
     
     def get_frame(self, timeout=1.0):

@@ -63,41 +63,37 @@ class FrameProcessor:
             self.process_thread.join(timeout=2)
         
         print(f"[{self.detector.__class__.__name__}] 處理執行緒已停止")
-    
+
     def _process_loop(self):
         """處理迴圈（在獨立執行緒中執行）"""
         while self.is_running:
             start_time = time.time()
             
             try:
-                # 從攝影機管理器取得影像
                 frame_data = self.camera_manager.get_frame(timeout=0.5)
                 
                 if frame_data is None:
                     time.sleep(0.1)
                     continue
                 
-                # 執行 AI 偵測
+                # 改回用 detect
                 result = self.detector.detect(
                     frame=frame_data['frame'],
                     timestamp=frame_data['timestamp']
                 )
                 
-                # 將結果放入佇列
                 if result and result.get('event_detected'):
                     try:
                         self.result_queue.put(result, block=False)
                     except:
-                        pass  # 佇列已滿，忽略
+                        pass
                 
-                # 更新統計
                 self.processed_count += 1
                 current_time = time.time()
                 if self.last_process_time:
                     self.actual_fps = 1.0 / (current_time - self.last_process_time)
                 self.last_process_time = current_time
                 
-                # 控制處理頻率
                 elapsed = time.time() - start_time
                 sleep_time = max(0, self.process_interval - elapsed)
                 if sleep_time > 0:

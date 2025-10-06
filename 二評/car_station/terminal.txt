@@ -1,0 +1,32 @@
+🤖 啟動 AI 偵測服務...
+[AIService] 啟動 AI 服務 (Trip 8)...
+[inside] 正在連接: 0
+[inside] 攝影機連接成功: 0
+[inside] 攝影機擷取執行緒已啟動
+[outside] 正在連接: demo/test_videos/test_outsideCamera.mov
+[outside] 攝影機連接成功: demo/test_videos/test_outsideCamera.mov
+[outside] 攝影機擷取執行緒已啟動
+[LaneDetector] 車道偵測器已初始化（滑動窗口算法）
+Downloading https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt to 'ai_models/yolov8n.pt'...
+ 18%|███████████████████▎                                                                                       | 1.12M/6.23M [00:01<00:05, 1.01MB/s]127.0.0.1 - - [06/Oct/2025 20:47:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2025 20:47:31] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2025 20:47:31] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 6.23M/6.23M [00:04<00:00, 1.47MB/s]
+[DistanceDetector] 模型載入失敗: Weights only load failed. This file can still be loaded, to do so you have two options, do those steps only if you trust the source of the checkpoint. 
+        (1) In PyTorch 2.6, we changed the default value of the `weights_only` argument in `torch.load` from `False` to `True`. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.
+        (2) Alternatively, to load with `weights_only=True` please check the recommended steps in the following error message.
+        WeightsUnpickler error: Unsupported global: GLOBAL ultralytics.nn.tasks.DetectionModel was not an allowed global by default. Please use `torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])` or the `torch.serialization.safe_globals([ultralytics.nn.tasks.DetectionModel])` context manager to allowlist this global if you trust this class/function.
+
+Check the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.
+[AIService] 啟動失敗: Weights only load failed. This file can still be loaded, to do so you have two options, do those steps only if you trust the source of the checkpoint. 
+        (1) In PyTorch 2.6, we changed the default value of the `weights_only` argument in `torch.load` from `False` to `True`. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.
+        (2) Alternatively, to load with `weights_only=True` please check the recommended steps in the following error message.
+        WeightsUnpickler error: Unsupported global: GLOBAL ultralytics.nn.tasks.DetectionModel was not an allowed global by default. Please use `torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])` or the `torch.serialization.safe_globals([ultralytics.nn.tasks.DetectionModel])` context manager to allowlist this global if you trust this class/function.
+
+Check the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.
+[AIService] 停止 AI 服務...
+[inside] 攝影機已停止
+[outside] 攝影機已停止
+[ScoreCalculator] Trip 8 最終評分: 100.0 分
+[AIService] AI 服務已停止
+❌ AI 服務啟動失敗

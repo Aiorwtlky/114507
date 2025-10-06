@@ -24,7 +24,7 @@ from scoring.score_calculator import ScoreCalculator
 class AIService:
     """統一 AI 服務"""
     
-    def __init__(self, trip_id):
+    def __init__(self, trip_id,app):
         """
         初始化 AI 服務
         
@@ -32,7 +32,7 @@ class AIService:
             trip_id: 行程 ID
         """
         self.trip_id = trip_id
-        
+        self.app = app  # 儲存 Flask app
         # 攝影機管理器
         self.inside_camera = None
         self.outside_camera = None
@@ -83,13 +83,18 @@ class AIService:
             
             # 2. 初始化偵測器
             self.drowsiness_detector = DrowsinessDetector()
+            self.drowsiness_detector.initialize()
             self.phone_detector = PhoneDetector()
+            self.phone_detector.initialize()
             self.attention_detector = AttentionDetector()
+            self.attention_detector.initialize()
             self.lane_detector = LaneDetector()
+            self.lane_detector.initialize()
             self.distance_detector = DistanceDetector()
-            
+            self.distance_detector.initialize()
+
             # 3. 啟動事件分發器
-            self.event_dispatcher = EventDispatcher(self.trip_id)
+            self.event_dispatcher = EventDispatcher(self.trip_id,self.app)
             self.event_dispatcher.start()
             
             # 4. 建立並啟動幀處理器
@@ -123,6 +128,10 @@ class AIService:
             # 6. 啟動區間管理器
             self.interval_manager = IntervalManager(self.trip_id, interval_minutes=15)
             self.interval_manager.start()
+
+                # 建立事件分發器（傳入 app）
+            self.event_dispatcher = EventDispatcher(self.trip_id, self.app)
+            self.event_dispatcher.start()
             
             print("[AIService] AI 服務啟動成功 ✅")
             return True
