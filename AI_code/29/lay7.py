@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>最新法令修正或宣導｜運研所指引（原則）</title>
+  <title>最新法令修正或宣導｜運研所指引（原則） — 純 HTML+CSS</title>
   
   <!--
-    本檔為單一 HTML，內嵌 CSS 與 JS。
+    本檔為單一 HTML，僅內嵌 CSS（已移除 JS）。
     版面依照使用者提供之截圖風格設計：上方大標、中標；
     下方四張卡片（含標題、下載圖示、插圖、意見回饋連結）與左右導引箭頭。
     盡量讓行數多，並維持可讀性與可維護性。
@@ -503,106 +503,7 @@
   <!-- Toast 區 -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script>
-    // ==========================
-    // JS：互動邏輯（左右導引、下載、回饋對話框、Toast）
-    // ==========================
-    (function() {
-      const track = document.getElementById('track');
-      const left = document.querySelector('.nav.left');
-      const right = document.querySelector('.nav.right');
-      const scrim = document.getElementById('scrim');
-      const fbForm = document.getElementById('fbForm');
-      const topicInput = document.getElementById('topic');
-      const closeDialog = document.getElementById('closeDialog');
-      const cancelBtn = document.getElementById('cancel');
-      const toast = document.getElementById('toast');
+  
 
-      // 左右捲動
-      const unit = 320; // 每次大約捲一張卡片寬
-      function scrollBy(dx) {
-        track.scrollBy({ left: dx, behavior: 'smooth' });
-      }
-      left.addEventListener('click', () => scrollBy(-unit));
-      right.addEventListener('click', () => scrollBy(+unit));
-
-      // 鍵盤左右鍵支援
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') { scrollBy(-unit); }
-        if (e.key === 'ArrowRight') { scrollBy(+unit); }
-      });
-
-      // 點擊「意見回饋」開啟 modal，並帶入主題
-      document.querySelectorAll('.feedback').forEach(a => {
-        a.addEventListener('click', (e) => {
-          e.preventDefault();
-          const topic = a.getAttribute('data-topic') || '';
-          topicInput.value = topic;
-          openDialog();
-        });
-      });
-
-      // 下載按鈕：動態產生假檔供下載（示意用途）
-      document.querySelectorAll('.dl').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const filename = btn.getAttribute('data-file') || 'download.pdf';
-          const content = `此為示意檔案：${filename}\n\n（請替換為實際檔案連結或後端串接）`;
-          const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-          showToast(`已開始下載：${filename}`);
-        });
-      });
-
-      // 對話框開關
-      function openDialog() {
-        scrim.setAttribute('aria-hidden', 'false');
-        setTimeout(() => topicInput.focus(), 30);
-      }
-      function closeModal() {
-        scrim.setAttribute('aria-hidden', 'true');
-      }
-      closeDialog.addEventListener('click', closeModal);
-      cancelBtn.addEventListener('click', closeModal);
-      scrim.addEventListener('click', (e) => {
-        if (e.target === scrim) closeModal();
-      });
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && scrim.getAttribute('aria-hidden') === 'false') {
-          closeModal();
-        }
-      });
-
-      // 送出回饋（純前端示意）
-      fbForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(fbForm);
-        const topic = formData.get('topic');
-        const msg = formData.get('msg');
-        if (!topic || !msg) {
-          showToast('請填寫主題與意見內容');
-          return;
-        }
-        closeModal();
-        fbForm.reset();
-        showToast('感謝您的回饋，我們已收到！');
-      });
-
-      // Toast 工具
-      let toastTimer = null;
-      function showToast(text) {
-        toast.textContent = text;
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
-      }
-    })();
-  </script>
 </body>
 </html>
