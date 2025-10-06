@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吾駕仙後端架構解析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+            animation: fadeInDown 1s ease;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn.active {
+            background: #764ba2;
+            color: white;
+        }
+
+        .section {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .step-content p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #68d391;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .arch-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .arch-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .arch-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+
+        .arch-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .arch-card li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .arch-card li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #fbbf24;
+        }
+
+        .connection-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .connection-node {
+            padding: 30px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .connection-node:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .connection-arrow {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .api-table th,
+        .api-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .api-table th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .api-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .method-badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .method-get { background: #48bb78; color: white; }
+        .method-post { background: #4299e1; color: white; }
+        .method-patch { background: #ed8936; color: white; }
+        .method-delete { background: #f56565; color: white; }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .connection-diagram {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 My Driving God 吾駕仙駕駛行為記錄系統</h1>
+            <p>後端架構與數據流向解析</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('overview')">系統總覽</button>
+            <button class="nav-btn" onclick="showSection('architecture')">技術架構</button>
+            <button class="nav-btn" onclick="showSection('dataflow')">數據流向</button>
+            <button class="nav-btn" onclick="showSection('scoring')">評分邏輯</button>
+            <button class="nav-btn" onclick="showSection('apis')">核心 API</button>
+            <button class="nav-btn" onclick="showSection('connections')">外部連接</button>
+        </div>
+
+        <!-- 系統總覽 -->
+        <div id="overview" class="section active">
+            <h2>📋 系統總覽</h2>
+            <p style="font-size: 1.2em; line-height: 1.8; margin-bottom: 30px;">
+                吾駕仙是一套專注於<span class="highlight">職業駕駛行為分析</span>的智慧系統，透過即時監控、AI 分析與數據回饋，提升行車安全。
+            </p>
+
+            <div class="architecture-grid">
+                <div class="arch-card">
+                    <h3>🎯 核心目標</h3>
+                    <ul>
+                        <li>即時監控駕駛行為</li>
+                        <li>AI 智慧評分與建議</li>
+                        <li>群組化管理機制</li>
+                        <li>完整數據追蹤</li>
+                    </ul>
+                </div>
+
+                <div class="arch-card">
+                    <h3>🏗️ 架構設計</h3>
+                    <ul>
+                        <li>前後端分離</li>
+                        <li>RESTful API 設計</li>
+                        <li>JWT Token 認證</li>
+                        <li>混合式資料傳輸</li>
+                    </ul>
+                </div>
+
+                <div class="arch-card">
+                    <h3>📊 資料處理</h3>
+                    <ul>
+                        <li>小資料：API 即時傳輸</li>
+                        <li>大檔案：雲端直傳</li>
+                        <li>時間區間化評分</li>
+                        <li>AI 動態建議生成</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技術架構 -->
+        <div id="architecture" class="section">
+            <h2>🏗️ 技術架構</h2>
+            
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Django REST Framework 後端</h3>
+                        <p>負責所有商業邏輯、資料庫操作、認證授權與 AI 服務整合</p>
+                        <div class="code-block">
+# 核心技術棧
+- Django 4.x + DRF
+- djangorestframework-simplejwt (JWT 認證)
+- MySQL資料庫
+- Generative AI Inference (AI 服務)
+- WeasyPrint (PDF 報告生成)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Flask 前端伺服器</h3>
+                        <p>渲染使用者介面，處理與後端 API 的所有通訊</p>
+                        <div class="code-block">
+# 前端職責
+- Jinja2 模板渲染
+- requests 呼叫後端 API
+- Chart.js 數據視覺化
+- JWT Token 管理與傳遞
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>車機端設備</h3>
+                        <p>執行 AI 模型進行即時監控，並與後端保持通訊</p>
+                        <div class="code-block">
+# 車機功能
+- NFC 讀取與身份識別
+- AI 視覺模型即時偵測
+- 事件即時上報 (API)
+- 影片直傳雲端 (GCS)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 數據流向 -->
+        <div id="dataflow" class="section">
+            <h2>🔄 完整數據流向</h2>
+            
+            <h3 style="margin-top: 30px; color: #667eea;">階段一：行程開始 (NFC 識別)</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>駕駛員掃描 NFC 卡</h3>
+                        <p>車機讀取 NFC 唯一 ID</p>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>車機查詢駕駛員身份</h3>
+                        <div class="code-block">
+GET /api/users/by-nfc/?nfc_id=ABCDEF1234
+
+Response: {
+  "id": 5,
+  "username": "driver_wang",
+  "personnelprofile": { ... }
+}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>開始新行程</h3>
+                        <div class="code-block">
+POST /api/trips/start/
+
+Body: {
+  "personnel": 5,
+  "device": 3,
+  "group": 2,
+  "start_time": "2025-10-06T09:00:00Z",
+  "name": "台北-台中路線"
+}
+
+Response: { "id": 42, "trip_number": "T202510060001", ... }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 50px; color: #667eea;">階段二：行程中 (事件監控)</h3>
+            <div class="flow-step">
+                <div class="step-number">⚡</div>
+                <div class="step-content">
+                    <h3>AI 偵測到危險事件 → 即時回報</h3>
+                    <div class="code-block">
+POST /api/events/
+
+Body: {
+  "trip": 42,
+  "event": 5,  // ScoringStandard 的 event_number (如 A001)
+  "timestamp": "2025-10-06T09:15:23Z",
+  "confidence_score": 0.92,
+  "event_details": "急轉彎超過安全閾值"
+}
+
+# 後端會立即寫入 AiVisionLog 表
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 50px; color: #667eea;">階段三：行程結束 (計分與建議)</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>車機回報行程結束</h3>
+                        <div class="code-block">
+PATCH /api/trips/42/end/
+
+Body: {
+  "end_time": "2025-10-06T11:30:00Z",
+  "total_mileage": 180.5
+}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>後端自動觸發評分系統</h3>
+                        <p>呼叫 <span class="highlight">calculate_trip_score()</span> 函式，進行時間區間化計分</p>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>AI 生成個人化建議</h3>
+                        <p>呼叫 Generative AI Inference API，根據扣分事件生成改善建議，存入 <span class="highlight">ai_suggestion</span> 欄位</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 50px; color: #667eea;">階段四：影片上傳 (混合模式)</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>車機直接上傳至 Google Cloud Storage</h3>
+                        <p>不經過後端 API，避免佔用伺服器頻寬</p>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>註冊影片網址至後端</h3>
+                        <div class="code-block">
+POST /api/videos/register/
+
+Body: {
+  "trip": 42,
+  "video_url": "https://storage.googleapis.com/...",
+  "start_time": "2025-10-06T09:00:00Z",
+  "end_time": "2025-10-06T11:30:00Z",
+  "file_size": 524288000  // 500MB
+}
+
+# 後端只儲存 metadata，不處理檔案本身
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 評分邏輯 -->
+        <div id="scoring" class="section">
+            <h2>🎯 智慧評分邏輯</h2>
+            
+            <p style="font-size: 1.2em; margin-bottom: 30px;">
+                採用<span class="highlight">時間區間化 + 分類評分</span>機制，精確反映駕駛行為
+            </p>
+
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>時間切分</h3>
+                        <p>將整趟行程切分為多個 <span class="highlight">15 分鐘區間</span></p>
+                        <div class="code-block">
+例如：09:00-11:30 的行程
+→ 區間1: 09:00-09:15
+→ 區間2: 09:15-09:30
+→ 區間3: 09:30-09:45
+... 共 10 個區間
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>事件分類</h3>
+                        <p>根據 <span class="highlight">event_number</span> 前綴分類</p>
+                        <div class="code-block">
+A 開頭 → 車內事件 (如 A001: 未繫安全帶)
+B 開頭 → 車外事件 (如 B003: 未保持安全距離)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>區間獨立計分</h3>
+                        <p>每個區間從 100 分開始，根據該區間內的違規扣分</p>
+                        <div class="code-block">
+區間1: 100 - 5(事件A) - 3(事件B) = 92 分
+區間2: 100 - 8(事件A) = 92 分
+區間3: 100 分 (無違規)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>最終分數計算</h3>
+                        <p><strong>關鍵規則：</strong></p>
+                        <div class="code-block">
+IF 某類別所有區間 >= 60 分:
+    該類別最終分數 = 所有區間的平均值
+ELSE (有任何區間 < 60 分):
+    該類別最終分數 = 所有區間中的最低分
+
+總分 = (車內分數 + 車外分數) / 2
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px; color: #667eea;">實際案例</h3>
+            <div class="code-block">
+行程共 4 個區間：
+
+車內區間分數: [88, 92, 75, 82]  → 所有 >= 60
+  → in_car_score = (88+92+75+82)/4 = 84.25
+
+車外區間分數: [95, 55, 88, 90]  → 區間2 < 60 ⚠️
+  → out_car_score = min([95, 55, 88, 90]) = 55
+
+總分 = (84.25 + 55) / 2 = 69.625
+            </div>
+        </div>
+
+        <!-- 核心 API -->
+        <div id="apis" class="section">
+            <h2>🔌 核心 API 一覽</h2>
+
+            <h3 style="color: #667eea; margin-top: 30px;">車機端專用 API</h3>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>方法</th>
+                        <th>端點</th>
+                        <th>功能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="method-badge method-get">GET</span></td>
+                        <td>/api/users/by-nfc/</td>
+                        <td>用 NFC ID 查詢駕駛員</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-post">POST</span></td>
+                        <td>/api/trips/start/</td>
+                        <td>開始新行程</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-patch">PATCH</span></td>
+                        <td>/api/trips/{id}/end/</td>
+                        <td>結束行程 (觸發計分)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-post">POST</span></td>
+                        <td>/api/events/</td>
+                        <td>回報 AI 偵測事件</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-post">POST</span></td>
+                        <td>/api/videos/register/</td>
+                        <td>註冊影片網址</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 style="color: #667eea; margin-top: 40px;">前端 Flask 常用 API</h3>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>方法</th>
+                        <th>端點</th>
+                        <th>功能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="method-badge method-post">POST</span></td>
+                        <td>/api/token/</td>
+                        <td>使用者登入取得 JWT</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-get">GET</span></td>
+                        <td>/api/auth/profile/</td>
+                        <td>獲取個人資料</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-get">GET</span></td>
+                        <td>/api/me/groups/</td>
+                        <td>獲取我的群組列表</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-get">GET</span></td>
+                        <td>/api/trips/?user_id={id}</td>
+                        <td>查詢特定成員行程</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-get">GET</span></td>
+                        <td>/api/trips/{id}/</td>
+                        <td>單趟行程詳細資料</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-post">POST</span></td>
+                        <td>/api/chatbot/</td>
+                        <td>AI 客服對話</td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-badge method-get">GET</span></td>
+                        <td>/api/statistics/trends/</td>
+                        <td>駕駛分數趨勢</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 外部連接 -->
+        <div id="connections" class="section">
+            <h2>🌐 外部系統連接</h2>
+
+            <div class="connection-diagram">
+                <div class="connection-node">
+                    <h3>Flask 前端</h3>
+                    <p>透過 requests 呼叫 API</p>
+                    <p style="margin-top: 10px; color: #667eea; font-weight: bold;">JWT Token 認證</p>
+                </div>
+                <div class="connection-arrow">→</div>
+                <div class="connection-node">
+                    <h3>Django 後端</h3>
+                    <p>RESTful API</p>
+                    <p style="margin-top: 10px; color: #667eea; font-weight: bold;">商業邏輯處理</p>
+                </div>
+                <div class="connection-arrow">→</div>
+                <div class="connection-node">
+                    <h3>MySQL 資料庫</h3>
+                    <p>持久化儲存</p>
+                    <p style="margin-top: 10px; color: #667eea; font-weight: bold;">Django ORM</p>
+                </div>
+            </div>
+
+            <h3 style="color: #667eea; margin-top: 50px;">與 Flask 前端的連接流程</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>使用者登入 Flask 前端</h3>
+                        <div class="code-block">
+# Flask app.py
+@app.route('/login', methods=['POST'])
+def login():
+    response = requests.post(
+        f"{BACKEND_URL}/api/token/",
+        json={'username': username, 'password': password}
+    )
+    token = response.json()['access']
+    session['token'] = token  # 儲存到 Flask session
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Flask 用 Token 呼叫後端 API</h3>
+                        <div class="code-block">
+# 所有後續請求都帶上 Authorization header
+headers = {'Authorization': f'Bearer {session["token"]}'}
+
+response = requests.get(
+    f"{BACKEND_URL}/api/trips/",
+    headers=headers
+)
+trips = response.json()
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Django 驗證 Token 並回傳資料</h3>
+                        <div class="code-block">
+# Django views.py
+from rest_framework.permissions import IsAuthenticated
+
+class TripListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        # JWT 自動解析出 request.user
+        return Trip.objects.filter(personnel=self.request.user)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Flask 渲染模板</h3>
+                        <div class="code-block">
+# Flask 將 API 資料傳給 Jinja2 模板
+return render_template('trips.html', trips=trips)
+
+# trips.html 使用 Chart.js 視覺化
+&lt;canvas id="scoreChart"&gt;&lt;/canvas&gt;
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #667eea; margin-top: 50px;">與外部 AI 服務連接</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">AI</div>
+                    <div class="step-content">
+                        <h3>Generative AI Inference</h3>
+                        <p>後端在行程結束時自動呼叫 AI 生成建議</p>
+                        <div class="code-block">
+# services.py
+from huggingface_hub import InferenceClient
+
+def get_chatbot_response(chat_history):
+    client = InferenceClient(api_key=settings.HF_TOKEN)
+    
+    response = client.chat.completions.create(
+        model="meta-llama/Llama-3.3-70B-Instruct",
+        messages=chat_history,
+        max_tokens=500
+    )
+    
+    return response.choices[0].message.content
+
+# 行程結束時自動生成個性化建議
+def calculate_trip_score(trip_id):
+    # ... 計分邏輯 ...
+    
+    # 生成 AI 建議
+    prompt = f"駕駛員在本次行程中發生了以下違規..."
+    suggestion = get_chatbot_response([
+        {"role": "system", "content": "你是駕駛安全顧問"},
+        {"role": "user", "content": prompt}
+    ])
+    
+    trip.ai_suggestion = suggestion
+    trip.save()
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #667eea; margin-top: 50px;">與 Google Cloud Storage 連接</h3>
+            <div class="flow-step">
+                <div class="step-number">☁️</div>
+                <div class="step-content">
+                    <h3>車機直接上傳影片 (繞過後端)</h3>
+                    <p><strong>為什麼這樣設計？</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                        <li>影片檔案通常 500MB - 2GB，若經過 Django 會嚴重影響效能</li>
+                        <li>GCS 提供直接上傳 API，速度更快且節省伺服器資源</li>
+                        <li>後端只需儲存影片的 URL，不處理實體檔案</li>
+                    </ul>
+                    <div class="code-block">
+# 車機端 (偽代碼)
+video_file = record_trip_video()
+gcs_url = upload_to_gcs(video_file)  # 直傳 GCS
+
+# 上傳成功後通知後端
+requests.post(
+    "https://backend/api/videos/register/",
+    json={
+        "trip": trip_id,
+        "video_url": gcs_url,
+        "file_size": video_file.size
+    }
+)
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #667eea; margin-top: 50px;">權限管理架構</h3>
+            <div class="architecture-grid">
+                <div class="arch-card">
+                    <h3>JWT Token 機制</h3>
+                    <ul>
+                        <li>登入後獲取 access_token</li>
+                        <li>每次 API 請求帶上 Token</li>
+                        <li>後端自動解析出 user</li>
+                        <li>15 分鐘後過期需 refresh</li>
+                    </ul>
+                </div>
+
+                <div class="arch-card">
+                    <h3>三層權限體系</h3>
+                    <ul>
+                        <li>一般成員：看自己資料</li>
+                        <li>群組管理員：管理成員</li>
+                        <li>系統管理員：全站權限</li>
+                    </ul>
+                </div>
+
+                <div class="arch-card">
+                    <h3>自訂 Permission 類別</h3>
+                    <ul>
+                        <li>IsOwnerOrAdmin</li>
+                        <li>IsGroupOwnerOrAdmin</li>
+                        <li>IsAnnouncementPublisher</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // 隱藏所有區塊
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            // 移除所有按鈕的 active 狀態
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // 顯示選中的區塊
+            document.getElementById(sectionId).classList.add('active');
+
+            // 標記對應按鈕為 active
+            event.target.classList.add('active');
+
+            // 平滑滾動到頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
