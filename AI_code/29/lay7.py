@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>最新法令修正或宣導｜運研所指引（原則） — 純 HTML+CSS</title>
+  <title>最新法令修正或宣導｜運研所指引（原則） — 青綠主題＋JS</title>
   
   <!--
-    本檔為單一 HTML，僅內嵌 CSS（已移除 JS）。
+    本檔為單一 HTML，內嵌 CSS 與 JS。
     版面依照使用者提供之截圖風格設計：上方大標、中標；
     下方四張卡片（含標題、下載圖示、插圖、意見回饋連結）與左右導引箭頭。
     盡量讓行數多，並維持可讀性與可維護性。
@@ -17,18 +17,18 @@
        基礎變數（CSS Variables）
        ========================== */
     :root {
-      --bg-0: #bfe7ff;         /* 背景由淡藍到更淡的漸層  */
-      --bg-1: #d5f0ff;         /* 背景上層色                                  */
-      --panel: #eaf6ff;        /* 外框面板色                                   */
+      --bg-0: #c9f7ef;         /* 背景由青綠到更淡的漸層  */
+      --bg-1: #e8fffb;         /* 背景上層色                                  */
+      --panel: #e9fbf6;        /* 外框面板色                                   */
       --paper: #ffffff;        /* 卡片內文底色                                 */
-      --ink: #0f172a;          /* 文字主色                                     */
-      --muted: #3b82f6;        /* 主要藍色                                     */
-      --muted-2: #2563eb;      /* 深一階藍                                      */
-      --muted-3: #1d4ed8;      /* 更深藍                                        */
-      --accent: #38bdf8;       /* 青藍點綴                                      */
+      --ink: #082c2a;          /* 文字主色                                     */
+      --muted: #14b8a6;        /* 主色：teal 500                                */
+      --muted-2: #0d9488;      /* 深一階：teal 600                               */
+      --muted-3: #0f766e;      /* 更深：teal 700                                  */
+      --accent: #a3e635;       /* 螢光青檸點綴                                  */
       --ok: #059669;           /* 綠色（成功）                                   */
       --warn: #b91c1c;         /* 紅色（警示）                                   */
-      --ring: rgba(59,130,246,.35); /* 聚焦陰影                                 */
+      --ring: rgba(20,184,166,.35); /* 聚焦陰影                                   */
       --shadow: 0 10px 40px rgba(2, 8, 23, 0.12);
       --radius: 16px;          /* 圓角                                          */
       --radius-2: 24px;        /* 大圓角                                        */
@@ -131,7 +131,7 @@
       text-align: center;
       font-size: var(--heading-size);
       font-weight: 800;
-      color: #204b9f;
+      color: var(--muted-2);
       line-height: 1.35;
       min-height: 3.4em; /* 讓兩行標題時高度一致 */
     }
@@ -144,8 +144,8 @@
       width: 46px;
       height: 46px;
       border-radius: 12px;
-      background: linear-gradient(180deg, #eff7ff, #dff0ff);
-      border: 1px solid #c7e2ff;
+      background: linear-gradient(180deg, #f0fffb, #e4fff6);
+      border: 1px solid #b8f5e7;
       cursor: pointer;
       transition: transform .2s ease;
     }
@@ -170,7 +170,7 @@
       text-align: center;
       margin-top: 6px;
       font-weight: 900;
-      color: #1253df;
+      color: var(--muted-2);
       text-decoration: none;
       padding: 8px 0 6px 0;
       border-top: 1px solid #e8f0fd;
@@ -191,15 +191,15 @@
       display: grid;
       place-items: center;
       border-radius: 50%;
-      border: 1px solid #c9e2ff;
-      background: linear-gradient(180deg,#ffffff,#eef6ff);
+      border: 1px solid #b8f5e7;
+      background: linear-gradient(180deg,#ffffff,#f3fffd);
       box-shadow: var(--shadow);
       cursor: pointer;
       user-select: none;
       transition: transform .2s ease, box-shadow .2s ease;
     }
     .nav:active { transform: translateY(-50%) scale(.98); }
-    .nav svg { width: 22px; height: 22px; fill: #1f4fd6; }
+    .nav svg { width: 22px; height: 22px; fill: var(--muted-2); }
     .nav.left  { left: 12px; }
     .nav.right { right: 12px; }
 
@@ -229,8 +229,8 @@
       justify-content: space-between; 
       align-items: center; 
       padding: 16px 18px; 
-      background: linear-gradient(180deg,#f6fbff,#ebf5ff);
-      border-bottom: 1px solid #e2eeff;
+      background: linear-gradient(180deg,#f6fffd,#e8fff6);
+      border-bottom: 1px solid #ccf5ea;
     }
     .dialog header h3 { margin: 0; font-size: 18px; }
     .dialog header button { 
@@ -239,25 +239,25 @@
       cursor: pointer; 
       padding: 6px; 
     }
-    .dialog header button svg { width: 22px; height: 22px; fill: #3656d7; }
+    .dialog header button svg { width: 22px; height: 22px; fill: var(--muted-2); }
 
     .dialog form { padding: 18px; display: grid; gap: 12px; }
     .dialog label { font-size: 14px; font-weight: 700; }
     .dialog input, .dialog textarea, .dialog select {
       width: 100%;
       padding: 12px 14px;
-      border: 1px solid #cfe3ff;
+      border: 1px solid #bfeee3;
       border-radius: 10px;
       outline: none;
       box-shadow: 0 0 0 0 var(--ring);
       transition: box-shadow .18s ease, border-color .18s ease;
       font-size: 14px;
-      background: #f9fcff;
+      background: #f7fffd;
     }
     .dialog input:focus,
     .dialog textarea:focus,
     .dialog select:focus {
-      border-color: #9cc4ff;
+      border-color: #7fdccf;
       box-shadow: 0 0 0 4px var(--ring);
       background: #fff;
     }
@@ -269,7 +269,7 @@
       border-radius: 10px;
       border: 1px solid #c7dbff;
       cursor: pointer;
-      background: linear-gradient(180deg,#ffffff,#eef6ff);
+      background: linear-gradient(180deg,#ffffff,#f3fffd);
       font-weight: 700;
     }
     .btn.primary { 
@@ -505,5 +505,84 @@
 
   
 
+  <script>
+    // ==========================
+    // JS：互動邏輯（左右導引、下載、回饋對話框、Toast）
+    // ==========================
+    (function() {
+      const track = document.getElementById('track');
+      const left = document.querySelector('.nav.left');
+      const right = document.querySelector('.nav.right');
+      const scrim = document.getElementById('scrim');
+      const fbForm = document.getElementById('fbForm');
+      const topicInput = document.getElementById('topic');
+      const closeDialog = document.getElementById('closeDialog');
+      const cancelBtn = document.getElementById('cancel');
+      const toast = document.getElementById('toast');
+
+      // 左右捲動
+      const unit = 320; // 每次大約捲一張卡片寬
+      function scrollByX(dx) { track.scrollBy({ left: dx, behavior: 'smooth' }); }
+      left.addEventListener('click', () => scrollByX(-unit));
+      right.addEventListener('click', () => scrollByX(+unit));
+
+      // 鍵盤左右鍵支援
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') scrollByX(-unit);
+        if (e.key === 'ArrowRight') scrollByX(+unit);
+      });
+
+      // 點擊「意見回饋」開啟 modal，並帶入主題
+      document.querySelectorAll('.feedback').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          const topic = el.getAttribute('data-topic') || '';
+          topicInput.value = topic;
+          openDialog();
+        });
+      });
+
+      // 下載按鈕：動態產生假檔供下載（示意用途）
+      document.querySelectorAll('.dl').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const filename = btn.getAttribute('data-file') || 'download.txt';
+          const content = `此為示意檔案：${filename}
+
+（請替換為實際檔案連結或後端串接）`;
+          const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+          showToast(`已開始下載：${filename}`);
+        });
+      });
+
+      // 對話框開關
+      function openDialog() { scrim.setAttribute('aria-hidden', 'false'); setTimeout(() => topicInput.focus(), 30); }
+      function closeModal() { scrim.setAttribute('aria-hidden', 'true'); }
+      closeDialog.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+      scrim.addEventListener('click', (e) => { if (e.target === scrim) closeModal(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && scrim.getAttribute('aria-hidden') === 'false') closeModal(); });
+
+      // 送出回饋（純前端示意）
+      fbForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(fbForm);
+        const topic = fd.get('topic');
+        const msg = fd.get('msg');
+        if (!topic || !msg) { showToast('請填寫主題與意見內容'); return; }
+        closeModal(); fbForm.reset(); showToast('感謝您的回饋，我們已收到！');
+      });
+
+      // Toast 工具
+      let timer = null;
+      function showToast(text) {
+        toast.textContent = text; toast.classList.add('show');
+        clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+    })();
+  </script>
 </body>
 </html>
