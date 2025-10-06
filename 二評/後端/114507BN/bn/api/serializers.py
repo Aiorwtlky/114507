@@ -38,7 +38,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile', 'administered_groups']
+        fields = ['id', 'username', 
+                  'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile', 'administered_groups']
 
     def get_is_group_leader(self, obj):
         """檢查使用者是否為任何群組的建立者。"""
@@ -164,13 +165,11 @@ class VehicleDeviceSerializer(serializers.ModelSerializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     """處理使用者註冊請求，支援扁平化的 Profile 欄位、頭像上傳和邀請碼。"""
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
-    # Profile fields
     personnel_number = serializers.CharField(write_only=True)
     phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
     license_type = serializers.CharField(write_only=True, required=False, allow_blank=True)
     driving_experience = serializers.IntegerField(write_only=True, required=False, default=0)
     avatar = serializers.ImageField(write_only=True, required=False)
-    # Invitation code
     invitation_code = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=8)
 
     class Meta:
@@ -201,7 +200,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 invite.is_used = True
                 invite.save()
             except InvitationCode.DoesNotExist:
-                pass # 忽略無效的邀請碼
+                pass 
         return user
 
 class TripStartSerializer(serializers.ModelSerializer):
