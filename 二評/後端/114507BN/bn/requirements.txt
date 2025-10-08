@@ -15,6 +15,7 @@ whitenoise>=6.6.0
 
 # AI & 機器學習
 huggingface-hub>=0.19.0
+google-generativeai
 
 # 雲端儲存
 cloudinary>=1.36.0
