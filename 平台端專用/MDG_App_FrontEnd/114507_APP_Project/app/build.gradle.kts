@@ -1,8 +1,14 @@
-    plugins {
+// 檔案路徑: app/build.gradle.kts
+
+plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // ⭐ 1. 從這裡移除 id("org.jetbrains.kotlin.plugin.serialization") ... 這一行
 }
+
+// ⭐ 2. 在 plugins 區塊外面，用傳統方式套用插件
+apply(plugin = "kotlinx-serialization")
 
 android {
     namespace = "com.example.mdgapp"
@@ -41,7 +47,7 @@ android {
 }
 
 dependencies {
-
+    // 依賴部分完全不用修改，保持原樣即可
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -50,7 +56,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    // ✅ 改成這樣
     implementation(libs.androidx.navigation.compose)
     implementation(libs.camerax.core)
     implementation(libs.camerax.camera2)
@@ -72,13 +77,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.androidx.compose.material.icons.extended)
-    // 加入 Retrofit 和 Coroutines 的 bundle
     implementation(libs.bundles.retrofit)
     implementation(libs.bundles.coroutines)
-    implementation(libs.maps.compose) // Google Maps for Compose
-    implementation(libs.play.services.location) // 用於獲取 GPS 位置
-    // 透過 bundle 一次性引用所有 Retrofit 相關函式庫
-    implementation(libs.bundles.retrofit)
-    // 透過 bundle 一次性引用所有 Coroutines 相關函式庫
-    implementation(libs.bundles.coroutines)
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.serialization.json)
 }

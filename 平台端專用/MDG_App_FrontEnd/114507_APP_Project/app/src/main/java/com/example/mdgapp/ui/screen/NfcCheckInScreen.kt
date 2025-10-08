@@ -1,11 +1,13 @@
 package com.example.mdgapp.ui.screen
 
+import android.util.Log // ⭐ 新增 import
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect // ⭐ 新增 import
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +18,10 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NfcCheckInScreen(navController: NavController) {
+    LaunchedEffect(Unit) {
+        Log.d("NfcApp", "進入「手機 NFC 註冊」畫面，此功能待定義。")
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

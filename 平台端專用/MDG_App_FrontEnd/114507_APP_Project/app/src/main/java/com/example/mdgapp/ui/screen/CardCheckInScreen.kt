@@ -1,11 +1,13 @@
 package com.example.mdgapp.ui.screen
 
+import android.util.Log // ⭐ 新增 import
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect // ⭐ 新增 import
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +18,11 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardCheckInScreen(navController: NavController) {
+    // 當這個畫面首次顯示時，輸出一條 Log
+    LaunchedEffect(Unit) {
+        Log.d("NfcApp", "進入「實體卡片註冊」畫面，等待掃描寫入...")
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -49,7 +56,7 @@ fun CardCheckInScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    "請將感應卡放置於掃描區",
+                    "請將感應卡放置於手機背面掃描區",
                     color = Color.Gray,
                     fontSize = 20.sp
                 )

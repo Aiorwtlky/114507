@@ -21,16 +21,16 @@ class ProfileViewModel : ViewModel() {
 
     private fun loadUserProfile() {
         _userProfile.value = UserProfile(
-            fullName = "Member 1",
-            employeeId = "MDG-001",
+            fullName = "黃仁勳",
+            employeeId = "EMP-001",
             avatarUrl = "", // 留空，UI 層將使用預設圖示
-            currentVehiclePlate = "MDG-6688",
+            currentVehiclePlate = "MDG-0000",
             groupName = "總部第一車隊",
             nfcCardNumber = "NFC-123456789", // ✅ 新增 NFC 卡號
-            email = "MDGDriver@example-logistics.com",
-            phone = "0988-666-888",
+            email = "j.huang@example.com",
+            phone = "0912345678",
             licenseNumber = "T123456789",
-            licenseClass = "職業聯結車",
+            licenseClass = "普通小型車",
             linkedAccounts = listOf(
                 LinkedAccount("Google", "MDGDriver@gmail.com", R.drawable.ic_google)
             ),
