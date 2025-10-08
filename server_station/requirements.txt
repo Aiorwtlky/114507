@@ -1,3 +1,0 @@
-pymysql
-qrcode
-flask-cors

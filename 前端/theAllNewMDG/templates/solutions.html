@@ -1,0 +1,291 @@
+{% extends 'base2.html' %}
+
+{% block title %}
+  解決方案｜My Driving God 吾駕仙
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    /* ----- 解決方案區塊 ----- */
+    .solutions-section {
+      padding: 80px 20px;
+      background-color: #ffffff;
+      text-align: center;
+    }
+    
+    .solutions-header {
+      max-width: 800px;
+      margin: 0 auto 60px auto;
+    }
+    
+    .solutions-header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+    
+    .solutions-header p {
+      font-size: 18px;
+      line-height: 1.7;
+      color: #555;
+    }
+    
+    .solutions-grid {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 0 auto;
+      align-items: stretch; /* ★★★ 關鍵修改1：讓所有卡片等高 ★★★ */
+    }
+    
+    .solution-card {
+      background-color: #f8f9fa;
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      flex: 1 1 300px;
+      max-width: 350px;
+      /* ★★★ 關鍵修改2：讓卡片內部也使用 flex 排版 ★★★ */
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .solution-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-icon {
+      margin-bottom: 20px;
+    }
+    
+    .card-icon img {
+      height: 80px; /* 稍微縮小logo高度，讓整體更協調 */
+      width: auto;
+    }
+    
+    .solution-card h3 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #000000;
+      /* ★★★ 新增：給標題一個最小高度，確保至少能容納兩行 ★★★ */
+      min-height: 66px; /* 22px * 1.5 (行高) * 2 (行數) */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .solution-card .price {
+      font-size: 24px;
+      font-weight: 700;
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+    
+    /* ★★★ 新增：讓 ul 列表自動填滿剩餘空間 ★★★ */
+    .solution-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+      margin-top: auto; /* 將列表推到價格下方，填滿剩餘空間 */
+      padding-top: 20px; /* 增加與價格之間的間距 */
+    }
+    
+    .solution-card ul li {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      color: #000000;
+    }
+    
+    .solution-card ul li::before {
+      content: '✓';
+      color: #007bff;
+      font-weight: 900;
+      margin-right: 10px;
+      margin-top: 2px;
+    }
+    
+    /* ----- 諮詢表單區塊 ----- */
+    .inquiry-form-section {
+      padding: 80px 20px;
+      background-color: #f8f9fa;
+    }
+    .form-container {
+      max-width: 700px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .form-container h2 {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+    .form-container p {
+      margin-bottom: 30px;
+      color: #555;
+    }
+    .inquiry-form .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .inquiry-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    .inquiry-form input,
+    .inquiry-form select,
+    .inquiry-form textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #dcdcdc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .inquiry-form input:focus,
+    .inquiry-form select:focus,
+    .inquiry-form textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+    }
+    .inquiry-form textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+    .inquiry-form .submit-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .inquiry-form .submit-btn:hover {
+      background-color: #0056b3;
+    }
+    
+    @media (max-width: 768px) {
+      .solutions-header h1 {
+        font-size: 30px;
+      }
+      .solutions-grid {
+        flex-direction: column;
+        align-items: center;
+      }
+      .solution-card {
+        width: 100%;
+        max-width: 400px;
+      }
+      .solution-card h3 {
+        min-height: auto;
+      } /* 在手機上取消最小高度，讓它自然排列 */
+      .form-container {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <section class="solutions-section">
+    <div class="solutions-header">
+      <h1>我們的解決方案</h1>
+      <p>我們提供從硬體設備到雲端管理平台的一站式智慧車隊解決方案，旨在透過先進的 AI 技術，提升行車安全、優化管理效率，並為您的業務創造長期價值。</p>
+    </div>
+
+    <div class="solutions-grid">
+      <div class="solution-card">
+        <div class="card-icon">
+          <img src="{{ url_for('static', filename='images/mdgessential.png') }}" alt="MDG Essential" />
+        </div>
+        <h3>MDG essential<br> 駕駛行為行車記錄器</h3>
+        <p class="price">定價 15999 元</p>
+        <ul>
+          <li>硬體設備一次性買斷</li>
+          <li>1080P高清IP攝影機</li>
+          <li>量產後成本可大幅優化</li>
+        </ul>
+      </div>
+      <div class="solution-card">
+        <div class="card-icon">
+          <img src="{{ url_for('static', filename='images/mdgpro.png') }}" alt="MDG Pro 平台" />
+        </div>
+        <h3>MDG Pro 車隊管理平台</h3>
+        <p class="price">定價 150 元/月</p>
+        <ul>
+          <li>雲端與軟體服務訂閱</li>
+          <li>256GB/車 雲端儲存空間</li>
+          <li>每日影像錄製10小時</li>
+          <li>數據與影像可保存30日</li>
+        </ul>
+      </div>
+      <div class="solution-card">
+        <div class="card-icon">
+          <img src="{{ url_for('static', filename='images/mdgpromax.png') }}" alt="MDG Pro Max" />
+        </div>
+        <h3>月繳整合方案</h3>
+        <p class="price">月繳 365 元/車</p>
+        <ul>
+          <li>硬體 + 平台組合方案</li>
+          <li>MDG essential行車記錄器與Pro平台</li>
+          <li>提供64個管理帳號</li>
+          <li>綁定60期享記錄器$0</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="inquiry-form-section">
+    <div class="form-container">
+      <h2>索取方案報價</h2>
+      <p>對我們的方案感興趣嗎？請填寫以下資訊，我們的專員將會盡快與您聯繫！</p>
+      <form class="inquiry-form" action="#" method="post">
+        <div class="form-group">
+          <label for="name">您的姓名 *</label><input type="text" id="name" name="name" required />
+        </div>
+        <div class="form-group">
+          <label for="company">公司/單位名稱 *</label><input type="text" id="company" name="company" required />
+        </div>
+        <div class="form-group">
+          <label for="email">電子郵件 *</label><input type="email" id="email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">聯絡電話 *</label><input type="tel" id="phone" name="phone" required />
+        </div>
+        <div class="form-group">
+          <label for="solution_plan">選擇方案 *</label><select id="solution_plan" name="solution_plan" required>
+            <option value="" disabled selected>請選擇您有興趣的方案</option>
+            <option value="MDG H1">MDG H1 駕駛行為記錄器 (定價15999元)</option>
+            <option value="MDG Pro">MDG Pro 車隊管理平台 (150元/月)</option>
+            <option value="Monthly Subscription">月繳整合方案 (365元/車)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message">您的需求或疑問 (選填)</label><textarea id="message" name="message" placeholder="例如：想了解導入的車隊規模、特殊需求等..."></textarea>
+        </div>
+        <button type="submit" class="submit-btn">送出諮詢</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

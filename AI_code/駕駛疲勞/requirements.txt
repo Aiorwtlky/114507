@@ -1,9 +1,0 @@
-Flask==2.2.5
-opencv-python>=4.8.0.76
-已重新修改OpenCV版本
-
-numpy==1.24.3
-mediapipe==0.10.0
-...
-
-
