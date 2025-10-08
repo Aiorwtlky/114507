@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>YOLOv8n Real-time Detection with Auto Recording</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#222; color:#eee; text-align:center; padding:20px; }
+    #videoStream { border: 4px solid #0af; border-radius: 8px; }
+    #description { margin-top: 10px; font-size: 1.2em; min-height: 2em; }
+    #logArea { margin-top: 20px; max-height: 200px; overflow-y: scroll; background: #111; padding: 10px; border-radius: 8px; text-align: left; font-family: monospace; }
+    button { margin: 10px 5px; font-size: 1em; padding: 10px 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>YOLOv8n Real-time Object Detection</h1>
+  <img id="videoStream" src="{{ url_for('video_feed') }}" width="640" height="480" />
+  <div id="description">Detecting...</div>
+
+  <div>
+    <button id="startRecBtn">開始每15秒紀錄</button>
+    <button id="stopRecBtn" disabled>停止紀錄</button>
+  </div>
+
+  <div id="logArea">紀錄將顯示於此...</div>
+
+  <script>
+    const desc = document.getElementById('description');
+    const logArea = document.getElementById('logArea');
+    const startBtn = document.getElementById('startRecBtn');
+    const stopBtn = document.getElementById('stopRecBtn');
+
+    async function updateDescription() {
+      try {
+        const resp = await fetch('/detected');
+        if (resp.ok) {
+          const data = await resp.json();
+          if(data.objects.length === 0) {
+            desc.textContent = "No objects detected";
+          } else {
+            desc.textContent = "Detected: " + data.objects.join(", ");
+          }
+        }
+      } catch (e) {
+        desc.textContent = "Error fetching data";
+      }
+    }
+
+    async function fetchRecords() {
+      try {
+        const resp = await fetch('/records');
+        if(resp.ok) {
+          const data = await resp.json();
+          const lines = data.records.map(r => `[${r.time}] ${r.objects.join(', ')}`);
+          logArea.textContent = lines.reverse().join('\n');
+        }
+      } catch(e) {
+        logArea.textContent = "Error fetching records";
+      }
+    }
+
+    // 每秒更新辨識文字與紀錄清單
+    setInterval(updateDescription, 1000);
+    setInterval(fetchRecords, 5000);
+
+    startBtn.onclick = async () => {
+      const res = await fetch('/start_recording', {method: 'POST'});
+      const data = await res.json();
+      if(data.status === 'recording_started'){
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        alert('開始自動紀錄，每15秒會記錄一次辨識結果');
+      } else {
+        alert('已經在紀錄中');
+      }
+    };
+
+    stopBtn.onclick = async () => {
+      const res = await fetch('/stop_recording', {method: 'POST'});
+      const data = await res.json();
+      if(data.status === 'recording_stopped'){
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        alert('已停止自動紀錄');
+      }
+    };
+  </script>
+</body>
+</html>

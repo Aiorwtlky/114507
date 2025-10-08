@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="qr-test-container">
+    <h2>QR設計測試</h2>
+    <input type="text" id="deviceSerialInput" placeholder="輸入 Device Serial...">
+    <button id="generateBtn" class="main-btn">產生加密QR</button>
+
+    <div id="resultArea" style="margin-top: 30px; text-align: center;">
+        <p id="encryptedText"></p>
+        <img id="qrImage" src="" alt="" style="margin-top: 20px;">
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/qr_test.js') }}"></script>
+{% endblock %}

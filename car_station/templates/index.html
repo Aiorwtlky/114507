@@ -1,97 +1,49 @@
-<!-- templates/index.html -->
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Car Station</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
 
-{% block title %}MDG 車機系統{% endblock %}
+  <!-- 左上角 查看本車資訊 按鈕 -->
+  <div id="deviceInfoBtnContainer">
+    <button id="deviceInfoBtn">查看本車資訊</button>
+  </div>
 
-{% block content %}
-<div class="hero-section">
-    <h1 class="main-title">MDG 車機系統</h1>
-    <p class="subtitle">智慧駕駛評分系統</p>
-</div>
+  <!-- Modal 彈出視窗 -->
+  <div id="deviceInfoModal" style="display: none;">
+      <div class="modal-content">
+          <h2>本車資訊</h2>
+          <div id="deviceInfoText"></div>
+          <div class="modal-buttons">
+              <button id="closeModalBtn">關閉</button>
+              <button id="resetDeviceBtn">重設資訊</button>
+          </div>
+      </div>
+  </div>
+  
+  <!-- 右上角時間 -->
+  <div id="clock"></div>
 
-<div class="nav-grid">
-    <a href="{{ url_for('trip.start_trip') }}" class="nav-button primary">
-        <div class="icon">🚗</div>
-        <div class="text">開始行程</div>
-    </a>
-    
-    <a href="{{ url_for('trip.trip_history') }}" class="nav-button">
-        <div class="icon">📊</div>
-        <div class="text">過往行程</div>
-    </a>
-    
-    <a href="{{ url_for('device_info.device_info') }}" class="nav-button">
-        <div class="icon">⚙️</div>
-        <div class="text">本機資訊</div>
-    </a>
-    <!-- 或者改成這樣（不跳轉，直接顯示說明） -->
-    <!--
-    <div class="nav-button" style="opacity: 0.6; cursor: default;">
-        <div class="icon">🎮</div>
-        <div class="text">GPIO 測試<br><small>請使用鍵盤 A/D/W/X</small></div>
-    </div>
-    -->
-</div>
+  <!-- 影像區 -->
+  <div id="camDeck">
+    <img id="cam-left"  class="cam" src="{{ url_for('video', cam_id='left')  }}" />
+    <img id="cam-rear"  class="cam" src="{{ url_for('video', cam_id='rear')  }}" />
+    <img id="cam-right" class="cam" src="{{ url_for('video', cam_id='right') }}" />
+  </div>
 
-<style>
-    .hero-section {
-        text-align: center;
-        padding: 60px 20px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 20px;
-        margin-bottom: 40px;
-    }
-    
-    .main-title {
-        font-size: 3em;
-        margin-bottom: 10px;
-        color: #fff;
-    }
-    
-    .subtitle {
-        font-size: 1.2em;
-        color: rgba(255,255,255,0.8);
-    }
-    
-    .nav-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 30px;
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    
-    .nav-button {
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255,255,255,0.2);
-        border-radius: 15px;
-        padding: 40px 20px;
-        text-align: center;
-        text-decoration: none;
-        color: #fff;
-        transition: all 0.3s ease;
-    }
-    
-    .nav-button:hover {
-        background: rgba(255,255,255,0.2);
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    
-    .nav-button.primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-color: rgba(255,255,255,0.3);
-    }
-    
-    .nav-button .icon {
-        font-size: 3em;
-        margin-bottom: 15px;
-    }
-    
-    .nav-button .text {
-        font-size: 1.2em;
-        font-weight: 600;
-    }
-</style>
-{% endblock %}
+  <!-- 按鈕列 -->
+  <div id="btnRow">
+    <button data-mode="left"  class="ctrlBtn">左燈</button>
+    <button data-mode="right" class="ctrlBtn">右燈</button>
+    <button data-mode="rear"  class="ctrlBtn">倒車</button>
+  </div>
+
+  <!-- 底部狀態欄 -->
+  <div id="statusBar">　</div>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

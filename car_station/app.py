@@ -1,47 +1,78 @@
-from flask import Flask
-from blueprints.main import main_bp
-from blueprints.trip import trip_bp
-from blueprints.gpio import gpio_bp
-from blueprints.camera import camera_bp
-from blueprints.device_info import device_info_bp
-from blueprints.gps import gps_bp
-from blueprints.video import video_bp
-from blueprints.ai_service import ai_service_bp
-from models import db, init_database
-from config import APP_CONFIG
-import os
+from flask import Flask, Response, render_template, redirect, url_for
+import cv2
+import camera_config as cfg
+import numpy as np
+import time
+import sqlite3
+from routes.config import SERVER_URL
+from routes.install import install_bp
+from routes.device import device_bp
+from routes.reset import reset_bp
+from routes.gpio import gpio_bp
 
-def create_app():
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = APP_CONFIG['SECRET_KEY']
-    
-    # SQLite 資料庫設定
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "mdg_car.db")}'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
-    # 初始化資料庫
-    db.init_app(app)
-    
-    # 註冊藍圖
-    app.register_blueprint(main_bp)
-    app.register_blueprint(trip_bp, url_prefix='/trip')
-    app.register_blueprint(gpio_bp, url_prefix='/api')
-    app.register_blueprint(camera_bp, url_prefix='/camera')
-    app.register_blueprint(device_info_bp, url_prefix='/device_info')
-    app.register_blueprint(gps_bp, url_prefix='/gps')
-    app.register_blueprint(video_bp, url_prefix='/video')
-    app.register_blueprint(ai_service_bp, url_prefix='/ai') 
 
-    # 建立資料庫表格
-    init_database(app)
-    
-    return app
+app = Flask(__name__)
+app.config['SERVER_URL'] = SERVER_URL
+
+#Blueprint
+app.register_blueprint(install_bp)
+app.register_blueprint(device_bp)
+app.register_blueprint(reset_bp)
+app.register_blueprint(gpio_bp)
+
+def open_stream(url):
+    cap = cv2.VideoCapture(url)
+    if not cap.isOpened():
+        cap.release()
+        cap = None
+    return cap
+
+def blank_frame(text="NO FEED", w=640, h=480):
+    frame = np.full((h, w, 3), 220, dtype=np.uint8)
+    cv2.putText(frame, text, (40, h // 2),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+    return frame
+
+def gen(camera_id):
+    url = cfg.CAMERA_URLS[camera_id]
+    cap = open_stream(url)
+
+    while True:
+        if cap:
+            ok, frame = cap.read()
+            if not ok:
+                cap.release()
+                cap = None
+        if not cap:
+            frame = blank_frame(f"{camera_id.upper()} OFFLINE")
+
+        _, buffer = cv2.imencode('.jpg', frame)
+        jpg_bytes = buffer.tobytes()
+        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' +
+               jpg_bytes + b'\r\n')
+        time.sleep(0.03)  # ≈30 fps
+
+#修改 index()，開機時自動檢查是否需要設定
+@app.route('/')
+def index():
+    conn = sqlite3.connect('device.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT car_plate, car_brand, vehicle_type, driver_position FROM devices WHERE device_serial = ?', ('mdgcs001',))
+    device = cursor.fetchone()
+    conn.close()
+
+    # 如果車輛資料還沒填，就跳去安裝設定頁
+    if device is None or None in device or '' in device:
+        return redirect(url_for('install.install'))
+
+    return render_template('index.html')
+
+@app.route('/video/<cam_id>')
+def video(cam_id):
+    return Response(gen(cam_id),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app = create_app()
-    app.run(
-        debug=APP_CONFIG['DEBUG'], 
-        host=APP_CONFIG['HOST'], 
-        port=APP_CONFIG['PORT']
-    )
+    import sys
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 730
+    app.run(host='0.0.0.0', port=port, threaded=True)

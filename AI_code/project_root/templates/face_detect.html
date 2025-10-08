@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}臉部偵測功能 (WebSocket){% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/face_detect.css') }}">
+<style>
+.video-container {
+  max-width: 640px;  /* 串流畫面寬度 */
+  margin: 0 auto;    /* 水平置中 */
+  border: 3px solid #008080;
+  border-radius: 12px;
+  padding: 10px;
+  background-color: #f0f8f8;
+  text-align: center;
+}
+
+.video-container img {
+  border-radius: 10px;
+  width: 100%;
+  height: auto;
+}
+
+  #status-text {
+    margin-top: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #008000;
+    min-height: 28px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 style="text-align:center;">即時臉部偵測畫面</h2>
+
+<div class="video-container">
+  <img id="video_feed" src="{{ url_for('video_feed_face') }}" alt="Face Detect Stream" />
+  <div id="status-text">目前狀態：正常</div>
+</div>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
+    integrity="sha384-OxL6ky8nh70+RdMbbRv0Lknmu+0xBo3Bq7fifn6kU2r2eY7ryqQzZhQ0Xj6QX2lg"
+    crossorigin="anonymous"></script>
+<script>
+  const socket = io();
+
+  socket.on('status_update', function(data) {
+    const statusText = document.getElementById('status-text');
+    if (data.status === "疲勞駕駛警告!") {
+      statusText.style.color = 'red';
+    } else {
+      statusText.style.color = '#008000';
+    }
+    statusText.textContent = `目前狀態：${data.status}`;
+  });
+</script>
+{% endblock %}

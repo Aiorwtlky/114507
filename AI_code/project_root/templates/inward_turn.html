@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}右轉內輪差辨識{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inward_turn.css') }}">
+{% endblock %}
+
+{% block content %}
+<h2>即時內輪差辨識畫面</h2>
+<img src="{{ url_for('video_feed_inward') }}" alt="Inward Turn Stream">
+{% endblock %}

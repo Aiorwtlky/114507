@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>安裝成功</title>
+    <meta http-equiv="refresh" content="3;url=/" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/transition_page.css') }}">
+    <script src="{{ url_for('static', filename='js/transition_page.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>安裝成功！</h1>
+        <p>即將於 <span id="countdown">3</span> 秒後跳回主畫面。</p>
+        <div class="loader"></div>
+        <a href="/">若未自動跳轉，請點此前往主畫面</a>
+    </div>
+</body>
+</html>

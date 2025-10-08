@@ -1,0 +1,9 @@
+{
+    "timestamp": "20250512_160634",
+    "object_type": "person",
+    "location": "right_cam",
+    "event_type": "outside_roi_intrusion",
+    "image_path": "20250512_160634_alert.jpg",
+    "video_path": "20250512_160634_clip.mp4",
+    "device_serial": "RPi-0001"
+}

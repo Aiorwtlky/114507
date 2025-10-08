@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}首頁{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="button-grid">
+    <a href="/inward-turn" class="btn-card">右轉內輪差辨識</a>
+    <a href="/face-detect" class="btn-card">臉部偵測功能</a>
+    <a href="/demo" class="btn-card">靜態展示頁面</a>
+</div>
+{% endblock %}

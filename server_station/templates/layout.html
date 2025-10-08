@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Drive God Car Server Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <h1>MDG 大型車管理系統</h1>
+    </header>
+
+    <main class="site-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <p>Copyright © 2025 NTUBIMD114507 Team — Chia-Hsien, Guan-Wen, Bo-Cheng, Ting-Yi, Ting-Xuan.</p>
+    </footer>
+</body>
+</html>

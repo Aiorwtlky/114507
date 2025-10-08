@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>智慧影像監控系統</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(to right, #c9d6ff, #e2e2e2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 48px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 32px;
+      color: #333;
+    }
+    p {
+      margin-bottom: 30px;
+      font-size: 18px;
+      color: #666;
+    }
+    .btn {
+      display: block;
+      width: 250px;
+      margin: 10px auto;
+      padding: 14px 28px;
+      font-size: 16px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #357ab7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚗 智慧影像辨識系統</h1>
+    <p>請選擇欲操作的功能：</p>
+    <a href="/camera" class="btn">📷 即時鏡頭畫面</a>
+    <a href="/record" class="btn">📂 事件紀錄總覽</a>
+    <a href="/video_feed" class="btn">🎞️ 原始影像串流</a>
+  </div>
+</body>
+</html>

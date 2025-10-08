@@ -1,0 +1,78 @@
+/* === 跳轉過渡頁面 === */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: #f8f2ea;
+    color: #333;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .container {
+    background: #fff;
+    padding: 32px 26px;
+    border-radius: 16px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.15);
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  h1 {
+    color: #333;
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  
+  a {
+    margin-top: 16px;
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #eddcc9;
+    color: #333;
+    text-decoration: none;
+    border-radius: 24px;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  
+  a:hover {
+    background-color: #ffb347;
+  }
+  
+  /* 🔥 轉圈圈動畫 */
+  .loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+    margin: 20px 0;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* 🔥 倒數數字 */
+  #countdown {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+  }
+  
