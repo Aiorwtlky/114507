@@ -1,5 +1,12 @@
-flask
-requests
-opencv-python-headless
-numpy
-pyserial
+# 原有依賴
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+pyserial==3.5
+requests==2.31.0
+
+# AI 相關依賴（新增）
+opencv-python==4.8.1.78
+mediapipe
+ultralytics==8.0.196
+numpy==1.24.3
+scipy==1.11.4

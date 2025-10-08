@@ -1,0 +1,130 @@
+{% extends 'base2.html' %}
+
+{% block title %}
+  關於我們｜My Driving God 吾駕仙
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* 頁面主要容器樣式 (此處佈局不變) */
+  .page-container {
+    max-width: 1100px;
+    margin: 60px auto; 
+    padding: 0 20px;
+    width: 60%;
+    max-width: 800px;
+    min-width: 300px;
+  }
+
+  /* --- 修改：品牌故事卡片改為白底樣式 --- */
+  .story-card {
+    background: #ffffff; /* 改為白色背景 */
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, .1); /* 調整陰影 */
+    border: 1px solid #e0e0e0; /* 改為淡灰色邊框 */
+  }
+
+  /* 內容排版 (此處佈局不變) */
+  .story-layout {
+    display: flex;
+    align-items: center;
+    gap: 40px; 
+  }
+
+  /* 左側視覺區 */
+  .story-visual {
+    flex: 0 0 200px; 
+    text-align: center;
+  }
+
+  .story-visual img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    border-radius: 12px;
+    /* --- 修改：圖片背景色 --- */
+    background-color: #f8f9fa; /* 加上一個極淡的灰色背景來襯托圖片 */
+    padding: 10px;
+  }
+
+  /* 右側文字內容區 */
+  .story-content {
+    flex: 1;
+  }
+
+  /* --- 修改：標題文字顏色 --- */
+  .story-content h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #2c3e50; /* 改為深藍灰色 */
+    border-left: 4px solid #007bff;
+    padding-left: 15px;
+  }
+
+  /* --- 修改：段落文字顏色 --- */
+  .story-content p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #333333; /* 改為深灰色 */
+    text-align: justify;
+    margin-bottom: 30px;
+  }
+
+  /* 按鈕樣式不變，藍底白字在白色背景上效果很好 */
+  .btn-more-story {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-more-story:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  }
+
+  /* 響應式設計 (此處佈局不變) */
+  @media (max-width: 768px) {
+    .page-container {
+        width: 90%;
+    }
+    .story-layout {
+      flex-direction: column;
+      text-align: center;
+    }
+    .story-content h2 {
+      border-left: none;
+      padding-left: 0;
+      text-align: center;
+    }
+    .story-visual {
+      margin-bottom: 30px;
+      flex-basis: auto;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  <div class="story-card">
+    <div class="story-layout">
+      <div class="story-visual">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="My Driving God Logo" />
+      </div>
+      <div class="story-content">
+        <h2>品牌故事 MyDrivingGod</h2>
+        <p>我們是來自國立臺北商業大學資訊管理系的畢業專題團隊，成立於 2024 年冬季 。身處常被稱為「交通地獄」的台灣，我們深刻感受到現行的駕駛輔助系統，多半僅針對車外風險，卻忽略了駕駛者因疲勞、分心等「人因風險」所帶來的潛在威脅 。 為此，我們投入開發「吾駕仙」這套專注於駕駛行為的智慧分析系統，期望補足現行技術的不足 。我們的目標是建立一套能「理解並回應」駕駛狀態的智慧防線 ，集監控、分析與 AI 教練於一體，透過數據回饋與改善建議，實踐真正以人為本的主動式安全防護，為每一趟旅程守望 。</p>
+        <a href="{{ url_for('contact') }}" class="btn-more-story">聯絡我們</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
