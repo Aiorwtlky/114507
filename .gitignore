@@ -1,0 +1,117 @@
+# ===================================================================
+# 通用 .gitignore 範本 (General Purpose .gitignore)
+# 適用於 Python、VS Code、PyCharm，並包含 macOS/Windows/Linux 系統檔案
+# ===================================================================
+
+# 敏感資訊 (Secrets & Credentials)
+# 永遠不要提交包含密碼、API 金鑰等敏感資訊的檔案！
+# 建議提交一個 .env.example 檔案作為範本
+.env
+.env.*
+!/.env.example
+config.ini
+credentials.json
+*.pem
+*.key
+
+# Python 相關 (Python Specific)
+# ---------------------------------
+# 虛擬環境 (Virtual Environments)
+venv/
+env/
+.venv/
+.env/
+# 專案中的虛擬環境目錄（本專案使用 mdgvenv/）
+mdgvenv/
+
+# Python 快取檔案 (Cache & Bytecode)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 套件打包與安裝 (Packaging & Installation)
+build/
+dist/
+*.egg-info/
+*.egg
+wheels/
+pip-wheel-metadata/
+parts/
+var/
+*.manifest
+*.spec
+
+# 測試與覆蓋率報告 (Testing & Coverage)
+.pytest_cache/
+.coverage
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE / 編輯器設定 (IDE / Editor Settings)
+# ---------------------------------
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# 作業系統檔案 (Operating System Files)
+# ---------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# 紀錄檔與資料庫 (Logs & Databases)
+# ---------------------------------
+*.log
+logs/
+*.sqlite3
+*.db
+db.sqlite3
+*.sqlite
+*.sql
+*.bak
+*.backup
+*.old
+
+
+# 專案特定大型檔案 (Project-specific Large Files)
+# ---------------------------------
+# 如果您的專案有大型資料集、使用者上傳的媒體檔案等，請取消註解並修改
+/data/
+/media/
+/uploads/
+*.zip
+*.tar.gz
+*.7z
+*.rar
+*.mp4
+*.mov
