@@ -1,113 +1,94 @@
 # main_window.py
 import sys
-import configparser
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QApplication
-from PySide6.QtCore import Qt, Slot, QTimer, QThread
-from PySide6.QtGui import QFont, QPixmap, QImage
-from worker import VideoWorker
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel, 
+                               QVBoxLayout, QHBoxLayout, QTextEdit)
+from PySide6.QtGui import QPixmap, QImage, QFont
+from PySide6.QtCore import Qt, QThread, Signal
 
-class MainWindow(QWidget):
+from worker import VideoWorker # 確保 worker.py 在同一個資料夾
+
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        self.video_path = config['DataSource']['road_video_path']
-        self.init_ui()
+        self.setWindowTitle("吾駕仙 - AI 駕駛行為分析模擬器")
+        self.setGeometry(100, 100, 1100, 800)
+
+        # --- UI 元件 ---
+        self.video_label = QLabel("正在初始化攝影機...")
+        self.video_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.video_label.setStyleSheet("background-color: black; color: white;")
+        
+        self.status_label = QLabel("狀態：初始化中...")
+        self.status_label.setFont(QFont("Arial", 14))
+        
+        self.log_label = QLabel("即時事件紀錄:")
+        self.log_label.setFont(QFont("Arial", 12))
+        
+        self.event_log = QTextEdit()
+        self.event_log.setReadOnly(True)
+        self.event_log.setFont(QFont("Consolas", 11))
+        self.event_log.setMaximumHeight(200) # 限制紀錄區塊的高度
+
+        # --- 佈局 ---
+        # 右側資訊面板
+        right_panel_layout = QVBoxLayout()
+        right_panel_layout.addWidget(self.status_label)
+        right_panel_layout.addWidget(self.log_label)
+        right_panel_layout.addWidget(self.event_log)
+        right_panel_layout.setContentsMargins(10, 10, 10, 10)
+        
+        right_panel_widget = QWidget()
+        right_panel_widget.setLayout(right_panel_layout)
+        right_panel_widget.setFixedWidth(400)
+
+        # 主佈局
+        main_layout = QHBoxLayout()
+        main_layout.addWidget(self.video_label, 1) # 影像佔用更大比例
+        main_layout.addWidget(right_panel_widget)
+        
+        central_widget = QWidget()
+        central_widget.setLayout(main_layout)
+        self.setCentralWidget(central_widget)
+
+        # --- 啟動背景執行緒 ---
         self.init_worker_thread()
 
-    def init_ui(self):
-        self.setWindowTitle("吾駕仙 - AI 駕駛監控系統 (智慧切換模式)")
-        self.setGeometry(100, 100, 1024, 768)
-        self.setStyleSheet("background-color: #1c1c1c;")
-
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-
-        self.video_label = QLabel("系統啟動中... 按 'Tab' 切換內/外模式 | 按 'n' 登入", self)
-        self.video_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.video_label.setFont(QFont("Arial", 20, QFont.Bold))
-        self.video_label.setStyleSheet("background-color: black; color: #cccccc;")
-        main_layout.addWidget(self.video_label, 90)
-
-        bottom_bar_layout = QHBoxLayout()
-        bottom_bar_layout.setSpacing(0)
-        
-        self.suggestion_label_inner = QLabel("--- 內部偵測 ---", self)
-        self.suggestion_label_outer = QLabel("--- 外部偵測 ---", self)
-        self.driver_status_label = QLabel("狀態：未登入", self)
-
-        for label in [self.suggestion_label_inner, self.suggestion_label_outer]:
-            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            label.setFont(QFont("Arial", 14, QFont.Bold))
-            label.setStyleSheet("background-color: #2c3e50; color: #ecf0f1; padding: 10px; border: 1px solid #40576d;")
-
-        self.driver_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.driver_status_label.setFont(QFont("Arial", 12))
-        self.driver_status_label.setStyleSheet("background-color: #34495e; color: white; padding: 10px; border-right: 1px solid #40576d; border-left: 1px solid #40576d;")
-        
-        bottom_bar_layout.addWidget(self.suggestion_label_inner, 40)
-        bottom_bar_layout.addWidget(self.driver_status_label, 20)
-        bottom_bar_layout.addWidget(self.suggestion_label_outer, 40)
-        main_layout.addLayout(bottom_bar_layout, 10)
-
-        self.timer_inner = QTimer(self)
-        self.timer_inner.setSingleShot(True)
-        self.timer_inner.timeout.connect(self.reset_suggestion_inner)
-
-        self.timer_outer = QTimer(self)
-        self.timer_outer.setSingleShot(True)
-        self.timer_outer.timeout.connect(self.reset_suggestion_outer)
-
     def init_worker_thread(self):
-        self.thread = QThread()
-        self.worker = VideoWorker(self.video_path)
-        self.worker.moveToThread(self.thread)
-
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
+        """初始化並啟動影像處理執行緒"""
+        self.worker = VideoWorker(driver_camera_index=0)
         
+        # 連接新版的訊號到對應的 UI 更新函式
         self.worker.change_pixmap.connect(self.set_image)
         self.worker.update_driver_status.connect(self.set_driver_status)
-        self.worker.update_suggestion_inner.connect(self.set_suggestion_inner)
-        self.worker.update_suggestion_outer.connect(self.set_suggestion_outer)
+        self.worker.update_event_log.connect(self.add_to_log)
+        
+        self.worker.start()
+        print("[INFO] Worker thread started from main window.")
 
-        self.thread.start()
-
-    @Slot(QImage)
+    # --- Slot 函式 (用來接收訊號) ---
     def set_image(self, image: QImage):
+        """更新視訊畫面"""
         self.video_label.setPixmap(QPixmap.fromImage(image))
 
-    @Slot(str)
-    def set_suggestion_inner(self, text: str):
-        self.suggestion_label_inner.setText(text)
-        self.suggestion_label_inner.setStyleSheet("background-color: #c0392b; color: white; padding: 10px; border: 1px solid #40576d;")
-        self.timer_inner.start(5000)
-
-    @Slot(str)
-    def set_suggestion_outer(self, text: str):
-        self.suggestion_label_outer.setText(text)
-        self.suggestion_label_outer.setStyleSheet("background-color: #e67e22; color: white; padding: 10px; border: 1px solid #40576d;")
-        self.timer_outer.start(5000)
-
-    def reset_suggestion_inner(self):
-        self.suggestion_label_inner.setText("--- 內部偵測 ---")
-        self.suggestion_label_inner.setStyleSheet("background-color: #2c3e50; color: #ecf0f1; padding: 10px; border: 1px solid #40576d;")
-        
-    def reset_suggestion_outer(self):
-        self.suggestion_label_outer.setText("--- 外部偵測 ---")
-        self.suggestion_label_outer.setStyleSheet("background-color: #2c3e50; color: #ecf0f1; padding: 10px; border: 1px solid #40576d;")
-        
-    @Slot(str)
     def set_driver_status(self, text: str):
-        self.driver_status_label.setText(text)
+        """更新駕駛員狀態標籤"""
+        self.status_label.setText(text)
+
+    def add_to_log(self, message: str):
+        """在事件紀錄中新增一筆訊息"""
+        self.event_log.append(message)
+        self.event_log.verticalScrollBar().setValue(self.event_log.verticalScrollBar().maximum()) # 自動滾動到底部
 
     def closeEvent(self, event):
-        print("Closing application...")
-        if self.thread.isRunning():
+        """當視窗被關閉時，安全地停止背景執行緒"""
+        print("[INFO] Closing application...")
+        if self.worker.isRunning():
             self.worker.stop()
-            self.thread.quit()
-            self.thread.wait()
+            self.worker.wait() # 等待執行緒完全結束
         event.accept()
+
+# --- 主程式進入點 ---
+if __name__ == '__main__':
+    # 確保您有 main.py，或者直接由此處執行
+    from main import main # 假設 main.py 裡有 main() 函式
+    main()

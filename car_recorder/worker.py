@@ -1,181 +1,143 @@
 # worker.py
 import cv2
 import time
-import numpy as np
 import os
+import numpy as np
 from datetime import datetime
 from PySide6.QtCore import QThread, Signal, Qt
 from PySide6.QtGui import QImage
 
-# --- 本地模組匯入 ---
-# 根據您提供的檔案，匯入對應的類別
+
 from event_detectors.advanced_fatigue_detector import FatigueDetector
-from event_detectors.advanced_distration_detector import DistractionDetector
-from event_detectors.advanced_adas_detector import AdasDetector
+from event_detectors.advanced_distraction_detector import DistractionDetector
+# 確保您有 dummy_gpio.py
+from dummy_gpio import GPIOSimulator 
 
-from dummy_gpio import GPIOSimulator
-from utils.api_client import ApiClient
-from local_database import LocalDatabase
-
-# UploaderWorker 執行緒 (為了 Demo 穩定，保持低度活動)
-class UploaderWorker(QThread):
-    def __init__(self, db, api_client):
-        super().__init__()
-        self.db = db
-        self.api = api_client
-        self._is_running = True
-
-    def run(self):
-        print("[Uploader] Background uploader started (in standby mode for demo).")
-        while self._is_running:
-            time.sleep(30) # 發表會期間不執行上傳，只休眠
-            
-    def stop(self):
-        self._is_running = False
-
-# --- VideoWorker 執行緒 ---
 class VideoWorker(QThread):
-    # 訊號定義
+    # --- 訊號定義 ---
     change_pixmap = Signal(QImage)
-    update_suggestion_inner = Signal(str)
-    update_suggestion_outer = Signal(str)
+    update_event_log = Signal(str)
     update_driver_status = Signal(str)
-    finished = Signal()
 
-    def __init__(self, road_video_path):
+    def __init__(self, driver_camera_index=0):
         super().__init__()
-        self.road_video_path = road_video_path
-        self.driver_camera_index = 0
         self._is_running = True
+        self.driver_camera_index = driver_camera_index
         
-        # 初始化所有模組
+        # --- 初始化核心模組 ---
+        print("[INFO] Initializing modules...")
         self.gpio = GPIOSimulator()
-        self.api = ApiClient(mock_mode=True)
-        self.db = LocalDatabase()
-        
-        print("Initializing AI Detectors from your final files...")
         self.fatigue_detector = FatigueDetector()
         self.distraction_detector = DistractionDetector()
-        self.adas_detector = AdasDetector()
-        print("AI Detectors Initialized.")
-
-        self.uploader_thread = UploaderWorker(self.db, self.api)
-        
-        self.cache_dir = "upload_queue_videos"
-        os.makedirs(self.cache_dir, exist_ok=True)
+        print("[INFO] Modules initialized.")
 
         self.driver_logged_in = False
         self.current_driver = "Unknown"
+        self.current_mode = 'inner'
         
-        self.current_mode = 'inner' # 預設為內部鏡頭模式
+        # --- 事件冷卻機制 ---
         self.event_cooldowns = {}
-        self.EVENT_COOLDOWN_SECONDS = 10
+        self.EVENT_COOLDOWN_SECONDS = 10 # 每個事件觸發後冷卻10秒
+
+        # --- 影像處理參數 ---
+        self.PROCESSING_WIDTH = 640
+        self.PROCESSING_HEIGHT = 480
 
     def run(self):
-        # self.uploader_thread.start() # 發表會期間建議保持註解
+        print("[INFO] VideoWorker thread started.")
         
-        cap_road = cv2.VideoCapture(self.road_video_path)
-        cap_driver = cv2.VideoCapture(self.driver_camera_index)
-        
-        if not cap_road.isOpened() or not cap_driver.isOpened():
-            print(f"錯誤: 無法開啟影像來源 (road: {cap_road.isOpened()}, driver: {cap_driver.isOpened()})。")
-            self.finished.emit()
+        # --- 初始化攝影機 ---
+        try:
+            cap_driver = cv2.VideoCapture(self.driver_camera_index)
+            if not cap_driver.isOpened():
+                raise IOError(f"Cannot open driver camera index {self.driver_camera_index}")
+        except Exception as e:
+            print(f"[ERROR] {e}")
+            self.update_driver_status.emit(f"錯誤: 無法開啟攝影機 {self.driver_camera_index}")
             return
 
-        frame_count = 0
         self.update_driver_status.emit("狀態：未登入 (按 'n') | 按 'Tab' 切換模式")
 
         while self._is_running:
-            # 硬體事件處理
+            start_time = time.time()
+
+            # 1. 硬體事件處理
             if self.gpio.check_nfc_scan():
                 self.driver_logged_in = not self.driver_logged_in
-                if self.driver_logged_in:
-                    self.current_driver = "Driver_1013"
-                    self.api.start_trip(self.current_driver, "Demo_Car")
-                    self.update_driver_status.emit(f"駕駛 {self.current_driver} 已登入")
-                else:
-                    self.api.end_trip()
-                    self.update_driver_status.emit("狀態：駕駛已登出")
-            
-            if self.gpio.check_mode_switch():
-                self.current_mode = 'outer' if self.current_mode == 'inner' else 'inner'
-                if self.current_mode == 'outer': cap_road.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                print(f"--- Switched to {self.current_mode.upper()} MODE ---")
+                status = "已登入" if self.driver_logged_in else "已登出"
+                print(f"[INFO] Driver status changed to: {status}")
+                self.update_driver_status.emit(f"狀態：駕駛 {status}")
 
+            if self.gpio.check_mode_switch():
+                # 專注於內部鏡頭，此處可先不實作
+                print("[INFO] Mode switch pressed (currently only inner mode supported).")
+
+            # 2. 檢查登入狀態
             if not self.driver_logged_in:
+                # 顯示一個待機畫面
+                idle_frame = np.zeros((self.PROCESSING_HEIGHT, self.PROCESSING_WIDTH, 3), dtype=np.uint8)
+                cv2.putText(idle_frame, "Please Log In (Press 'n')", (100, self.PROCESSING_HEIGHT // 2), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                self.emit_frame(idle_frame)
                 time.sleep(0.1)
                 continue
 
-            # 根據模式執行對應 AI 引擎
-            display_frame = None
-            if self.current_mode == 'inner':
-                ret, frame = cap_driver.read()
-                if not ret: continue
-                frame = cv2.flip(frame, 1)
-                
-                # 依序執行內部偵測
-                distraction_event, display_frame = self.distraction_detector.analyze_frame(frame, frame_count)
-                if distraction_event: self.handle_event(distraction_event, frame, 'inner')
-                
-                fatigue_event, display_frame = self.fatigue_detector.analyze_frame(display_frame, frame_count)
-                if fatigue_event: self.handle_event(fatigue_event, frame, 'inner')
-
-            else: # 'outer' mode
-                ret, frame = cap_road.read()
-                if not ret: 
-                    cap_road.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                    continue
-                
-                adas_event, display_frame = self.adas_detector.analyze_frame(
-                    frame, frame_count, self.gpio.is_left_on(), self.gpio.is_right_on()
-                )
-                if adas_event: self.handle_event(adas_event, frame, 'outer')
-
-            # 更新 UI
-            if display_frame is not None:
-                final_frame_rgb = cv2.cvtColor(display_frame, cv2.COLOR_BGR2RGB)
-                h, w, ch = final_frame_rgb.shape
-                qt_image = QImage(final_frame_rgb.data, w, h, w * ch, QImage.Format_RGB888)
-                self.change_pixmap.emit(qt_image.scaled(1024, 768, Qt.AspectRatioMode.KeepAspectRatio))
+            # 3. 讀取與預處理影像
+            ret, frame = cap_driver.read()
+            if not ret:
+                print("[WARN] Failed to grab frame from driver camera.")
+                time.sleep(0.5)
+                continue
             
-            time.sleep(1 / 30)
-            frame_count += 1
+            frame = cv2.flip(frame, 1)
+            frame = cv2.resize(frame, (self.PROCESSING_WIDTH, self.PROCESSING_HEIGHT))
+
+            # 4. AI 分析
+            # 分心偵測優先，並取得頭部姿態數據
+            distraction_events, frame, head_pose = self.distraction_detector.analyze_frame(frame)
+            # 疲勞偵測使用頭部姿態數據
+            fatigue_events, frame = self.fatigue_detector.analyze_frame(frame, head_pose)
+
+            # 5. 事件處理
+            all_events = distraction_events + fatigue_events
+            for event_string in all_events:
+                self.handle_event(event_string)
+
+            # 6. 更新UI
+            self.emit_frame(frame)
             
-        # 清理資源
-        cap_road.release()
+            # 控制幀率
+            processing_time = time.time() - start_time
+            sleep_time = max(0, (1/30) - processing_time)
+            time.sleep(sleep_time)
+            
+        # --- 清理資源 ---
         cap_driver.release()
         self.gpio.stop()
-        if self.uploader_thread.isRunning():
-            self.uploader_thread.stop()
-            self.uploader_thread.wait()
-        self.db.close()
-        self.finished.emit()
-        print("Worker thread finished.")
+        print("[INFO] VideoWorker thread finished.")
 
-    def handle_event(self, event_string: str, frame, event_type: str):
+    def handle_event(self, event_string: str):
         current_time = time.time()
-        # 穩定地從 "A01 重度疲勞(...)" 中提取出 "A01"
-        event_code = event_string.split(' ')[0]
+        event_code = event_string.split(':')[0]
         
-        last_triggered_time = self.event_cooldowns.get(event_code)
-        if last_triggered_time and (current_time - last_triggered_time < self.EVENT_COOLDOWN_SECONDS):
-            return
+        last_triggered = self.event_cooldowns.get(event_code, 0)
+        if (current_time - last_triggered) > self.EVENT_COOLDOWN_SECONDS:
+            self.event_cooldowns[event_code] = current_time
+            
+            timestamp = datetime.now().strftime('%H:%M:%S')
+            log_message = f"[{timestamp}] {event_string}"
+            
+            print(f"[EVENT] {log_message}")
+            self.update_event_log.emit(log_message)
 
-        print(f"--- Event ({event_type.upper()}) --- : {event_string}")
-        self.event_cooldowns[event_code] = current_time
-
-        if event_type == 'inner':
-            self.update_suggestion_inner.emit(event_string)
-        elif event_type == 'outer':
-            self.update_suggestion_outer.emit(event_string)
-
-        # 離線暫存邏輯
-        timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-        media_filename = f"{timestamp_str}_{event_code}.jpg"
-        local_media_path = os.path.join(self.cache_dir, media_filename)
-        cv2.imwrite(local_media_path, frame)
-        if self.driver_logged_in:
-            self.db.add_event(event_string, self.current_driver, local_media_path)
+    def emit_frame(self, frame):
+        """將 OpenCV frame 轉換並發射給 UI"""
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = frame_rgb.shape
+        bytes_per_line = ch * w
+        qt_image = QImage(frame_rgb.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        self.change_pixmap.emit(qt_image)
 
     def stop(self):
         self._is_running = False
+        print("[INFO] Stopping VideoWorker thread...")
