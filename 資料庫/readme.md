@@ -1,97 +1,67 @@
-# 智慧行車記錄器系統資料庫 (Smart Dashcam System DB)
+# 專案名稱：AI 駕駛行為分析與車隊管理系統後端模型
 
-## 📌 專案簡介
+## 概述 (Overview)
 
-本資料庫設計用於 **智慧行車記錄器系統**，支援駕駛員管理、設備管理、AI
-偵測結果儲存、違規評分與群組統計，並提供管理者與駕駛員不同視角的查詢功能。
+本文件描述了後端服務的核心 **Django 資料模型**，主要用於支援 **車隊管理、駕駛行為分析** 及 **AI 視覺事件紀錄** 等功能。系統圍繞著 **人員、群組、車機、行程** 等核心實體設計，旨在提供一個結構化的資料基礎來進行數據收集、評分、分析與回饋。
 
--   **版本**: 4.0\
--   **建立日期**: 2025-08-25\
--   **主要內容**: 12 個主要資料表 + 3 個視圖 + 1 個評分計算程序
+所有模型定義於 `api/models.py` 檔案中。
 
-------------------------------------------------------------------------
+## 資料模型結構總覽 (Data Model Structure)
 
-## 📂 資料庫結構
+系統模型可分為四大主要模組：
 
-### 1. 用戶管理系統 (3 個表)
+1.  **人員與權限管理 (User & Permission Management)**
+    * 管理使用者資料、群組與群組內角色。
+2.  **系統與公告 (System & Announcement)**
+    * 管理系統級和群組級的公告，以及群組邀請機制。
+3.  **車輛與行程管理 (Vehicle & Trip Management)**
+    * 本系統的核心模組，負責記錄行程細節、地理軌跡、AI 偵測事件、評分標準與影像紀錄。
+4.  **回饋 (Feedback)**
+    * 用於收集使用者對 AI 建議的意見回饋。
 
--   `users`：系統用戶主表 (管理者 + 駕駛員)
--   `management_groups`：管理群組表
--   `drivers`：駕駛員資料表
+---
 
-### 2. 設備管理 (2 個表)
+## 模組細節 (Module Details)
 
--   `raspberry_devices`：樹莓派設備表
--   `vehicles`：車輛資料表
+### 1. 人員與權限管理
 
-### 3. 駕駛記錄系統 (1 個表)
+| 模型名稱 (Table Name) | 說明 (Description) | 關鍵欄位 (Key Fields) | 關聯 (Relationship) |
+| :--- | :--- | :--- | :--- |
+| **PersonnelProfile** | 擴充 Django 內建 User 模型，儲存人員詳細資料。 | `personnel_number` (人員編號), `phone`, `license_number`, `driving_experience` (駕駛年資), `nfc_card_id` | **OneToOne** to `User` |
+| **Group** | 定義使用者群組，用於組織成員和行程。 | `group_number`, `name`, `created_by` | **ManyToMany** to `User` via `GroupMember` |
+| **GroupMember** | 群組與使用者之間的中介模型，定義成員角色。 | `group`, `user`, `role` (角色: 成員/管理員) | **ForeignKey** to `Group` & `User` |
 
--   `driving_sessions`：駕駛工作階段表
+### 2. 系統與公告
 
-### 4. AI 偵測結果系統 (2 個表)
+| 模型名稱 (Table Name) | 說明 (Description) | 關鍵欄位 (Key Fields) | 說明/邏輯 (Notes) |
+| :--- | :--- | :--- | :--- |
+| **SystemAnnouncement** | 平台級公告。 | `announcement_number`, `content`, `is_active` | - |
+| **GroupAnnouncement** | 特定群組內部的公告。 | `announcement_number` (自動生成), `group`, `publisher` | `announcement_number` 邏輯：`ANN-{group_id}-{random_hex}` |
+| **InvitationCode** | 具時效性、一次性的群組邀請碼。 | `code` (自動生成), `group`, `expires_at`, `is_used` | `code` 邏輯：`secrets.token_hex(4).upper()`；預設 24 小時過期。 |
 
--   `interior_detections`：內鏡頭偵測結果 (駕駛員行為)
--   `exterior_detections`：前鏡頭偵測結果 (交通環境)
+### 3. 車輛與行程管理 (核心模組)
 
-### 5. 簡化評分系統 (3 個表)
+| 模型名稱 (Table Name) | 說明 (Description) | 關鍵欄位 (Key Fields) | 關聯 (Relationship) |
+| :--- | :--- | :--- | :--- |
+| **VehicleDevice** | 車載設備 (車機) 資料。 | `device_number`, `vehicle_type` | - |
+| **Trip** | **核心行程紀錄**，記錄單次行程的整體資訊與評分。 | `trip_number`, `group`, `device`, `personnel`, `score`, `in_car_score`, `out_car_score`, `ai_suggestion`, `total_mileage` | **ForeignKey** to `Group`, `VehicleDevice`, `User` |
+| **RouteLog** | 儲存行程中的**地理軌跡資料**。 | `trip`, `timestamp`, `location`, `speed` | **ForeignKey** to `Trip` |
+| **ScoringStandard** | 定義 AI 偵測事件的**評分標準**。 | `event_number`, `description`, `deduction_points` (扣分點數) | - |
+| **AiVisionLog** | 儲存 AI 偵測到的**具體駕駛事件紀錄**。 | `trip`, `event` (關聯評分標準), `timestamp`, `event_details`, `confidence_score` | **ForeignKey** to `Trip`, `ScoringStandard` |
+| **VideoRecord** | 儲存與行程關聯的**影像紀錄資訊**。 | `video_number` (自動生成), `trip`, `video_url`, `start_time`, `end_time` | **ForeignKey** to `Trip` |
 
--   `scoring_rules`：評分規則表
--   `session_scores`：工作階段評分表
--   `violation_records`：違規記錄表
+### 4. 回饋
 
-### 6. 資料同步管理 (1 個表)
+| 模型名稱 (Table Name) | 說明 (Description) | 關鍵欄位 (Key Fields) | 邏輯 (Logic) |
+| :--- | :--- | :--- | :--- |
+| **TripSuggestionFeedback** | 收集使用者對 AI 行程建議的**回饋**。 | `trip`, `user`, `feedback_type` (1: 有幫助, -1: 沒有幫助), `comment` | **`unique_together = ('trip', 'user')`**：確保單一使用者對單一行程只提交一次回饋。 |
 
--   `sync_logs`：同步日誌表
+---
 
-------------------------------------------------------------------------
+## 技術棧 (Technology Stack)
 
-## 👁‍🗨 視圖 (Views)
+* **後端框架**: Django
+* **資料庫 ORM**: Django Models
+* **語言**: Python
 
-1.  `v_driver_sessions`：駕駛記錄總覽 (駕駛員查看)
-2.  `v_driver_performance`：駕駛員績效摘要 (管理者評估)
-3.  `v_group_summary`：群組管理總覽 (群組管理者使用)
-
-------------------------------------------------------------------------
-
-## ⚙️ 儲存程序 (Stored Procedure)
-
--   `sp_calculate_score(session_id)`\
-    計算指定工作階段的分數、違規次數與等級，並更新至 `session_scores`。
-
-------------------------------------------------------------------------
-
-## 📝 初始化評分規則
-
-內外鏡頭常見違規類型
-(疲勞、分心、使用手機、未繫安全帶、偏離車道、障礙物等)，
-系統會根據嚴重程度給予不同扣分。
-
-------------------------------------------------------------------------
-
-## ✅ 系統特色
-
--   支援 **A/B/C/F 四級評分**
--   偵測結果僅儲存 **文字描述**
--   提供 **駕駛員、管理員、群組管理者** 不同使用場景
--   可擴充至 **AI 模型自動分析與建議**
-
-------------------------------------------------------------------------
-
-## 🚀 快速開始
-
-``` sql
--- 建立資料庫
-SOURCE mdgtest.sql;
-
--- 測試總結查詢
-SELECT * FROM v_driver_sessions LIMIT 10;
-```
-
-------------------------------------------------------------------------
-
-## 📊 系統總結
-
--   **資料表數量**: 12\
--   **視圖數量**: 3\
--   **評分系統**: A/B/C/F 四級制\
--   **資料儲存**: 僅儲存文字偵測結果
+---
