@@ -1,1 +1,1 @@
-AI Model可供平台端及邊緣端使用
+our ai model: OpenCV, Mediapipe, YOLOv8 
