@@ -29,3 +29,5 @@ django-extensions>=3.2.0
 cryptography>=41.0.0
 
 dotenv
+
+django-rest-passwordreset

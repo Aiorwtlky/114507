@@ -81,4 +81,7 @@ urlpatterns = [
     path('personnel/', PersonnelListAPIView.as_view(), name='personnel-list'),
     path('devices/', DeviceListAPIView.as_view(), name='device-list'),
     path('groups/all/', GroupListAPIView.as_view(), name='group-list-all'),
+
+    # 10. 密碼重設 API
+    path('auth/password-reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
 ]

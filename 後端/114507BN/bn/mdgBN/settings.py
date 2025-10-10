@@ -5,22 +5,16 @@ Django settings for mdgBN project - Production Ready Version
 from pathlib import Path
 import os
 import environ
-from datetime import timedelta # 【新增】匯入 timedelta 以設定 JWT 過期時間
+from datetime import timedelta
 
 env = environ.Env(
     DEBUG=(bool, False)
 )
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# 讀取環境變數
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = [
@@ -30,7 +24,6 @@ ALLOWED_HOSTS = [
     '140.131.114.182',
 ]
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,8 +33,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    # 'rest_framework.authtoken', # 【修改】移除舊的 authtoken
     'api',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt', 
+    'whitenoise.runserver_nostatic',
+    'django_rest_passwordreset',
 ]
 
 MIDDLEWARE = [
@@ -81,7 +77,6 @@ DATABASES = {
     'default': env.db()
 }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
@@ -89,21 +84,17 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
-# 國際化設定
 LANGUAGE_CODE = 'zh-hant'
 TIME_ZONE = 'Asia/Taipei'
 USE_I18N = True
 USE_TZ = True
 
-# 靜態檔案設定
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# 媒體檔案設定
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =============================================================================
@@ -264,3 +255,14 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_HTTPONLY = True
 if not DEBUG:
     SESSION_COOKIE_SECURE = False
+
+# =============================================================================
+# EMAIL 設定 (從 .env 讀取)
+# =============================================================================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = env('EMAIL_PORT', cast=int, default=587)
+EMAIL_USE_TLS = env('EMAIL_USE_TLS', cast=bool, default=True)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER') 
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
