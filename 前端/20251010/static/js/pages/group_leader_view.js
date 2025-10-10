@@ -134,7 +134,6 @@
                 return;
             }
             
-            // ▼▼▼ 【核心修正】從 groupsData.results[0] 獲取第一個群組 ▼▼▼
             const targetGroup = groupsData.results[0];
             const groupId = targetGroup.id;
 
@@ -147,7 +146,6 @@
             const membersData = await membersRes.json();
             const announcementsData = await announcementsRes.json();
             
-            // 【修正】API 回傳的成員列表可能也帶有分頁，所以讀取 membersData.results
             const members = membersData.results || membersData; 
 
             updateGroupInfoUI(targetGroup, members, currentUser);
@@ -158,6 +156,12 @@
             initFilterControls();
             document.querySelector('a[href*="create_announcement"]').href = `/create_announcement?group_id=${groupId}`;
 
+            // ▼▼▼【這裡就是新增的程式碼】▼▼▼
+            // 更新「新增成員」按鈕的連結
+            const inviteLink = document.getElementById('invite-member-link');
+            if (inviteLink) {
+                inviteLink.href = `/invite_member?group_id=${groupId}`;
+            }
             
         } catch (error) {
             console.error("載入群組管理頁面失敗:", error.message);
@@ -175,7 +179,6 @@
         }
     }
     
-    // ========== 1. 初始化趨勢圖表（你原本的程式碼） ==========
     function initTrendsChart() {
         const canvas = document.getElementById('groupTrendsChart');
         if (!canvas) {
@@ -225,7 +228,6 @@
         console.log('✅ 群組趨勢圖表已初始化（顯示整體平均）');
     }
 
-    // ========== 2. 篩選器控制（你原本的程式碼） ==========
     function initFilterControls() {
         const periodType = document.getElementById('periodType');
         const yearFilter = document.getElementById('yearFilter');
@@ -251,7 +253,6 @@
         console.log('✅ 篩選器已初始化');
     }
 
-    // ========== 3. 分數徽章自動上色 ==========
     function initScoreBadges() {
         const scoreBadges = document.querySelectorAll('.score-badge');
         scoreBadges.forEach(badge => {
@@ -264,7 +265,6 @@
         console.log(`✅ 已為 ${scoreBadges.length} 個分數徽章設定顏色`);
     }
 
-    // ========== 4. 刪除確認對話框 ==========
 window.confirmDelete = async function(id, title) {
         if (confirm(`確定要刪除公告「${title}」嗎？\n\n此操作無法復原。`)) {
             try {
@@ -276,7 +276,6 @@ window.confirmDelete = async function(id, title) {
                     alert('公告已成功刪除！');
                     window.location.reload(); // 重新整理頁面以更新列表
                 } else {
-                    // 如果後端有回傳錯誤訊息，嘗試顯示
                     try {
                         const errorData = await response.json();
                         alert(`刪除失敗：${JSON.stringify(errorData)}`);
@@ -293,7 +292,6 @@ window.confirmDelete = async function(id, title) {
         }
     };
 
-    // ========== 5. 將事件監聽器放在 IIFE 的最尾端 ==========
     document.addEventListener('DOMContentLoaded', initializeGroupViewPage);
 
 })();

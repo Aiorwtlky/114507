@@ -44,7 +44,9 @@
         </div>
     </div>
     <div class="d-card members-card">
-        <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-users"></i> 群組成員管理</h3><div class="header-actions"><a href="{{ url_for('invite_member') }}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> 新增成員</a></div></div>
+        <a href="{{ url_for('invite_member') }}" class="btn btn-primary">...</a>
+
+    <a id="invite-member-link" href="#" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> 新增成員</a>
         <div class="members-table-wrapper"><table class="members-table"><thead><tr><th class="avatar-col">頭像</th><th>編號</th><th>姓名</th><th>總平均分</th><th>加入日期</th><th class="actions-col">操作</th></tr></thead><tbody id="members-table-body"><tr><td colspan="6" style="text-align: center; padding: 2rem;">載入中...</td></tr></tbody></table></div>
     </div>
     <div class="d-card announcements-card">
