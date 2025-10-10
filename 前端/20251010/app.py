@@ -5,11 +5,9 @@ import os
 from datetime import timedelta
 
 app = Flask(__name__)
-# ---【核心】設定 Session ---
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
-# ---【核心】Jinja2 樣板過濾器 ---
 @app.template_filter('format_datetime')
 def format_datetime(value):
     from datetime import datetime
@@ -17,12 +15,8 @@ def format_datetime(value):
     try: return datetime.fromisoformat(value.replace('Z', '+00:00')).strftime('%Y-%m-%d %H:%M')
     except (ValueError, TypeError): return value
 
-# --- ▼▼▼ 核心頁面路由 ▼▼▼ ---
-
 @app.route("/")
 def home():
-    # 檢查 session 決定導向，如果 session 檢查出錯，直接到首頁
-    # 這是為了避免在未登入狀態下，因 session 相關邏輯出錯而無法瀏覽公開頁面
     if 'access_token' in session:
         return redirect(url_for('dashboard'))
     return render_template("index.html")
@@ -42,8 +36,6 @@ def register():
 @app.route("/forgot_password")
 def forgot_password():
     return render_template("forgot_password.html")
-
-# --- ▼▼▼ 需要登入的頁面 ▼▼▼ ---
 
 @app.route("/dashboard")
 def dashboard():
@@ -68,9 +60,6 @@ def group_leader_view():
 @app.route("/all_reports")
 def all_reports():
     return render_template("all_reports.html")
-
-
-# --- ▼▼▼ 【核心修正】補全所有 HTML 樣板需要的佔位路由 ▼▼▼ ---
 
 @app.route("/solutions")
 def solutions():
