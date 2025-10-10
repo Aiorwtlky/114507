@@ -140,8 +140,9 @@ def announcements():
 def print_report():
     return "這是「列印報表」的佔位頁面。"
 
-# --- ▲▲▲ 佔位路由結束 ▲▲▲ ---
-
+@app.route("/reset-password")
+def reset_password():
+    return render_template("reset_password.html")
 
 @app.errorhandler(404)
 def not_found(_):

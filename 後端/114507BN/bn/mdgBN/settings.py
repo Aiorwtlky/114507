@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'api',
+    'api.apps.ApiConfig',  
     'rest_framework.authtoken',
     'rest_framework_simplejwt', 
     'whitenoise.runserver_nostatic',
@@ -260,9 +260,9 @@ if not DEBUG:
 # EMAIL 設定 (從 .env 讀取)
 # =============================================================================
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = env('EMAIL_PORT', cast=int, default=587)
-EMAIL_USE_TLS = env('EMAIL_USE_TLS', cast=bool, default=True)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER') 
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+# EMAIL_PORT = env('EMAIL_PORT', cast=int, default=587)
+# EMAIL_USE_TLS = env('EMAIL_USE_TLS', cast=bool, default=True)
+# EMAIL_HOST_USER = env('EMAIL_HOST_USER') 
+# EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
