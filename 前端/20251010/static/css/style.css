@@ -12,21 +12,9 @@
   --nav: clamp(1.4rem, 3vw, 3.2rem);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Oxanium", sans-serif;
-  color: var(--text)
-}
 
-body {
-  background: var(--bg-grad) fixed;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden
-}
+
+
 
 html {
   scroll-behavior: smooth;
@@ -43,17 +31,7 @@ footer {
 }
 
 
-/* 星空粒子 */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: radial-gradient(#fff 1px, transparent 1px);
-  background-size: 2px 2px;
-  opacity: .25;
-  animation: stars 60s linear infinite
-}
+
 
 @keyframes stars {
   to {
@@ -125,29 +103,7 @@ body::before {
   width: 100%
 }
 
-/* ---------- Hero ---------- */
-.hero {
-  /* 保留原有的結構和全螢幕高度 */
-  min-height: 100vh;
-  padding-inline: 6vw; /* 左右邊距 */
-  display: flex;
-  flex-direction: column;
 
-  /* 關鍵！加回這行，把內容往下推一個導覽列的高度 */
-  padding-top: var(--header-h); 
-  
-  /* 更新為靠左對齊 */
-  justify-content: center;   /* 內容垂直置中 */
-  align-items: flex-start;   /* 內容水平靠左 */
-  text-align: left;          /* 文字靠左 */
-}
-
-.mega-title {
-  font-size: 100px;
-  font-weight: 300;
-  line-height: 1.05;
-  margin-top: 50px;
-}
 
 :root {
   --primary: #00ffff;
@@ -303,18 +259,7 @@ cursor: pointer;
   }
 }
 
-/* ---------- Features ---------- */
-.features {
-  margin-top: 160px;
-  height: 100vh;
-  padding: 3rem 2.5vw;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(220px, 1fr));
-  gap: 1rem;
-  place-content: center;
-  scroll-snap-align: start;
-  margin-bottom: 200px;
-}
+
 
 .features > article{
   background-color: #ffffff;
@@ -350,7 +295,6 @@ cursor: pointer;
   background: rgba(255, 255, 255, .07);
   border: 1px solid rgba(255, 255, 255, .15);
   border-radius: 22px;
-  padding: 1.6rem 1.2rem;
   backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
@@ -359,11 +303,12 @@ cursor: pointer;
   text-align: center;
   transition: .4s;
   font-size: 2rem;
+  gap: 2rem; /* 新增：設定文字區和圖示區的固定間距 */
 }
 
 /* 內文字級 & 漸層標題 */
 .card i {
-  font-size: 3.4em;
+  font-size: 3.7em;
   /* 圖示大小不變，作為視覺主體 */
   margin-bottom: .65em;
   color: var(--glow);
@@ -372,7 +317,7 @@ cursor: pointer;
 }
 
 .card h3 {
-  font-size: 1.2em;
+  font-size: 1.6em;
   /* <<< 已縮小 */
   margin-bottom: .4em;
   background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
@@ -1207,4 +1152,133 @@ body.logged-in #sidebar-logged-in {
 /* --- 導覽列最後一個項目增加右邊間距 --- */
 .nav-links > li:last-child {
   margin-right: 20px;
+}
+
+/* ======================================= */
+/* ===== 全新淺色主題 (Modern Light) ===== */
+/* ======================================= */
+
+/* --- 1. 整體頁面設定 --- */
+body {
+  /* 將背景從漸層改為乾淨的淺灰色 */
+  background: #f8f9fa;
+  /* 設定主要文字顏色為深灰色，確保可讀性 */
+  color: #212529;
+  /* 使用更適合閱讀的字體 */
+  font-family: "Noto Sans TC", sans-serif;
+}
+
+/* 移除 body::before 的星空動畫，因為淺色主題不需要 */
+body::before {
+  display: none;
+}
+
+/* --- 2. Hero 區塊 (標題區) --- */
+.hero {
+  background: white; /* 給 Hero 區塊一個純白的背景，與 body 的淺灰做出區隔 */
+  text-align: center; /* 所有文字置中 */
+  padding: 100px 2rem; /* 上下大量的留白空間 */
+  min-height: auto; /* 不再強制佔滿整個螢幕 */
+  border-bottom: 1px solid #dee2e6; /* 底部加一條細線，增加質感 */
+}
+
+.hero .mega-title {
+  color: #212529; /* 標題文字顏色 */
+  font-size: clamp(2.5rem, 6vw, 4rem); /* 調整一個更適合的大小 */
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: none; /* 移除霓虹光暈 */
+  margin: 0;
+}
+
+/* 漸層文字的處理 */
+.hero .gradient-text {
+  /* 在淺色主題中，我們讓漸層文字變成單一的主色調 */
+  color: #007bff; /* 這就是我們新的「科技藍」主色 */
+  background: none; /* 移除背景漸層 */
+  -webkit-background-clip: initial; /* 恢復正常文字渲染 */
+  -webkit-text-fill-color: initial;
+  animation: none; /* 移除動畫 */
+}
+
+.hero .subtitle {
+  color: #6c757d; /* 副標題使用柔和的灰色 */
+  font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+  max-width: 600px; /* 設定最大寬度，避免在寬螢幕上文字太長 */
+  margin: 1rem auto 0 auto; /* 上方間距，並自動水平置中 */
+  opacity: 1; /* 恢復不透明 */
+}
+
+
+/* --- 3. Features 區塊 (卡片區) --- */
+.features {
+  /* 使用 padding 來創造與 Hero 區塊的距離 */
+  padding: 80px 0;
+  
+  /* 原有的網格佈局可以繼續使用，非常棒 */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1124px;
+  margin: 0 auto; /* 水平置中 */
+}
+
+/* --- 4. 全新的卡片樣式 --- */
+.card {
+  background: #ffffff; /* 實心白色背景 */
+  border: 1px solid #dee2e6; /* 細緻的灰色邊框 */
+  border-radius: 12px; /* 稍微小一點的圓角，更顯專業 */
+  padding: 2rem 1.5rem;
+  text-align: center;
+  
+  /* 移除舊的玻璃擬態效果 */
+  backdrop-filter: none;
+  
+  /* 使用更細膩的陰影 */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease; /* 保留流暢的動態效果 */
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+  border-color: #007bff; /* 滑鼠移上去時，邊框變為主題色 */
+}
+
+/* 卡片內部元素顏色 */
+.card i {
+  color: #007bff; /* 圖示使用主題色 */
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  filter: none; /* 移除光暈 */
+}
+
+.card h3 {
+  color: #212529; /* 標題使用深灰色 */
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  /* 移除文字漸層 */
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+}
+
+.card p.subtitle {
+  color: #6c757d; /* 副標題使用柔和的灰色 */
+  font-size: 1.5rem;
+  line-height: 1.6;
+}
+
+/* --- 5. 響應式調整 (維持不變) --- */
+@media (max-width: 992px) {
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 60px 2rem;
+  }
+}
+@media (max-width: 768px) {
+  .features {
+    grid-template-columns: repeat(1, 1fr);
+    padding: 60px 2rem;
+  }
 }
