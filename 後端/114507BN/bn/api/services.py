@@ -4,24 +4,39 @@ import os
 import math
 from datetime import timedelta
 from dotenv import load_dotenv
-from huggingface_hub import InferenceClient
 from django.contrib.auth.models import User
 from .models import Trip, AiVisionLog
+
+# NEW: 匯入 Vertex AI 相關套件
+import vertexai
+from vertexai.generative_models import GenerativeModel, GenerationConfig
 
 # =============================================================================
 # 0. 初始化設定 (Initialization)
 # =============================================================================
-# 載入環境變數並初始化 Hugging Face client，確保整個模組共用以提升效率。
+# 載入環境變數並初始化 Vertex AI client，確保整個模組共用以提升效率。
 load_dotenv()
-HF_TOKEN = os.getenv("HF_TOKEN")
-client = None
-if HF_TOKEN:
-    client = InferenceClient(token=HF_TOKEN)
-else:
-    print("警告：未在 .env 檔案中找到 HF_TOKEN。AI 相關功能將無法運作。")
+
+# NEW: Vertex AI 初始化區塊
+gemini_model = None
+try:
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT_ID")
+    location = os.getenv("GOOGLE_CLOUD_LOCATION")
+    if not project_id or not location:
+        print("警告：未在 .env 檔案中找到 GOOGLE_CLOUD_PROJECT_ID 或 GOOGLE_CLOUD_LOCATION。")
+    else:
+        vertexai.init(project=project_id, location=location)
+        # 我們選用 Flash 模型，它在速度和成本效益上表現優異，非常適合報告生成與聊天
+        gemini_model = GenerativeModel("gemini-1.5-flash-001")
+        print("✅ Vertex AI Gemini 連線成功。")
+except Exception as e:
+    print(f"❌ Vertex AI 初始化失敗: {e}")
+    print("警告：AI 相關功能將無法運作。")
+
 
 # =============================================================================
 # 1. 核心商業邏輯 (Core Business Logic)
+# (這整個區塊完全不需要修改，因為它與 AI 模型的呼叫無關)
 # =============================================================================
 
 def calculate_trip_score(trip_id: int):
@@ -131,6 +146,7 @@ def is_driver_on_active_trip(user: User) -> bool:
     """
     return Trip.objects.filter(personnel=user, end_time__isnull=True).exists()
 
+
 # =============================================================================
 # 2. AI 服務 (AI Services)
 # =============================================================================
@@ -140,15 +156,10 @@ def generate_ai_suggestion(trip_id: int) -> str:
     """
     (自動化、單向任務)
     根據單趟行程的所有危險事件，生成一份正式、客觀的駕駛行為改善建議報告。
-    
-    Args:
-        trip_id (int): 要生成報告的行程 ID。
-        
-    Returns:
-        str: AI 生成的建議文本，或在錯誤時回傳預設訊息。
     """
-    if not client:
-        return "系統設定錯誤：Hugging Face API Token 未配置。"
+    # MODIFIED: 檢查 Gemini 模型是否初始化成功
+    if not gemini_model:
+        return "系統設定錯誤：Vertex AI 初始化失敗。"
 
     try:
         events = AiVisionLog.objects.filter(trip_id=trip_id)
@@ -160,17 +171,25 @@ def generate_ai_suggestion(trip_id: int) -> str:
     event_summary = "\n".join([f"- 事件：{log.event.description}，細節：{log.event_details}" for log in events])
     system_prompt = "你是一位專業的智慧駕駛安全分析師「吾仙」。任務是根據一份危險駕駛事件清單，撰寫一份客觀、專業、且具建設性的駕駛行為改善建議報告。請避免口語化，並以條列式呈現重點。"
     user_prompt = f"請分析以下行程的危險駕駛事件，並生成改善建議報告：\n\n【危險事件清單】\n{event_summary}\n\n請條列主要的風險點，並提供具體改善建議。"
+    
+    # MODIFIED: Gemini 的 messages 格式與您原本的完全相容
     messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
 
     try:
-        response = client.chat.completions.create(
-            model="Qwen/Qwen2.5-14B-Instruct",
-            messages=messages,
-            max_tokens=300, temperature=0.5,
+        # MODIFIED: 建立 Gemini 的生成設定
+        generation_config = GenerationConfig(
+            temperature=0.5,
+            max_output_tokens=300
         )
-        return response.choices[0].message.content.strip()
+        # MODIFIED: 呼叫 Gemini 模型
+        response = gemini_model.generate_content(
+            messages,
+            generation_config=generation_config
+        )
+        # MODIFIED: Gemini 回應的格式更簡潔
+        return response.text.strip()
     except Exception as e:
-        print(f"[AI Service - Suggestion] 遠端 API 呼叫錯誤: {e}")
+        print(f"[AI Service - Suggestion] Vertex AI API 呼叫錯誤: {e}")
         return f"系統分析您本次行程有以下事件：\n{event_summary}\n\n建議您注意改善駕駛習慣，確保行車安全。"
 
 # 2.2. 即時對話回應器
@@ -178,14 +197,9 @@ def get_chatbot_response(chat_history: list) -> str:
     """
     (互動式、雙向任務)
     接收前端傳來的完整對話歷史，生成即時的聊天回覆。
-    
-    Args:
-        chat_history (list): 包含對話歷史的字典列表。
-        
-    Returns:
-        str: AI 生成的回覆文本，或在錯誤時回傳預設訊息。
     """
-    if not client:
+    # MODIFIED: 檢查 Gemini 模型是否初始化成功
+    if not gemini_model:
         return "抱歉，助理系統目前無法連線，請稍後再試。"
 
     system_prompt = """
@@ -204,12 +218,19 @@ def get_chatbot_response(chat_history: list) -> str:
         chat_history.insert(0, {"role": "system", "content": system_prompt})
     
     try:
-        response = client.chat.completions.create(
-            model="Qwen/Qwen2.5-14B-Instruct",
-            messages=chat_history,
-            max_tokens=512, temperature=0.7,
+        # MODIFIED: 建立 Gemini 的生成設定
+        generation_config = GenerationConfig(
+            temperature=0.7,
+            max_output_tokens=512
         )
-        return response.choices[0].message.content.strip()
+        # MODIFIED: 呼叫 Gemini 模型
+        # 對於多輪對話，可以直接傳入整個 history list
+        response = gemini_model.generate_content(
+            chat_history,
+            generation_config=generation_config
+        )
+        # MODIFIED: Gemini 回應的格式更簡潔
+        return response.text.strip()
     except Exception as e:
-        print(f"[AI Service - Chatbot] 遠端 API 呼叫錯誤: {e}")
+        print(f"[AI Service - Chatbot] Vertex AI API 呼叫錯誤: {e}")
         return "抱歉，我現在好像遇到了一點技術問題，請您稍後再問我一次。"

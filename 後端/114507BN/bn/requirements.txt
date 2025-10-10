@@ -1,6 +1,7 @@
 # Django 核心
 Django>=5.2.0,<6.0
 djangorestframework>=3.14.0
+djangorestframework-simplejwt
 django-environ>=0.11.0
 
 # 資料庫
@@ -12,13 +13,11 @@ django-cors-headers>=4.3.0
 
 # 靜態檔案處理
 whitenoise>=6.6.0
+weasyprint>=53.3
 
 # AI & 機器學習
-huggingface-hub>=0.19.0
 google-generativeai
-
-# 雲端儲存
-cloudinary>=1.36.0
+google-cloud-aiplatform
 
 # 生產環境伺服器
 gunicorn>=21.2.0
@@ -29,4 +28,4 @@ django-extensions>=3.2.0
 # 安全性
 cryptography>=41.0.0
 
-dotenv>=1.0.0
+dotenv
