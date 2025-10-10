@@ -1,5 +1,6 @@
 package com.example.mdgapp.data.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mdgapp.data.local.TokenManager
@@ -38,7 +39,6 @@ class ProfileViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            // ⭐ 從 TokenManager 取得儲存的 Token
             val token = TokenManager.getToken()
 
             if (token.isNullOrBlank()) {
@@ -47,6 +47,7 @@ class ProfileViewModel : ViewModel() {
             }
 
             try {
+                // ⭐ 修正重點 1：直接呼叫 getUserProfile()，不需手動傳入 token
                 val response = RetrofitInstance.api.getUserProfile()
                 _uiState.update { it.copy(isLoading = false, userProfile = response) }
 
@@ -56,6 +57,8 @@ class ProfileViewModel : ViewModel() {
             } catch (e: IOException) {
                 _uiState.update { it.copy(isLoading = false, errorMessage = "網路連線失敗") }
             } catch (e: Exception) {
+                // ⭐ 修正重點 2：加入詳細的錯誤日誌，方便我們除錯
+                Log.e("ViewModelError", "解析 UserProfile 時發生未知錯誤", e)
                 _uiState.update { it.copy(isLoading = false, errorMessage = "發生未知的錯誤") }
             }
         }

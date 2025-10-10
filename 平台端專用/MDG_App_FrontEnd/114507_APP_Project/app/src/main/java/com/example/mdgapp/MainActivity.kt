@@ -16,12 +16,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.mdgapp.data.model.NotificationSettings
 import com.example.mdgapp.data.model.UserProfile
 import com.example.mdgapp.data.model.UserProfileResponse
+import com.example.mdgapp.data.viewmodel.NfcViewModel
 import com.example.mdgapp.data.viewmodel.ProfileViewModel
 import com.example.mdgapp.navigation.AppNavGraph
 import com.example.mdgapp.ui.theme.MyApplicationTheme
-import com.example.mdgapp.data.model.NotificationSettings
 
 class MainActivity : ComponentActivity() {
 
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
     private val TAG = "NfcApp"
 
     private val profileViewModel: ProfileViewModel by viewModels()
+    private val nfcViewModel: NfcViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,36 +88,39 @@ class MainActivity : ComponentActivity() {
 
             when (currentRoute) {
                 "cardCheckIn" -> {
-                    // ⭐ 修正 1: 從 uiState 中取得 userProfile
                     val userProfileFromApi = profileViewModel.uiState.value.userProfile
-
                     if (userProfileFromApi == null) {
                         Log.e(TAG, "無法獲取使用者資料，ViewModel 中的 Profile 為 null")
-                        runOnUiThread { Toast.makeText(this, "錯誤：無法獲取使用者資料", Toast.LENGTH_SHORT).show() }
+                        runOnUiThread { Toast.makeText(this, "錯誤：個人資料尚未載入完成，請稍候再試", Toast.LENGTH_SHORT).show() }
                         return
                     }
 
-                    // ⭐ 修正 2: 將 API 的 UserProfileResponse 轉換為本地的 UserProfile
-                    val localUserProfile = userProfileFromApi.toLocalUserProfile()
+                    val scannedSerialNumber = tag.id.toHexString()
+                    Log.d(TAG, "掃描到的卡片序號: $scannedSerialNumber")
 
-                    Log.d(TAG, "準備從 ViewModel 寫入個人資料: $localUserProfile")
+                    val existingNfcId = userProfileFromApi.personnelprofile?.nfcCardId
+                    Log.d(TAG, "使用者已綁定的卡片序號: $existingNfcId")
 
-                    val result = nfcHandler.writeUserProfile(tag, localUserProfile)
-                    handleNfcResult(result)
-                    if (result is NfcHandler.NfcResult.WriteSuccess) {
-                        runOnUiThread { navController.popBackStack() }
+                    if (!existingNfcId.isNullOrBlank() && existingNfcId.equals(scannedSerialNumber, ignoreCase = true)) {
+                        Log.i(TAG, "此卡片已綁定至您的帳號，無需重複操作。")
+                        runOnUiThread { Toast.makeText(this, "此卡片已是您的註冊卡片", Toast.LENGTH_SHORT).show() }
+
+                    } else {
+                        val message = if (existingNfcId.isNullOrBlank()) "首次綁定新卡" else "更換為新的卡片"
+                        Log.i(TAG, message)
+
+                        val localUserProfile = userProfileFromApi.toLocalUserProfile()
+                        Log.d(TAG, "準備寫入個人資料: $localUserProfile")
+
+                        val result = nfcHandler.writeUserProfile(tag, localUserProfile)
+                        handleNfcResult(result)
                     }
                 }
-
                 "NfcLogIn" -> {
                     Log.d(TAG, "執行【打卡】讀取操作...")
                     val result = nfcHandler.readUserProfile(intent)
                     handleNfcResult(result)
-                    if (result is NfcHandler.NfcResult.ReadSuccess) {
-                        runOnUiThread { navController.popBackStack() }
-                    }
                 }
-
                 else -> {
                     Log.d(TAG, "在非 NFC 功能頁面掃描到標籤，不執行操作。")
                 }
@@ -126,15 +131,28 @@ class MainActivity : ComponentActivity() {
     private fun handleNfcResult(result: NfcHandler.NfcResult) {
         when (result) {
             is NfcHandler.NfcResult.WriteSuccess -> {
-                Log.i(TAG, "--- NFC 註冊成功 ---")
-                Log.i(TAG, "寫入資料 (JSON): ${result.writtenData}")
-                Log.i(TAG, "讀回驗證: ${result.readBackData}")
-                runOnUiThread { Toast.makeText(this, "註冊成功！", Toast.LENGTH_SHORT).show() }
+                Log.i(TAG, "--- NFC 卡片寫入成功 ---")
+                Log.i(TAG, "卡片序號: ${result.serialNumber}")
+
+                Log.d(TAG, "卡片寫入成功，準備將序號 ${result.serialNumber} 回傳伺服器進行綁定...")
+                nfcViewModel.bindNfcCard(result.serialNumber)
+
+                // ⭐ 修正重點：在綁定 API 送出後，命令 ProfileViewModel 重新整理資料
+                Log.d(TAG, "命令 ProfileViewModel 重新整理以同步最新資料...")
+                profileViewModel.fetchUserProfile()
+
+                runOnUiThread {
+                    Toast.makeText(this, "卡片註冊成功！正在同步資料...", Toast.LENGTH_LONG).show()
+                    navController.popBackStack()
+                }
             }
             is NfcHandler.NfcResult.ReadSuccess -> {
                 Log.i(TAG, "--- NFC 讀取成功 ---")
                 Log.i(TAG, "讀取到的 UserProfile 物件: ${result.userProfile}")
-                runOnUiThread { Toast.makeText(this, "讀取成功！", Toast.LENGTH_SHORT).show() }
+                runOnUiThread {
+                    Toast.makeText(this, "打卡成功！", Toast.LENGTH_SHORT).show()
+                    navController.popBackStack()
+                }
             }
             is NfcHandler.NfcResult.Error -> {
                 Log.e(TAG, "--- NFC 操作失敗 ---: ${result.message}")
@@ -143,27 +161,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * 輔助轉換函式：將從 API 獲取的 UserProfileResponse 轉換為 NFC 寫入所需的 UserProfile。
-     */
+    private fun ByteArray.toHexString(): String = joinToString("") { "%02X".format(it) }
+
     private fun UserProfileResponse.toLocalUserProfile(): UserProfile {
-        // 這個函式負責將從網路 API 取得的資料格式 (UserProfileResponse)
-        // 轉換為您 NFC 處理邏輯需要的本地資料格式 (UserProfile)
+        val fullName = listOfNotNull(this.lastName, this.firstName).joinToString("")
+
         return UserProfile(
-            fullName = "${this.lastName}${this.firstName}",
+            fullName = if(fullName.isBlank()) this.username else fullName,
             employeeId = this.personnelprofile?.personnelNumber ?: "N/A",
             avatarUrl = this.personnelprofile?.avatar ?: "",
             email = this.email,
             phone = this.personnelprofile?.phone ?: "N/A",
-            // 注意：以下欄位在 UserProfileResponse 中不存在，暫時給予預設值
             currentVehiclePlate = "MDG-0000",
             groupName = "總部第一車隊",
-            nfcCardNumber = "NFC-暫存", // 寫入時這個欄位可能不需要，取決於您的 NfcHandler 實作
+            nfcCardNumber = "NFC-暫存",
             licenseNumber = this.personnelprofile?.licenseNumber ?: "N/A",
             licenseClass = this.personnelprofile?.licenseType ?: "N/A",
-            linkedAccounts = emptyList(), // 暫時給予空列表
-
-            // ⭐ 修正：提供一個預設的 NotificationSettings 物件，而不是 null
+            linkedAccounts = emptyList(),
             notificationSettings = NotificationSettings(
                 receiveDangerousEvent = true,
                 receiveSystemAnnouncements = true,
