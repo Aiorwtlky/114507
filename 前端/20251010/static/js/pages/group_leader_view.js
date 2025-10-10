@@ -1,13 +1,10 @@
-// 檔案路徑: static/js/pages/group_leader_view.js
+// 檔案路徑: static/js/pages/group_leader_view.js (完整修正版)
 
 (function() {
     'use strict';
 
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
-    /**
-     * 執行帶有認證標頭的 fetch 請求
-     */
     async function fetchWithAuth(endpoint, options = {}) {
         const token = localStorage.getItem('accessToken');
         if (!token) {
@@ -29,15 +26,17 @@
         }
         return response;
     }
+    function updateSidebarUI(currentUser) {
+        if (!currentUser) return;
+        document.getElementById('sidebar-avatar').src = currentUser.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
+        document.getElementById('sidebar-username').textContent = currentUser.first_name || currentUser.username;
+        document.getElementById('sidebar-user-role').textContent = currentUser.is_staff ? '管理員' : '一般成員';
+    }
 
-    /**
-     * 更新群組資訊卡片
-     */
     function updateGroupInfoUI(group, members, currentUser) {
         document.getElementById('group-name').textContent = group.name;
         document.getElementById('group-description').textContent = group.description || '暫無描述';
 
-        // 顯示管理員列表
         const leadersList = document.getElementById('group-leaders-list');
         leadersList.innerHTML = '';
         const admins = members.filter(member => member.role === 'ADMIN');
@@ -49,7 +48,6 @@
             leadersList.innerHTML = '<span class="leader-badge">尚無管理員</span>';
         }
 
-        // 顯示我在此群組的身分
         const myMembership = members.find(member => member.id === currentUser.id);
         document.getElementById('my-identity-avatar').src = currentUser.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
         document.getElementById('my-identity-name').textContent = currentUser.first_name || currentUser.username;
@@ -57,9 +55,6 @@
         document.getElementById('my-identity-role').innerHTML = `<i class="fa-solid fa-user-tie"></i> ${myRole}`;
     }
 
-    /**
-     * 更新群組成員表格
-     */
     function updateMembersTableUI(members) {
         const tableBody = document.getElementById('members-table-body');
         tableBody.innerHTML = '';
@@ -93,14 +88,11 @@
         initScoreBadges();
     }
 
-    /**
-     * 更新群組公告列表
-     */
     function updateAnnouncementsListUI(announcements) {
         const announcementsList = document.getElementById('announcements-list');
         announcementsList.innerHTML = '';
-        if (announcements && announcements.length > 0) {
-            announcements.forEach(ann => {
+        if (announcements && announcements.results && announcements.results.length > 0) { // <-- 【修正】 讀取 announcements.results
+            announcements.results.forEach(ann => {
                 const publishDate = new Date(ann.publish_date).toLocaleDateString();
                 const shortContent = ann.content.length > 30 ? ann.content.substring(0, 30) + '...' : ann.content;
                 announcementsList.innerHTML += `
@@ -124,9 +116,6 @@
         }
     }
 
-    /**
-     * 頁面載入後執行的主要函式
-     */
     async function initializeGroupViewPage() {
         try {
             const [groupsRes, currentUserRes] = await Promise.all([
@@ -135,15 +124,18 @@
             ]);
             if (!groupsRes.ok || !currentUserRes.ok) throw new Error('無法獲取群組或使用者資料');
             
-            const groups = await groupsRes.json();
+            const groupsData = await groupsRes.json();
             const currentUser = await currentUserRes.json();
 
-            if (!groups || groups.length === 0) {
+            updateSidebarUI(currentUser);
+
+            if (!groupsData.results || groupsData.results.length === 0) {
                 document.getElementById('group-name').textContent = '您尚未加入任何群組';
                 return;
             }
             
-            const targetGroup = groups[0];
+            // ▼▼▼ 【核心修正】從 groupsData.results[0] 獲取第一個群組 ▼▼▼
+            const targetGroup = groupsData.results[0];
             const groupId = targetGroup.id;
 
             const [membersRes, announcementsRes] = await Promise.all([
@@ -152,15 +144,20 @@
             ]);
             if (!membersRes.ok || !announcementsRes.ok) throw new Error('無法獲取群組成員或公告');
 
-            const members = await membersRes.json();
-            const announcements = await announcementsRes.json();
+            const membersData = await membersRes.json();
+            const announcementsData = await announcementsRes.json();
             
+            // 【修正】API 回傳的成員列表可能也帶有分頁，所以讀取 membersData.results
+            const members = membersData.results || membersData; 
+
             updateGroupInfoUI(targetGroup, members, currentUser);
             updateMembersTableUI(members);
-            updateAnnouncementsListUI(announcements);
+            updateAnnouncementsListUI(announcementsData);
 
             initTrendsChart();
             initFilterControls();
+            document.querySelector('a[href*="create_announcement"]').href = `/create_announcement?group_id=${groupId}`;
+
             
         } catch (error) {
             console.error("載入群組管理頁面失敗:", error.message);
@@ -268,12 +265,29 @@
     }
 
     // ========== 4. 刪除確認對話框 ==========
-    window.confirmDelete = function(id, title) {
-        const confirmed = confirm(`確定要刪除公告「${title}」嗎？\n\n此操作無法復原。`);
-        if (confirmed) {
-            console.log('確認刪除 ID:', id);
-            alert('刪除功能開發中...');
-            // deleteAnnouncement(id);
+window.confirmDelete = async function(id, title) {
+        if (confirm(`確定要刪除公告「${title}」嗎？\n\n此操作無法復原。`)) {
+            try {
+                const response = await fetchWithAuth(`/api/announcements/${id}/`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) { // HTTP 狀態碼 204 No Content 代表成功
+                    alert('公告已成功刪除！');
+                    window.location.reload(); // 重新整理頁面以更新列表
+                } else {
+                    // 如果後端有回傳錯誤訊息，嘗試顯示
+                    try {
+                        const errorData = await response.json();
+                        alert(`刪除失敗：${JSON.stringify(errorData)}`);
+                    } catch {
+                        alert(`刪除失敗：伺服器回應狀態 ${response.status}`);
+                    }
+                }
+            } catch (error) {
+                console.error('刪除公告時發生錯誤:', error);
+                alert('刪除失敗，請檢查網路連線。');
+            }
         } else {
             console.log('取消刪除');
         }

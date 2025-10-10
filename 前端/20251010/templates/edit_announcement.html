@@ -96,22 +96,21 @@
           編輯公告
         </h1>
         <div class="group-context">
-          <p><strong>發布單位:</strong> 台灣北大物流股份有限公司萬華分公司</p>
-          <p><strong>所屬群組:</strong> 北大物流 C組</p>
+          <p><strong>發布單位:</strong> <span id="publisher-unit">載入中...</span></p>
+          <p><strong>所屬群組:</strong> <span id="group-context-name">載入中...</span></p>
         </div>
       </div>
       <div class="publisher-card">
-        <img src="{{ url_for('static', filename='images/chang.png') }}" alt="張原因" class="publisher-avatar" />
+        <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}" alt="發布者頭像" class="publisher-avatar" id="publisher-avatar" />
         <div class="publisher-details">
-          <span class="publisher-name">張原因</span>
-          <span class="publisher-role">發布者 (組長)</span>
+          <span class="publisher-name" id="publisher-name">載入中...</span>
+          <span class="publisher-role">發布者</span>
         </div>
       </div>
     </div>
   </div>
-
   <div class="d-card form-card">
-    <form class="announcement-form">
+    <form id="announcementForm" class="announcement-form">
       <div class="card-header">
           <h2 class="card-title">公告內容</h2>
       </div>
@@ -119,36 +118,22 @@
       <div class="form-main">
         <div class="form-group">
           <label for="subject">主旨</label>
-          <input type="text" id="subject" name="subject" value="2025年10月1日人事組織命令公告三" required />
+          <input type="text" id="subject" name="subject" value="載入中..." required />
         </div>
 
         <div class="form-group">
           <label for="content">內容</label>
-          <textarea id="content" name="content">
-            <p>各位同仁大家好：</p>
-            <p>茲因應公司業務調整及組織優化需求，經管理階層審慎評估後，現公告以下人事異動事項，自2025年10月1日起正式生效：</p>
-            <h4>一、人事異動</h4>
-            <ul>
-                <li><strong>李明哲</strong>：由「配送組組員」調任為「調度管理專員」，負責路線規劃與車輛調度工作。</li>
-                <li><strong>陳雅婷</strong>：由「北區配送組」調任至「南區配送組」，協助南區業務擴展。</li>
-                <li><strong>王建國</strong>：晉升為「物流管理副理」，統籌北部三區之配送作業與人員管理。</li>
-            </ul>
-            <h4>二、組織調整</h4>
-            <ul>
-                <li>原「臨時配送組」併入「常規配送 A 組」，以提升調度效率。</li>
-                <li>新設「客戶服務專組」，由黃庭毅主任擔任組長，專責處理客戶投訴與服務品質改善。</li>
-            </ul>
-          </textarea>
+          <textarea id="content" name="content"></textarea>
         </div>
 
         <div class="form-group">
             <label>發佈狀態</label>
-            <p class="text-muted">此公告已於 2025年09月29日 發布。</p>
+            <p class="text-muted" id="publish-status">正在載入狀態...</p>
         </div>
       </div>
       
       <div class="form-actions">
-        <button type="button" class="btn btn-danger" onclick="confirm('確定要刪除這篇公告嗎？')">
+        <button type="button" class="btn btn-danger" id="deleteButton">
             <i class="fa-solid fa-trash"></i> 刪除公告
         </button>
         <div class="form-actions-main">
@@ -165,20 +150,6 @@
 
 {% block extra_js %}
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // 初始化 TinyMCE 富文本編輯器
-      // 它會自動讀取 textarea 內的 HTML 內容並呈現
-      tinymce.init({
-        selector: '#content',
-        plugins: 'lists link image table code help wordcount',
-        toolbar: 'undo redo | blocks | bold italic | bullist numlist | link image | table | code | help',
-        language: 'zh_TW',
-        height: 400,
-        menubar: false,
-        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }'
-      });
-    });
-  </script>
+  <script src="https://cdn.tiny.cloud/1/mrkaq8vn4883iw5q9a4p8ulcaupokh8r658azp048c9z3qj8/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+  <script src="{{ url_for('static', filename='js/pages/edit_announcement.js') }}"></script>
 {% endblock %}
