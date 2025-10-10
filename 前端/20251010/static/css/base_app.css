@@ -1,0 +1,456 @@
+/* ===================================
+   檔案名稱：static/css/base_app.css (優化版)
+   用途：MDG Pro 內部應用介面
+   =================================== */
+
+/* --- 1. CSS 變數與字體 --- */
+:root {
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --light-bg: #f8f9fa;
+    --white-bg: #ffffff;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --border-light: #dee2e6;
+    --sidebar-width: 260px;
+    --header-height: 60px;
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --transition-speed: 0.3s;
+}
+
+/* 字體優化 */
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('../fonts/GoogleSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap; /* ✨ 優化：防止字體載入閃爍 */
+}
+
+/* --- 2. 全局設定 --- */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+    position: relative;
+    line-height: 1.6;
+}
+
+/* --- 3. ✨ 極光背景優化版 --- */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 120vw;
+    height: 120vw;
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0.08; /* ✨ 降低透明度，更柔和 */
+    filter: blur(150px);
+    pointer-events: none; /* ✨ 防止影響點擊事件 */
+    will-change: transform;
+}
+
+body::before {
+    background: radial-gradient(circle, var(--primary-color), transparent 70%);
+    animation: move-glow-1 30s infinite alternate ease-in-out;
+}
+
+body::after {
+    background: radial-gradient(circle, #ff00c4, transparent 70%);
+    animation: move-glow-2 35s infinite alternate-reverse ease-in-out;
+}
+
+/* ✨ 使用 translate3d 提升效能 */
+@keyframes move-glow-1 {
+    0% { transform: translate3d(-60%, -60%, 0) rotate(0deg); }
+    100% { transform: translate3d(-40%, -40%, 0) rotate(180deg); }
+}
+
+@keyframes move-glow-2 {
+    0% { transform: translate3d(-40%, -40%, 0) rotate(0deg); }
+    100% { transform: translate3d(-60%, -50%, 0) rotate(-180deg); }
+}
+
+/* --- 4. 主要佈局 --- */
+.app-layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    min-height: 100vh;
+}
+
+/* --- 5. ✨ 側邊欄 (優化版) --- */
+.app-sidebar {
+    background-color: var(--white-bg);
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto; /* ✨ 加入滾動，避免內容過多時被截斷 */
+    z-index: 100;
+    transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ✨ 自訂滾動條樣式 */
+.app-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.app-sidebar::-webkit-scrollbar-track {
+    background: var(--light-bg);
+}
+
+.app-sidebar::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 3px;
+}
+
+.app-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* 側邊欄區塊 */
+.sidebar-header,
+.sidebar-footer {
+    padding: 1rem 1.5rem;
+    flex-shrink: 0; /* ✨ 防止被壓縮 */
+}
+
+.sidebar-header {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto; /* ✨ 只讓中間內容滾動 */
+}
+
+.sidebar-footer {
+    border-top: 1px solid var(--border-light);
+    margin-top: auto;
+}
+
+/* Logo 區域 */
+.brand {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity var(--transition-speed);
+}
+
+.brand:hover {
+    opacity: 0.8;
+}
+
+.brand-logo {
+    height: 32px;
+    width: auto;
+}
+
+.brand-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    font-family: 'GoogleSans', 'Inter', sans-serif;
+}
+
+/* 使用者資料 */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-light);
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* ✨ 防止文字溢出 */
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-group {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 導覽選單 */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem;
+    gap: 0.25rem; /* ✨ 使用 gap 替代 margin-bottom */
+}
+
+.nav-item {
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all var(--transition-speed) ease;
+    position: relative;
+}
+
+.nav-item i {
+    width: 20px; /* ✨ 固定圖標寬度，對齊更整齊 */
+    text-align: center;
+}
+
+.nav-item:hover {
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    transform: translateX(2px);
+}
+
+.nav-item.is-active {
+    background-color: var(--primary-color);
+    color: var(--white-bg);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+
+.nav-item.is-active:hover {
+    background-color: var(--primary-hover);
+    transform: translateX(0);
+}
+
+/* 登出按鈕樣式 */
+.nav-logout-btn {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.nav-logout-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #c82333;
+}
+
+/* --- 6. ✨ 新增：頂部標題欄 --- */
+.app-header {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-light);
+    padding: 0 2rem;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+}
+
+.app-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-dark);
+}
+
+/* --- 7. 主要內容區 --- */
+.main-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.app-main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* --- 8. 漢堡選單按鈕 --- */
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background-color var(--transition-speed);
+}
+
+.hamburger-btn:hover {
+    background-color: var(--light-bg);
+}
+
+.hamburger-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* --- 9. ✨ 手機版遮罩層 --- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+}
+
+.sidebar-overlay.is-active {
+    opacity: 1;
+}
+
+/* --- 10. ✨ RWD 響應式設計 (統一使用 768px) --- */
+@media (max-width: 768px) {
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* 側邊欄變成 fixed，預設隱藏 */
+    .app-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px; /* ✨ 手機版稍微寬一點 */
+        max-width: 85vw;
+        transform: translateX(-100%);
+        z-index: 200;
+        box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .app-sidebar.is-active {
+        transform: translateX(0);
+    }
+
+    /* 顯示漢堡按鈕 */
+    .hamburger-btn {
+        display: block;
+    }
+
+    /* 顯示遮罩層 */
+    .sidebar-overlay {
+        display: block;
+    }
+
+    /* 調整主內容區 padding */
+    .app-main {
+        padding: 1.5rem 1rem;
+    }
+
+    /* ✨ 當側邊欄打開時，防止背景滾動 */
+    body.sidebar-open {
+        overflow: hidden;
+    }
+}
+
+/* --- 11. 平板優化 (768px - 992px) --- */
+@media (min-width: 769px) and (max-width: 992px) {
+    :root {
+        --sidebar-width: 220px; /* ✨ 平板版側邊欄稍窄 */
+    }
+
+    .brand-text {
+        font-size: 1rem;
+    }
+
+    .nav-item {
+        font-size: 0.9rem;
+        padding: 0.75rem 0.85rem;
+    }
+
+    .app-main {
+        padding: 1.75rem;
+    }
+}
+
+/* --- 12. 大螢幕優化 (>1600px) --- */
+@media (min-width: 1600px) {
+    .app-main {
+        max-width: 1600px;
+        padding: 2.5rem;
+    }
+}
+
+/* --- 13. 無障礙設計 --- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 鍵盤焦點樣式 */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* --- 14. 列印樣式 --- */
+@media print {
+    .app-sidebar,
+    .app-header,
+    .hamburger-btn {
+        display: none;
+    }
+
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .app-main {
+        padding: 0;
+    }
+
+    body::before,
+    body::after {
+        display: none;
+    }
+}

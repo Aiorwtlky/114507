@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDG 專案頁面目錄 (呱呱頁)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 沿用我們專案的色彩變數 --- */
+        :root {
+            --primary-color: #007bff;
+            --light-bg: #f8f9fa;
+            --white-bg: #ffffff;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+            --border-light: #dee2e6;
+        }
+
+        /* --- 基礎樣式 --- */
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: var(--white-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* --- 排版與文字 --- */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 2.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        code {
+            background-color: #e9ecef;
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 90%;
+            border-radius: 3px;
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        /* --- 表格樣式 --- */
+        .page-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .page-table th,
+        .page-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .page-table thead th {
+            background-color: var(--light-bg);
+            font-weight: 700;
+        }
+
+        .page-table tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+        
+        /* --- 按鈕樣式 --- */
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MDG 專案頁面目錄 (呱呱頁)</h1>
+        <p>此頁面用於快速預覽和導航至各個前端頁面模板，方便後端開發人員理解頁面結構與對應的檔案。</p>
+
+        <h2>公眾網站頁面 (Public-Facing Pages)</h2>
+        <table class="page-table">
+            <thead>
+                <tr>
+                    <th>頁面名稱 / 功能</th>
+                    <th>對應模板檔案</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>首頁 (Homepage)</td>
+                    <td><code>home.html</code></td>
+                    <td><a href="{{ url_for('home') }}" class="btn" target="_blank">前往</a></td>
+                </tr>
+                <tr>
+                    <td>使用者登入頁</td>
+                    <td><code>login.html</code></td>
+                    <td><a href="{{ url_for('login') }}" class="btn" target="_blank">前往</a></td>
+                </tr>
+                <tr>
+                    <td>使用者註冊頁</td>
+                    <td><code>register.html</code></td>
+                    <td><a href="{{ url_for('register') }}" class="btn" target="_blank">前往</a></td>
+                </tr>
+                <tr>
+                    <td>解決方案頁</td>
+                    <td><code>solutions.html</code></td>
+                    <td><a href="#" class="btn" target="_blank">TBD</a></td>
+                </tr>
+                <tr>
+                    <td>關於我們頁</td>
+                    <td><code>about.html</code></td>
+                    <td><a href="#" class="btn" target="_blank">TBD</a></td>
+                </tr>
+                 <tr>
+                    <td>聯絡我們頁</td>
+                    <td><code>contact.html</code></td>
+                    <td><a href="#" class="btn" target="_blank">TBD</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>MDG Pro 應用程式頁面 (Application Pages)</h2>
+        <p><strong>注意：</strong> 以下頁面可能需要登入狀態才能正確顯示。</p>
+        <table class="page-table">
+            <thead>
+                <tr>
+                    <th>頁面名稱 / 功能</th>
+                    <th>對應模板檔案</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>數位儀表板 (Dashboard)</td>
+                    <td><code>dashboard.html</code></td>
+                    <td><a href="{{ url_for('dashboard') }}" class="btn" target="_blank">前往</a></td>
+                </tr>
+                <tr>
+                    <td>個人資料設定</td>
+                    <td><code>edit_profile.html</code></td>
+                    <td><a href="{{ url_for('edit_profile') }}" class="btn" target="_blank">前往</a></td>
+                </tr>
+                <tr>
+                    <td>我的群組</td>
+                    <td><code>my_groups_standalone.html</code></td>
+                    <td><a href="{{ url_for('my_groups_standalone') }}" class="btn" target="_blank">前往</a></td>
+                </tr>
+                <tr>
+                    <td>歷史行程</td>
+                    <td><code>all_reports.html</code></td>
+                    <td><a href="{{ url_for('all_reports') }}" class="btn" target="_blank">前往</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,727 @@
+/* ===================================
+   檔案：static/css/pages/invite_member.css
+   用途：邀請管理頁面樣式
+   =================================== */
+
+/* --- 1. 基礎變數 --- */
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --light-bg: #f5f5f7;
+    --white-bg: #ffffff;
+    --text-dark: #1d1d1f;
+    --text-muted: #86868b;
+    --border-light: #d2d2d7;
+    --card-radius: 12px;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --transition: all 0.3s ease;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* --- 2. 容器佈局 --- */
+.invite-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    width: 100%;
+}
+
+/* --- 3. 卡片基礎樣式 --- */
+.d-card {
+    background: var(--white-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--card-radius);
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    transition: var(--transition);
+}
+
+.d-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 4. 卡片基礎樣式 --- */
+.d-card {
+    background: var(--white-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--card-radius);
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    transition: var(--transition);
+}
+
+.d-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-dark);
+}
+
+.card-title i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+/* --- 5. 計數標籤 --- */
+.count-badge {
+    background: var(--light-bg);
+    padding: 0.4rem 0.875rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.count-badge strong {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.count-badge.pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.count-badge.pending strong {
+    color: #ffc107;
+    font-weight: 700;
+}
+
+/* --- 6. 表單樣式 --- */
+.create-invite-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.form-group label i {
+    color: var(--primary-color);
+}
+
+.form-group input[type="text"],
+.filter-select {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    background: var(--white-bg);
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    transition: var(--transition);
+}
+
+.form-group input[type="text"]:hover,
+.filter-select:hover {
+    border-color: var(--primary-color);
+}
+
+.form-group input[type="text"]:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.filter-select {
+    cursor: pointer;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+/* --- 7. 切換開關 --- */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    margin-bottom: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-label {
+    display: inline-block;
+    margin-left: var(--spacing-sm);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+/* --- 8. 按鈕樣式 --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: var(--white-bg);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-dark);
+    border: 1px solid var(--border-light);
+}
+
+.btn-outline:hover {
+    background: var(--light-bg);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* --- 9. 邀請結果區域 --- */
+.invite-result {
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.result-header i {
+    color: #22c55e;
+    font-size: 1.5rem;
+}
+
+.result-header h4 {
+    margin: 0;
+    color: #166534;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.result-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.code-display label,
+.code-url label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #166534;
+    margin-bottom: var(--spacing-xs);
+}
+
+.url-input-group {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.url-input-group input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid #86efac;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.btn-copy {
+    padding: 0.75rem 1.25rem;
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-copy:hover {
+    background: #16a34a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* --- 10. 表格樣式 --- */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.data-table thead {
+    background: var(--light-bg);
+}
+
+.data-table th {
+    padding: var(--spacing-md);
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.data-table td {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+}
+
+.data-table tbody tr {
+    transition: var(--transition);
+}
+
+.data-table tbody tr:hover {
+    background: var(--light-bg);
+}
+
+/* --- 11. 表格內容樣式 --- */
+.name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.name-cell i {
+    color: var(--primary-color);
+    font-size: 1.125rem;
+}
+
+.name-cell span {
+    font-weight: 600;
+}
+
+.code-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.code-cell code {
+    background: var(--light-bg);
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--primary-color);
+    border: 1px solid var(--border-light);
+}
+
+/* --- 12. 群組標籤 (參考 leader-badge) --- */
+.leader-badge {
+    padding: 0.4rem 1rem;
+    background: rgba(102, 126, 234, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #667eea;
+    display: inline-block;
+}
+
+/* --- 13. 分數標籤 (參考 score-badge) --- */
+.score-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.score-badge.excellent {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.score-badge.warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.score-badge.danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* --- 14. 圖標 --- */
+.icon-yes {
+    color: #28a745;
+    font-size: 1.125rem;
+}
+
+.icon-no {
+    color: #dc3545;
+    font-size: 1.125rem;
+}
+
+/* --- 15. 操作按鈕 --- */
+.actions-col {
+    width: 100px;
+    text-align: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    margin: 0 0.25rem;
+}
+
+.btn-action:hover {
+    background: var(--primary-color);
+    color: var(--white-bg);
+    transform: translateY(-2px);
+}
+
+.btn-action.success:hover {
+    background: #28a745;
+}
+
+.btn-action.danger:hover {
+    background: #dc3545;
+}
+
+.btn-action:disabled {
+    background: var(--light-bg);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.btn-action:disabled:hover {
+    transform: none;
+}
+
+/* --- 16. 用戶資訊 --- */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.member-avatar-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-details strong {
+    color: var(--text-dark);
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.user-details span {
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+}
+
+/* --- 17. 操作按鈕區 --- */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
+}
+
+/* --- 18. 手機版優化 --- */
+@media (max-width: 768px) {
+    .page-header-card {
+        padding: var(--spacing-lg);
+    }
+
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-icon {
+        width: 64px;
+        height: 64px;
+        font-size: 2rem;
+    }
+
+    .header-info h1 {
+        font-size: 1.5rem;
+    }
+
+    .d-card {
+        padding: var(--spacing-md);
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table {
+        font-size: 0.85rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--spacing-sm);
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+
+/* --- 19. 無障礙優化 --- */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.btn:focus-visible,
+.btn-action:focus-visible,
+.filter-select:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* --- 20. 列印樣式 --- */
+@media print {
+    .header-actions,
+    .btn-copy,
+    .action-buttons,
+    .btn-action {
+        display: none;
+    }
+
+    .d-card {
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+
+    .group-info-card {
+        background: var(--white-bg) !important;
+        color: var(--text-dark) !important;
+        border: 1px solid var(--border-light) !important;
+    }
+
+    .header-icon {
+        background: var(--light-bg) !important;
+        color: var(--primary-color) !important;
+    }
+}
+
+/* --- 21. 群組資訊卡片 (必須放在最後確保優先權) --- */
+.d-card.group-info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: var(--white-bg) !important;
+    border: none !important;
+    padding: var(--spacing-xl) !important;
+}
+
+.d-card.group-info-card:hover {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    position: relative;
+}
+
+.group-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    backdrop-filter: blur(10px);
+    color: var(--white-bg);
+}
+
+.group-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.group-name {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--white-bg);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.group-company {
+    margin: 0.5rem 0 0 0;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}

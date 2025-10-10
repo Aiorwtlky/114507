@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}個人資料 · 吾駕仙 My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    
+    <div class="d-card group-info-card">
+        <div class="group-header">
+            <div class="group-icon">
+                <i class="fa-solid fa-user-circle"></i>
+            </div>
+            <div class="group-info">
+                <h1 class="group-name" id="profile-header-username">載入中...</h1>
+                <p class="group-company">
+                    <i class="fa-solid fa-clock"></i>
+                    上次登入：<span id="profile-header-last-login">--</span>
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('edit_profile_basic') }}" class="btn-header-action">
+                    <i class="fa-solid fa-user-pen"></i>
+                    <span>編輯個人資料</span>
+                </a>
+                <a href="{{ url_for('change_password') }}" class="btn-header-action">
+                    <i class="fa-solid fa-key"></i>
+                    <span>更改密碼</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn-header-action danger" id="logoutButton">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>登出</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <section class="d-card profile-section">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-address-card"></i> 基本資料</h3>
+        </div>
+        <div class="section-content">
+            <div class="view-mode">
+                <div class="photo-view">
+                    <img src="{{ url_for('static', filename='img/user-placeholder.svg') }}" alt="使用者頭像" id="profile-avatar">
+                </div>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <label>姓名</label>
+                        <span id="profile-first-name">--</span>
+                    </div>
+                    <div class="data-item">
+                        <label>使用者名稱</label>
+                        <span id="profile-username">--</span>
+                    </div>
+                    <div class="data-item">
+                        <label>人員編號</label>
+                        <span id="profile-personnel-number">--</span>
+                    </div>
+                    <div class="data-item">
+                        <label>性別</label>
+                        <span id="profile-gender">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="d-card profile-section">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-envelope"></i> 聯絡方式</h3>
+        </div>
+        <div class="section-content">
+            <div class="data-grid">
+                <div class="data-item">
+                    <label>電子郵件</label>
+                    <span id="profile-email">--</span>
+                </div>
+                <div class="data-item">
+                    <label>聯絡電話</label>
+                    <span id="profile-phone">--</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="d-card profile-section">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-car"></i> 駕駛資訊</h3>
+        </div>
+        <div class="section-content">
+            <div class="data-grid">
+                <div class="data-item">
+                    <label>駕照號碼</label>
+                    <span id="profile-license-number">--</span>
+                </div>
+                <div class="data-item">
+                    <label>駕照等級</label>
+                    <span id="profile-license-type">--</span>
+                </div>
+                <div class="data-item">
+                    <label>駕駛年資</label>
+                    <span id="profile-driving-experience">--</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/profile.js') }}"></script>
+{% endblock %}

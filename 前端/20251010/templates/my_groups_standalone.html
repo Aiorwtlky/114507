@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    我的群組 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
+
+    <style>
+      /* --- 整體頁面、標題、創建按鈕樣式 (與前一版相同) --- */
+      body {
+        background-color: #f4f7f9;
+      }
+      .page-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+      }
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+      }
+      .page-header h1 {
+        font-size: 2.25rem;
+        color: #1a2a5f;
+        margin: 0;
+      }
+      .btn-create-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: #1a2a5f;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.2s;
+        box-shadow: 0 4px 12px rgba(26, 42, 95, 0.2);
+      }
+      .btn-create-group:hover {
+        background-color: #2c46a0;
+        transform: translateY(-2px);
+      }
+      
+      /* --- [新增] 搜尋欄位樣式 --- */
+      .search-container {
+        margin-bottom: 2rem;
+      }
+      .search-container form {
+        display: flex;
+        width: 100%;
+        max-width: 500px; /* 限制搜尋欄最大寬度 */
+      }
+      .search-container input[type="search"] {
+        flex-grow: 1; /* 佔滿剩餘空間 */
+        border: 2px solid #dde2e7;
+        border-right: none;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border-radius: 8px 0 0 8px; /* 左側圓角 */
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .search-container input[type="search"]:focus {
+        border-color: #1a2a5f;
+      }
+      .search-container button {
+        border: none;
+        background-color: #1a2a5f;
+        color: white;
+        padding: 0 1.25rem;
+        border-radius: 0 8px 8px 0; /* 右側圓角 */
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: background-color 0.2s;
+      }
+      .search-container button:hover {
+        background-color: #2c46a0;
+      }
+
+      /* --- 群組列表樣式 (與前一版相同) --- */
+      .group-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 1rem;
+      }
+      .group-list li {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        transition: box-shadow 0.2s, transform 0.2s;
+      }
+      .group-list li:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+      }
+      .group-list li a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        font-size: 1.1rem;
+      }
+      .group-role { padding: 0.25em 0.6em; font-size: 0.85rem; font-weight: bold; border-radius: 12px; color: white; white-space: nowrap; }
+      .role-leader { background-color: #1a2a5f; }
+      .role-member { background-color: #888; }
+      
+      /* --- [新增] 分頁導覽列樣式 --- */
+      .pagination-container {
+        margin-top: 2.5rem;
+        display: flex;
+        justify-content: center;
+      }
+      .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      .page-item .page-link {
+        padding: 0.75rem 1rem;
+        display: block;
+        background-color: #fff;
+        color: #1a2a5f;
+        text-decoration: none;
+        border-left: 1px solid #dee2e6;
+        transition: background-color 0.2s, color 0.2s;
+      }
+      .page-item:first-child .page-link {
+        border-left: none;
+      }
+      .page-item .page-link:hover {
+        background-color: #f4f7f9;
+      }
+      /* 目前頁面 */
+      .page-item.active .page-link {
+        background-color: #1a2a5f;
+        color: white;
+        font-weight: bold;
+        cursor: default;
+      }
+      /* 禁用狀態 */
+      .page-item.disabled .page-link {
+        color: #aaa;
+        background-color: #f8f9fa;
+        pointer-events: none; /* 讓連結無法點擊 */
+      }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="page-container">
+    
+        <div class="page-header">
+            <h1><i class="fas fa-users"></i> 我的群組</h1>
+            <a href="{{ url_for('create_group') }}" class="btn-create-group">
+                <i class="fas fa-plus"></i> 創建新群組
+            </a>
+        </div>
+
+        <div class="search-container">
+            <form method="GET" action="{{ url_for('my_groups_standalone') }}">
+                <input type="search" name="q" placeholder="搜尋群組名稱..." value="{{ request.args.get('q', '') }}">
+                <button type="submit" aria-label="搜尋"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+        
+        <ul class="group-list">
+            {# 
+              現在迴圈遍歷的是後端傳來的 pagination 物件中的 items 
+              這裡的假資料減少為 8 筆，模擬一頁的內容
+            #}
+            <li>
+                <a href="#">北大物流 C 組</a>
+                <span class="group-role role-leader">組長</span>
+            </li>
+            <li>
+                <a href="#">2025雙十一宅配臨時</a>
+                <span class="group-role role-member">一般組員</span>
+            </li>
+            <li>
+                <a href="#">北大物流職訓23A</a>
+                <span class="group-role role-member">一般組員</span>
+            </li>
+            <li>
+                <a href="#">南區配送 B 隊</a>
+                <span class="group-role role-leader">組長</span>
+            </li>
+            <li>
+                <a href="#">企業客戶專送組</a>
+                <span class="group-role role-member">一般組員</span>
+            </li>
+            <li>
+                <a href="#">花花粉絲後援會</a>
+                <span class="group-role role-member">一般組員</span>
+            </li>
+            <li>
+                <a href="#">睿軒行物流 YI 組</a>
+                <span class="group-role role-member">一般組員</span>
+            </li>
+            <li>
+                <a href="#">總公司週五羽球社</a>
+                <span class="group-role role-member">一般組員</span>
+            </li>
+        </ul>
+
+        <div class="pagination-container">
+          <nav aria-label="群組列表分頁">
+            {# 
+              這裡是分頁的靜態範例，真實情況下需要用後端邏輯動態生成
+              例如，第 2 頁是當前頁面
+            #}
+            <ul class="pagination">
+              <li class="page-item"><a class="page-link" href="#">« 上一頁</a></li>
+              <li class="page-item"><a class="page-link" href="#">1</a></li>
+              <li class="page-item active"><span class="page-link">2</span></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item disabled"><span class="page-link">...</span></li>
+              <li class="page-item"><a class="page-link" href="#">10</a></li>
+              <li class="page-item"><a class="page-link" href="#">下一頁 »</a></li>
+            </ul>
+          </nav>
+        </div>
+    </div>
+{% endblock %}

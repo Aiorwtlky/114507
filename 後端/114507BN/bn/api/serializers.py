@@ -14,79 +14,85 @@ from .models import (
 
 # =============================================================================
 # 區塊 1：唯讀與巢狀序列化器 (For Data Reading & Nesting)
-# 這些 Serializer 主要用於 GET 請求，提供豐富且適合前端展示的資料結構。
 # =============================================================================
 
 class PersonnelProfileSerializer(serializers.ModelSerializer):
-    """序列化人員詳細資料 (PersonnelProfile)，並處理頭像的完整 URL。"""
-    # 讓 avatar 欄位在更新時也能被接收，但非必填
-    avatar = serializers.ImageField(required=False, allow_null=True) 
+    """【最終修正版】序列化人員詳細資料，並手動產生完整的頭像 URL。"""
+    avatar = serializers.SerializerMethodField()
     
     class Meta:
         model = PersonnelProfile
         fields = ['personnel_number', 'gender', 'license_number', 'avatar', 'phone', 'license_type', 'driving_experience']
 
     def get_avatar(self, obj):
-        """
-        覆寫 avatar 欄位的輸出，將相對路徑轉換為前端可直接使用的絕對 URL。
-        """
         request = self.context.get('request')
-        # 檢查 obj.avatar 是否存在且有 url 屬性
-        if obj.avatar and hasattr(obj.avatar, 'url'):
+        if request and obj.avatar and hasattr(obj.avatar, 'url'):
             return request.build_absolute_uri(obj.avatar.url)
         return None
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    序列化使用者核心資料 (User)，並巢狀包含 Profile。
-    【已強化】此 Serializer 同時支援個人資料的讀取與巢狀更新。
+    【最終修正版】序列化使用者核心資料，並正確處理巢狀 Profile 的讀取與更新。
     """
-    # 直接將 PersonnelProfileSerializer 作為巢狀欄位。
-    # DRF 會自動處理讀取時的巢狀序列化。更新邏輯則由下面的 update 方法處理。
-    personnelprofile = PersonnelProfileSerializer()
-    
-    # 使用 SerializerMethodField 產生一些計算後的唯讀欄位
+    # 讀取時，使用上面定義的唯讀 Serializer
+    personnelprofile = PersonnelProfileSerializer(read_only=True)
+
+    # 為了讓更新 (PATCH) 時能接收扁平化的 FormData，我們在 Meta 外面用 write_only 定義它們
+    # source='personnelprofile.XXX' 告訴 DRF 這些欄位要對應到 personnelprofile 模型
+    personnel_number = serializers.CharField(source='personnelprofile.personnel_number', write_only=True, required=False, allow_blank=True)
+    gender = serializers.CharField(source='personnelprofile.gender', write_only=True, required=False)
+    license_number = serializers.CharField(source='personnelprofile.license_number', write_only=True, required=False, allow_blank=True)
+    avatar = serializers.ImageField(source='personnelprofile.avatar', write_only=True, required=False, allow_null=True)
+    phone = serializers.CharField(source='personnelprofile.phone', write_only=True, required=False, allow_blank=True)
+    license_type = serializers.CharField(source='personnelprofile.license_type', write_only=True, required=False, allow_blank=True)
+    driving_experience = serializers.IntegerField(source='personnelprofile.driving_experience', write_only=True, required=False)
+
     is_group_leader = serializers.SerializerMethodField()
     administered_groups = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
+            # 讀取用的欄位
             'id', 'username', 'last_login', 'first_name', 'last_name', 'email', 
-            'is_staff', 'is_group_leader', 'administered_groups', 'personnelprofile'
+            'is_staff', 'is_group_leader', 'administered_groups', 'personnelprofile', 
+            # 寫入用的欄位
+            'personnel_number', 'gender', 'license_number', 'avatar', 'phone', 
+            'license_type', 'driving_experience'
         ]
-        # 確保在讀取 Profile 時，這些核心欄位是唯讀的
-        read_only_fields = ['id', 'username', 'last_login', 'is_staff', 'is_group_leader', 'administered_groups']
+        read_only_fields = ['id', 'username', 'last_login', 'is_staff', 'is_group_leader', 'administered_groups', 'personnelprofile']
 
     def get_is_group_leader(self, obj):
-        """檢查使用者是否為任何群組的建立者。"""
         return Group.objects.filter(created_by=obj).exists()
     
     def get_administered_groups(self, obj):
-        """獲取使用者被指派為管理員的所有群組 ID 列表。"""
         admin_memberships = GroupMember.objects.filter(user=obj, role='ADMIN')
         return [membership.group.id for membership in admin_memberships]
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        # 【微調】從 validated_data 中手動分離出 profile 的欄位
-        profile_fields = ['personnel_number', 'gender', 'license_number', 'avatar', 'phone', 'license_type', 'driving_experience']
-        profile_data = {}
-        for field in profile_fields:
-            if field in validated_data:
-                profile_data[field] = validated_data.pop(field)
+        """
+        【核心修正】覆寫 update 方法，正確處理巢狀的 personnelprofile 資料。
+        """
+        # 1. 因為我們使用了 source='personnelprofile.XXX'，DRF 會自動將相關資料
+        #    打包成一個 'personnelprofile' 的字典放在 validated_data 中。
+        #    我們把它彈出來。
+        profile_data = validated_data.pop('personnelprofile', {})
+        
+        # 2. 更新 User 模型本身的欄位 (例如 first_name, email)
+        instance = super().update(instance, validated_data)
 
-        # 更新 Profile 物件
+        # 3. 如果 profile_data 裡面有東西，就逐一更新 PersonnelProfile 物件
         if profile_data:
             profile = instance.personnelprofile
-            profile_serializer = PersonnelProfileSerializer(instance=profile, data=profile_data, partial=True, context=self.context)
-            if profile_serializer.is_valid(raise_exception=True):
-                profile_serializer.save()
-
-        # 更新 User 物件
-        instance = super().update(instance, validated_data)
+            # 使用 setattr 迴圈，安全地更新每個欄位
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            # 儲存 Profile 的變更
+            profile.save()
+            
         return instance
-
+    
 class GroupMemberSerializer(serializers.ModelSerializer):
     """序列化群組成員資料，包含其在特定群組的角色與 Profile。"""
     average_score = serializers.FloatField(read_only=True, default=0)

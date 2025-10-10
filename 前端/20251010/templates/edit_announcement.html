@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block title %}
+  編輯公告 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    /* ========================================
+       編輯公告頁面樣式 (與發布頁面共用)
+       ======================================== */
+
+    /* --- 全域變數 & 基礎設定 --- */
+    :root {
+      --primary-color: #4f46e5;
+      --primary-dark: #4338ca;
+      --danger-color: #ef4444; /* 新增危險色 */
+      --danger-dark: #dc2626;  /* 新增危險色 hover */
+      --white-bg: #ffffff;
+      --light-bg: #f8f9fa;
+      --text-dark: #1f2937;
+      --text-muted: #6b7280;
+      --border-light: #e5e7eb;
+      --spacing-sm: 0.75rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --transition: all 0.3s ease;
+    }
+    body { background-color: var(--light-bg); }
+    
+    /* --- 頁面容器 & 卡片基礎樣式 --- */
+    .page-container { max-width: 1200px; margin: 0 auto; padding: var(--spacing-xl); }
+    .d-card { background: var(--white-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); margin-bottom: var(--spacing-xl); }
+
+    /* --- 頂部資訊卡 --- */
+    .page-header-card { padding: var(--spacing-xl); background: linear-gradient(135deg, #374151 0%, #111827 100%); color: var(--white-bg); }
+    .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-lg); }
+    .header-main-info { flex: 1; }
+    .page-title { font-size: 2.25rem; font-weight: 700; margin: 0 0 var(--spacing-sm) 0; display: flex; align-items: center; gap: var(--spacing-md); }
+    .group-context { font-size: 1rem; opacity: 0.9; }
+    .group-context p { margin: var(--spacing-sm) 0; }
+    .group-context strong { font-weight: 600; margin-right: var(--spacing-sm); }
+    .publisher-card { display: flex; align-items: center; gap: var(--spacing-md); background: rgba(255, 255, 255, 0.1); padding: var(--spacing-md); border-radius: 10px; }
+    .publisher-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--white-bg); }
+    .publisher-details { display: flex; flex-direction: column; }
+    .publisher-name { font-size: 1.125rem; font-weight: 600; }
+    .publisher-role { font-size: 0.875rem; opacity: 0.8; }
+    
+    /* --- 表單卡 --- */
+    .form-card { padding: var(--spacing-xl); }
+    .card-header { margin-bottom: var(--spacing-lg); padding-bottom: var(--spacing-md); border-bottom: 2px solid var(--border-light); }
+    .card-title { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); margin: 0; }
+    .announcement-form { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+    .form-main { display: grid; grid-template-columns: 1fr; gap: var(--spacing-xl); }
+    .form-group { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+    .form-group label { font-weight: 600; color: var(--text-dark); font-size: 1rem; }
+    .form-group input[type="text"] { padding: 0.875rem 1rem; border: 1px solid var(--border-light); border-radius: 8px; font-size: 1rem; transition: var(--transition); }
+    .form-group input[type="text"]:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+    .scheduler-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-lg); }
+    .radio-group { display: flex; gap: var(--spacing-lg); }
+    .radio-label { display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer; }
+    #scheduled_time_picker.hidden { display: none; }
+    
+    /* --- 按鈕 --- */
+    .form-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-md); padding-top: var(--spacing-lg); border-top: 2px solid var(--border-light); margin-top: var(--spacing-lg); }
+    .form-actions-main { display: flex; gap: var(--spacing-md); }
+    .btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; text-align: center; cursor: pointer; transition: var(--transition); border: 1px solid transparent; }
+    .btn-primary { background-color: var(--primary-color); color: var(--white-bg); border-color: var(--primary-color); }
+    .btn-primary:hover { background-color: var(--primary-dark); }
+    .btn-secondary { background-color: var(--light-bg); color: var(--text-dark); border-color: var(--border-light); }
+    .btn-secondary:hover { background-color: var(--border-light); }
+    .btn-danger { background-color: transparent; color: var(--danger-color); border-color: transparent; }
+    .btn-danger:hover { background-color: rgba(239, 68, 68, 0.1); color: var(--danger-dark); }
+
+    /* --- RWD --- */
+    @media (max-width: 768px) {
+        .page-container { padding: var(--spacing-md); }
+        .header-content { flex-direction: column; align-items: stretch; }
+        .form-actions { flex-direction: column; }
+        .form-actions-main { width: 100%; display: flex; flex-direction: column-reverse; }
+        .btn-danger { background-color: var(--danger-color); color: var(--white-bg); border-color: var(--danger-color); order: 1; }
+        .btn-danger:hover { background-color: var(--danger-dark); color: var(--white-bg); }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  <div class="d-card page-header-card">
+    <div class="header-content">
+      <div class="header-main-info">
+        <h1 class="page-title">
+          <i class="fa-solid fa-pencil"></i>
+          編輯公告
+        </h1>
+        <div class="group-context">
+          <p><strong>發布單位:</strong> 台灣北大物流股份有限公司萬華分公司</p>
+          <p><strong>所屬群組:</strong> 北大物流 C組</p>
+        </div>
+      </div>
+      <div class="publisher-card">
+        <img src="{{ url_for('static', filename='images/chang.png') }}" alt="張原因" class="publisher-avatar" />
+        <div class="publisher-details">
+          <span class="publisher-name">張原因</span>
+          <span class="publisher-role">發布者 (組長)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-card form-card">
+    <form class="announcement-form">
+      <div class="card-header">
+          <h2 class="card-title">公告內容</h2>
+      </div>
+
+      <div class="form-main">
+        <div class="form-group">
+          <label for="subject">主旨</label>
+          <input type="text" id="subject" name="subject" value="2025年10月1日人事組織命令公告三" required />
+        </div>
+
+        <div class="form-group">
+          <label for="content">內容</label>
+          <textarea id="content" name="content">
+            <p>各位同仁大家好：</p>
+            <p>茲因應公司業務調整及組織優化需求，經管理階層審慎評估後，現公告以下人事異動事項，自2025年10月1日起正式生效：</p>
+            <h4>一、人事異動</h4>
+            <ul>
+                <li><strong>李明哲</strong>：由「配送組組員」調任為「調度管理專員」，負責路線規劃與車輛調度工作。</li>
+                <li><strong>陳雅婷</strong>：由「北區配送組」調任至「南區配送組」，協助南區業務擴展。</li>
+                <li><strong>王建國</strong>：晉升為「物流管理副理」，統籌北部三區之配送作業與人員管理。</li>
+            </ul>
+            <h4>二、組織調整</h4>
+            <ul>
+                <li>原「臨時配送組」併入「常規配送 A 組」，以提升調度效率。</li>
+                <li>新設「客戶服務專組」，由黃庭毅主任擔任組長，專責處理客戶投訴與服務品質改善。</li>
+            </ul>
+          </textarea>
+        </div>
+
+        <div class="form-group">
+            <label>發佈狀態</label>
+            <p class="text-muted">此公告已於 2025年09月29日 發布。</p>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-danger" onclick="confirm('確定要刪除這篇公告嗎？')">
+            <i class="fa-solid fa-trash"></i> 刪除公告
+        </button>
+        <div class="form-actions-main">
+            <a href="{{ url_for('group_leader_view') }}" class="btn btn-secondary">取消</a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-save"></i> 儲存變更
+            </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化 TinyMCE 富文本編輯器
+      // 它會自動讀取 textarea 內的 HTML 內容並呈現
+      tinymce.init({
+        selector: '#content',
+        plugins: 'lists link image table code help wordcount',
+        toolbar: 'undo redo | blocks | bold italic | bullist numlist | link image | table | code | help',
+        language: 'zh_TW',
+        height: 400,
+        menubar: false,
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }'
+      });
+    });
+  </script>
+{% endblock %}

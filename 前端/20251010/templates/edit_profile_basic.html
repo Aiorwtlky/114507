@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}編輯個人資料 · 吾駕仙 My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    
+    <div class="d-card group-info-card">
+        <div class="group-header">
+            <div class="group-icon"><i class="fa-solid fa-user-pen"></i></div>
+            <div class="group-info">
+                <h1 class="group-name">編輯個人資料</h1>
+                <p class="group-company"><i class="fa-solid fa-info-circle"></i> 修改您的個人帳戶與駕駛資訊</p>
+            </div>
+            <button type="submit" form="editProfileForm" class="btn-edit-profile">
+                <i class="fa-solid fa-floppy-disk"></i><span>儲存變更</span>
+            </button>
+        </div>
+    </div>
+
+    <form id="editProfileForm" enctype="multipart/form-data">      
+        <section class="d-card profile-section">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-address-card"></i> 基本資料</h3>
+            </div>
+            <div class="section-content">
+                <div class="edit-mode">
+                    <div class="photo-edit">
+                        <img src="{{ url_for('static', filename='img/user-placeholder.svg') }}" alt="使用者頭像" id="avatarPreview">
+                        <label for="avatarUpload" class="btn-upload-photo">
+                            <i class="fa-solid fa-camera"></i><span>更換頭像</span>
+                        </label>
+                        <input type="file" id="avatarUpload" name="avatar" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="name"><i class="fa-solid fa-user"></i> 姓名</label>
+                            <input type="text" id="name" name="first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="username"><i class="fa-solid fa-at"></i> 使用者名稱</label>
+                            <input type="text" id="username" name="username" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="emp_id"><i class="fa-solid fa-id-badge"></i> 人員編號</label>
+                            <input type="text" id="emp_id" name="personnel_number" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender"><i class="fa-solid fa-venus-mars"></i> 性別</label>
+                            <select id="gender" name="gender" required>
+                                <option value="UNSPECIFIED">不願透漏</option>
+                                <option value="MALE">男</option>
+                                <option value="FEMALE">女</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="d-card profile-section">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-address-book"></i> 聯絡方式</h3>
+            </div>
+            <div class="section-content">
+                <div class="edit-mode">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="email"><i class="fa-solid fa-envelope"></i> 電子郵件</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone"><i class="fa-solid fa-phone"></i> 聯絡電話</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="d-card profile-section">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-id-card"></i> 駕駛資訊</h3>
+            </div>
+            <div class="section-content">
+                <div class="edit-mode">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="license_number"><i class="fa-solid fa-id-card-clip"></i> 駕照號碼</label>
+                            <input type="text" id="license_number" name="license_number">
+                        </div>
+                        <div class="form-group">
+                            <label for="license_type"><i class="fa-solid fa-car"></i> 駕照等級</label>
+                            <select id="license_type" name="license_type">
+                                <option value="普通小型車">普通小型車</option>
+                                <option value="大客車">大客車</option>
+                                <option value="大貨車">大貨車</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="driving_years"><i class="fa-solid fa-calendar-check"></i> 駕駛年資</label>
+                            <input type="number" id="driving_years" name="driving_experience" min="0" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/edit-profile.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}
+  我的行車影像 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/member_videos.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="videos-container">
+    <div class="page-header">
+        <h1>
+            {# ✨ 修改：標題改為更通用的「我的行車影像」 #}
+            <i class="fa-solid fa-video"></i>
+            我的行車影像
+        </h1>
+        {# ✨ 修改：返回按鈕的目的地和文字 #}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">返回儀表板</a>
+    </div>
+
+    <section class="filter-bar">
+        <div class="filter-group">
+            <label for="date-picker">選擇日期</label>
+            <input type="date" id="date-picker" name="date" value="2025-08-27">
+        </div>
+        <div class="filter-group">
+            <label for="vehicle-select">選擇車機</label>
+            <select id="vehicle-select" name="vehicle">
+                <option value="all">全部車機</option>
+                <option value="A01">車機-A01</option>
+                <option value="B02">車機-B02</option>
+            </select>
+        </div>
+        <button class="btn btn-primary">篩選</button>
+    </section>
+
+    <div class="videos-list">
+      <section class="daily-videos">
+        <h2 class="date-header">2025 / 08 / 27</h2>
+        <div class="video-gallery">
+          <div class="video-card" data-starttime="14:00" data-endtime="15:36" data-vehicle="車機-A01" data-size="1.2 GB">
+            <div class="video-thumbnail">
+              <img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽">
+              <div class="play-icon"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="video-card-content">
+              <h3 class="video-time">14:00 - 15:36</h3>
+              <div class="video-meta">
+                <span><i class="fa-solid fa-truck"></i> 車機-A01</span>
+                <span><i class="fa-solid fa-database"></i> 1.2 GB</span>
+                <span><i class="fa-solid fa-clock"></i> 1 小時 36 分鐘</span>
+              </div>
+            </div>
+          </div>
+          <div class="video-card" data-starttime="10:15" data-endtime="11:05" data-vehicle="車機-B02" data-size="850 MB">
+            <div class="video-thumbnail">
+                <img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽">
+                <div class="play-icon"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="video-card-content">
+              <h3 class="video-time">10:15 - 11:05</h3>
+              <div class="video-meta">
+                <span><i class="fa-solid fa-truck"></i> 車機-B02</span>
+                <span><i class="fa-solid fa-database"></i> 850 MB</span>
+                <span><i class="fa-solid fa-clock"></i> 50 分鐘</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      </div>
+</div>
+
+<div class="modal-overlay" id="videoModalOverlay" style="display: none;">
+    <div class="modal-content" id="videoModalContent">
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <a href="#" class="btn btn-primary btn-download-full" id="modalDownloadFull"></a>
+            <h3 class="segment-title">影片區段 (每 15 分鐘)</h3>
+            <div class="segment-list" id="modalSegmentList"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/member_videos.js') }}" defer></script>
+{% endblock %}

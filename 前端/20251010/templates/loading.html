@@ -1,0 +1,18 @@
+{% extends "base2.html" %}
+{% block title %}跳轉中 · My Driving God{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/loading.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="loading-wrapper">
+  <h1 class="loading-title">MY DRIVING GOD</h1>
+  <div class="spinner" data-target="{{ target }}"></div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/loading.js') }}" defer></script>
+{% endblock %}

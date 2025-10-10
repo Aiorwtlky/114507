@@ -1,0 +1,74 @@
+/* 檔案名稱：static/css/pages/form_page.css */
+/* 這個 CSS 專門用來美化獨立的表單頁面，例如編輯個人資料、新增資料等 */
+
+.form-page-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--white-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.form-card .form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 1.5rem;
+}
+.form-card .form-header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+.form-card .form-header p { color: var(--text-muted); font-size: 1.1rem; }
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.photo-upload {
+    margin: 1.5rem auto;
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+.upload-label { cursor: pointer; display: block; width: 100%; height: 100%; border-radius: 50%; border: 2px dashed var(--border-light); overflow: hidden; }
+.upload-label img { width: 100%; height: 100%; object-fit: cover; }
+
+.gender-group .radio-group { display: flex; gap: 1.5rem; align-items: center; }
+.radio-group label { display: flex; align-items: center; gap: 0.5rem; }
+
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+}
+.btn { display: inline-block; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none; text-align: center; transition: all 0.3s ease; }
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: #0056b3; transform: translateY(-2px); }
+.btn-secondary { background-color: var(--light-bg); color: var(--text-dark); border: 1px solid var(--border-light); }
+.btn-secondary:hover { background-color: #e9ecef; }

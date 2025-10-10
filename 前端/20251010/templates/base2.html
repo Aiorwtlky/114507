@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="My Driving God 吾駕仙 - 智慧交通管理系統，提升駕駛安全與效率">
+    <title>{% block title %}My Driving God 吾駕仙{% endblock %}</title>
+    
+    <!-- 字體預載入優化 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    
+    <!-- 主要樣式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base_public_light.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- ✨ 新增：手機版遮罩層 -->
+    <div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+
+    <!-- ========== 頂部導覽欄 ========== -->
+    <header class="topbar" role="banner">
+        <div class="topbar-container">
+            <!-- Logo -->
+            <a href="{{ url_for('home') }}" class="brand" aria-label="My Driving God 首頁">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" 
+                     alt="My Driving God Logo" 
+                     class="brand-logo">
+                <span class="brand-text">My Driving God</span>
+            </a>
+
+            <!-- 漢堡選單按鈕（手機版） -->
+            <button class="hamburger-btn" 
+                    id="hamburgerBtn" 
+                    aria-label="開啟選單"
+                    aria-expanded="false"
+                    aria-controls="navLinks">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- 導覽選單 -->
+            <nav class="nav-links" id="navLinks" role="navigation" aria-label="主選單">
+                <ul>
+                    <li>
+                        <a href="{{ url_for('home') }}" 
+                           {% if request.endpoint == 'home' %}aria-current="page"{% endif %}>
+                            首頁
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('solutions') }}"
+                           {% if request.endpoint == 'solutions' %}aria-current="page"{% endif %}>
+                            解決方案
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('about') }}"
+                           {% if request.endpoint == 'about' %}aria-current="page"{% endif %}>
+                            關於我們
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('contact') }}"
+                           {% if request.endpoint == 'contact' %}aria-current="page"{% endif %}>
+                            聯絡我們
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('login') }}" class="nav-cta">
+                            前往 MDG Pro
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ========== 主要內容 ========== -->
+    <main role="main">
+        {% block content %}
+        <!-- 子頁面內容會插入這裡 -->
+        {% endblock %}
+    </main>
+
+    <!-- ========== 頁尾 ========== -->
+    <footer class="footer" role="contentinfo">
+        <p>© 2025 My Driving God 吾駕仙智慧交通系統 — All Rights Reserved.</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main_public.js') }}" defer></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

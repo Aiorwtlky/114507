@@ -1,0 +1,278 @@
+/* 引用儀表板的基礎卡片樣式 */
+@import url('dashboard.css');
+
+body {
+    /* 預設的深色背景 */
+}
+
+.form-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 24px;
+}
+
+.announcement-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* --- 頂部資訊列 --- */
+.form-header {
+    display: grid;
+    grid-template-columns: 1.5fr auto 1.5fr;
+    gap: 24px;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 24px;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    color: #000;
+    margin: 0;
+}
+
+/* --- 主要表單區 --- */
+.form-main {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 992px) {
+
+    .form-header,
+    .form-main {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- 卡片與表單元素樣式 --- */
+.d-card .d-card-body {
+    padding: 24px;
+    /* 新增：讓卡片內的 form-group 有間距 */
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 【修改】為頂部資訊區塊加上藍色外框 */
+.info-card {
+    border: 2px solid #1a2a5f;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #333;
+}
+
+.info-card p {
+    margin: 0;
+}
+
+.info-card strong {
+    color: #000;
+}
+
+.publisher-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.publisher-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.publisher-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.publisher-title {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.publisher-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #000;
+}
+
+.publisher-role {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+/* 【修改】為表單群組加上藍色外框 */
+.form-group {
+    margin-bottom: 0;
+    /* 移除舊的 margin，改由 d-card-body 的 gap 控制間距 */
+    border: 2px solid #1a2a5f;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+input[type="text"],
+textarea,
+input[type="datetime-local"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    color: #212529;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #1a2a5f;
+    box-shadow: 0 0 0 3px rgba(26, 42, 95, 0.2);
+}
+
+/* 【新增】將主旨輸入框加高加大 */
+#subject {
+    padding: 18px 16px;
+    font-size: 1.1rem;
+}
+
+.radio-group {
+    display: flex;
+    gap: 24px;
+    margin-top: 12px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #333;
+}
+
+input[type="radio"] {
+    accent-color: #1a2a5f;
+}
+
+.datetime-picker {
+    margin-top: 12px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 表單按鈕 */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    padding-top: 0;
+    /* 移除分隔線和 padding */
+    border-top: none;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-primary {
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+
+    background-color: #f0f2f5;
+    color: #0c0c0c;
+    padding: 14px 32px;
+    border-radius: 50px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background-color: #0d1530;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #333;
+}
+
+/* --- ▼▼▼ 請在它的下方加入這段新修正 ▼▼▼ --- */
+.radio-label span {
+    color: #000000;
+    /* 強制指定 span 的文字顏色為黑色 */
+}
+
+/* --- 新增：年月日標籤文字樣式 --- */
+.date-input-group span {
+    color: #212529;
+    /* 設定為深灰色 */
+    font-weight: 500;
+}
+
+.info-card p {
+    color: #000000;
+    /* 將文字顏色設定為黑色 */
+}
+
+.member-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;           /* 關鍵：讓圖片填滿容器 */
+  object-position: center top; /* 關鍵修改：優先顯示圖片頂部 */
+  /* 其他您已有的樣式，例如 border */
+}
+
+/* 適用於組員列表表格中的小頭像 */
+.table-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;           /* 關鍵：讓圖片填滿容器 */
+  object-position: center 25%; /* 關鍵修改：將對焦點從頂部(0%)往下移到 25% 的位置 */
+  /* 其他您已有的樣式 */
+}

@@ -1,0 +1,165 @@
+{% extends "base2.html" %}
+{% block title %}建立您的 MDG Pro 帳戶{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/register.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="register-page">
+  <div class="register-container">
+    <div class="form-header">
+      <h2 class="mega-title gradient-text">建立您的 MDG Pro 帳戶</h2>
+      <p class="subtitle">只需幾個步驟，即可開始您的智能駕駛管理之旅。</p>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-step active" data-step="1">帳戶資訊</div>
+        <div class="progress-step" data-step="2">個人資料</div>
+        <div class="progress-step" data-step="3">駕駛資訊</div>
+    </div>
+
+  <form class="register-form" id="registerForm" enctype="multipart/form-data">      
+      <div class="form-step active" data-step="1">
+        <h3 class="step-title">1. 設定您的帳戶</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label for="activation_code">MDG Pro 啟用碼</label>
+            <input type="text" id="activation_code" name="activation_code" placeholder="請輸入您的啟用碼" required>
+          </div>
+          <div class="form-group">
+            <label for="name">姓名</label>
+            <input type="text" id="name" name="name" placeholder="請輸入真實姓名" required>
+          </div>
+          <div class="form-group">
+            <label for="email">電子郵件</label>
+            <input type="email" id="email" name="email" placeholder="將作為您的登入帳號" required>
+          </div>
+          <div class="form-group full">
+            <label for="password">設定密碼</label>
+            <input type="password" id="password" name="password" placeholder="至少 6 碼英數混合" required minlength="6">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="2">
+        <h3 class="step-title">2. 完善個人資料</h3>
+        <div class="form-grid profile-grid">
+            <div class="form-group photo-upload-group">
+                <label>個人照片 (選填)</label>
+                <div class="photo-upload">
+                    <label for="photo" class="upload-label">
+                        <img id="photoPreview" src="{{ url_for('static', filename='img/user-placeholder.svg') }}" alt="預覽">
+                        <span class="upload-icon"><i class="fa-solid fa-camera"></i></span>
+                    </label>
+                    <input type="file" id="photo" name="avatar" accept="image/*" hidden>
+                </div>
+            </div>
+            <div class="profile-fields">
+                <div class="form-group">
+                    <label for="username">使用者名稱</label>
+                    <input type="text" id="username" name="username" placeholder="例如 driver123" required>
+                </div>
+                <div class="form-group">
+                    <label for="personnel_number">人員編號</label>
+                    <input type="text" id="personnel_number" name="personnel_number" placeholder="請輸入您的員工編號" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">聯絡電話</label>
+                    <input type="tel" id="phone" name="phone" placeholder="09xxxxxxxx" required pattern="^09\d{8}$">
+                </div>
+            </div>
+            <div class="form-group gender-group full">
+                <label>性別</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="gender" value="MALE" required> 男</label>
+                    <label><input type="radio" name="gender" value="FEMALE"> 女</label>
+                    <label><input type="radio" name="gender" value="UNSPECIFIED"> 不願透漏</label>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="3">
+        <h3 class="step-title">3. 駕駛員資訊 (選填)</h3>
+        <p class="step-subtitle">如果您是駕駛員，填寫此資訊能讓系統提供更精準的分析。</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="license_number">駕照號碼</label>
+                <input type="text" id="license_number" name="license_number" placeholder="請輸入您的駕照號碼">
+            </div>
+            <div class="form-group">
+                <label for="license">駕照等級</label>
+                <select id="license" name="license">
+                  <option value="">請選擇</option>
+                  <option value="A">普通小型車</option>
+                  <option value="B">大客車</option>
+                  <option value="C">大貨車</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="experience">駕駛年資</label>
+                <input type="number" id="experience" name="experience" placeholder="以年為單位" min="0">
+            </div>
+            <div class="form-group">
+                <label for="invitation_code">群組邀請碼 (選填)</label>
+                <input type="text" id="invitation_code" name="invitation_code" placeholder="請輸入8位數邀請碼" maxlength="8">
+            </div>
+            <div class="form-group full">
+                <label>使用條款與隱私權政策</label>
+                <div class="scroll-box" id="termsBox">
+  <p>
+    <strong>服務條款與隱私權政策</strong><br><br>
+    <strong>最後更新日期：2025年10月08日</strong><br><br>
+    歡迎使用「吾駕仙 My Driving God」（以下簡稱「本服務」），本服務由 [請填寫您的公司名稱]（以下簡稱「我們」）提供。在您註冊並使用本服務前，請務必詳細閱讀以下條款。當您勾選「我已閱讀並同意條款」並完成註冊，即表示您已充分理解並同意接受本條款之所有內容。<br><br>
+    <strong>第一條：服務說明</strong><br>
+    本服務是一個智慧駕駛管理平台，旨在透過數據分析與 AI 技術，提升駕駛安全、優化車隊管理效率。服務內容包含但不限於：數位儀表板、駕駛行為分析、行程數據紀錄、行車影像雲端存取等功能。<br><br>
+    <strong>第二條：帳戶責任</strong><br>
+    1. 您承諾提供給我們的註冊資料（包括但不限於姓名、電子郵件、聯絡電話、駕照資訊等）均為您本人最新且真實的資料。<br>
+    2. 您有義務妥善保管您的帳號密碼，並為所有使用此帳號的行為負完全責任。<br>
+    3. 若您發現帳號有任何安全疑慮或被未經授權使用，應立即通知我們。<br><br>
+    <strong>第三條：資料收集與使用（隱私權政策）</strong><br>
+    為提供本服務，我們將收集、處理及利用您的個人資料與駕駛數據。收集範圍如下：<br>
+    1.  <strong>個人識別資料</strong>：姓名、人員編號、電子郵件、聯絡電話、駕照號碼與等級、使用者照片等。<br>
+    2.  <strong>駕駛行為數據</strong>：行駛路線、速度、加速度、急煞、急轉彎、行駛時段等匿名化駕駛行為。<br>
+    3.  <strong>車輛感測數據</strong>：透過車載裝置收集的 GPS 定位、行車影像、陀螺儀數據等。<br><br>
+    我們承諾，所有收集的資料將嚴格遵守個人資料保護法的相關規定，並用於以下目的：<br>
+    -   提供個人化的駕駛安全評分與建議。<br>
+    -   產生匿名的數據報告，以供管理人員進行車隊安全與效率分析。<br>
+    -   系統維護、問題排查與服務優化。<br>
+    -   在法律規範或政府機關要求下，提供必要資訊。<br><br>
+    <strong>第四條：資料安全</strong><br>
+    我們採用業界標準的安全技術（如 SSL 加密傳輸、資料庫加密儲存）來保護您的資料安全，防止未經授權的存取、修改或洩露。<br><br>
+    <strong>第五條：使用者行為規範</strong><br>
+    您同意不利用本服務從事任何違法或侵犯他人權益的行為。若有違反，我們有權暫停或終止您的帳戶服務。<br><br>
+    <strong>第六條：服務中止與修改</strong><br>
+    我們保留隨時修改或暫時、永久中止本服務的權利，相關變更將於網站上公告，不另行個別通知。<br><br>
+    <strong>第七條：條款修訂</strong><br>
+    我們得隨時修訂本條款，修訂後的條款將公布於本網站。若您在修訂後繼續使用本服務，將視為您已同意接受該修訂。<br><br>
+    <strong>第八條：聯絡我們</strong><br>
+    若您對本條款有任何疑問，歡迎隨時透過電子郵件聯繫我們：[請填寫您的聯繫電子郵件]<br><br>
+    --- 請滑動至最下方以啟用同意選項 ---
+  </p>
+</div>
+                <label class="agree">
+                    <input type="checkbox" id="agreeCheckbox" disabled>
+                    我已閱讀並同意條款
+                </label>
+            </div>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">上一步</button>
+        <button type="button" class="btn btn-primary" id="nextBtn">下一步</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;" disabled>完成註冊</button>
+      </div>
+
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/register.js') }}" defer></script>
+{% endblock %}

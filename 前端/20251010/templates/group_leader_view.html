@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}群組管理 · My Driving God{% endblock %}
+
+{% block page_heading %}群組管理{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_leader_view.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="group-leader-container">
+    
+    <div class="d-card group-info-card">
+        <div class="group-header">
+            <div class="group-icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="group-info">
+                <h2 class="group-name" id="group-name">載入中...</h2>
+                <p class="group-company">
+                    <i class="fa-solid fa-building"></i>
+                    <span id="group-description">--</span>
+                </p>
+            </div>
+            <a href="{{ url_for('group_settings') }}" class="btn-settings" title="群組設定">
+                <i class="fa-solid fa-cog"></i>
+            </a>
+        </div>
+
+        <div class="group-leaders">
+            <span class="leaders-label">
+                <i class="fa-solid fa-crown"></i>
+                群組管理員
+            </span>
+            <div class="leaders-list" id="group-leaders-list">
+                <span class="leader-badge">載入中...</span>
+            </div>
+        </div>
+
+        <div class="my-identity">
+            <span class="identity-label">
+                <i class="fa-solid fa-id-card"></i>
+                我的身分
+            </span>
+             <div class="identity-content">
+                <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}" 
+                     alt="我的頭像" 
+                     class="identity-avatar"
+                     id="my-identity-avatar">
+                <div class="identity-info">
+                    <span class="identity-name" id="my-identity-name">--</span>
+                    <span class="identity-role" id="my-identity-role">
+                        <i class="fa-solid fa-user-tie"></i>
+                        --
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-card trends-card">
+        <div class="card-header">...</div>
+        <div class="trends-filters">...</div>
+        <div class="trends-content">...</div>
+    </div>
+
+    <div class="d-card members-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-users"></i>
+                群組成員管理
+            </h3>
+            <div class="header-actions">
+                <a href="{{ url_for('invite_member') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-user-plus"></i>
+                    新增成員
+                </a>
+            </div>
+        </div>
+
+        <div class="members-table-wrapper">
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th class="avatar-col">頭像</th>
+                        <th>編號</th>
+                        <th>姓名</th>
+                        <th>總平均分</th>
+                        <th>加入日期</th>
+                        <th class="actions-col">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="members-table-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem;">載入中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-card announcements-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-bullhorn"></i>
+                群組公告管理
+            </h3>
+            <div class="header-actions">
+                <a href="{{ url_for('create_announcement') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i>
+                    新增公告
+                </a>
+            </div>
+        </div>
+
+        <div class="announcements-list" id="announcements-list">
+            <div style="text-align: center; padding: 2rem;">載入中...</div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+            <i class="fa-solid fa-arrow-left"></i>
+            返回儀表板
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/pages/group_leader_view.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  線上客服 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/chat.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <div class="chat-page-container">
+    <div class="chat-card">
+      <header class="chat-header">
+        <h3>MDG智慧交通系統 - 線上客服</h3>
+        <div class="status-indicator">
+          <span class="dot"></span>
+          <span class="online">線上</span>
+        </div>
+      </header>
+
+      <main class="messages-area" id="messagesArea">
+        <div class="msg-bubble is-admin">
+          <div class="author-name">吾仙</div>
+          <div class="text">您好！我是吾駕仙 AI 客服，請問有什麼可以為您服務的嗎？</div>
+        </div>
+      </main>
+
+      <footer class="composer-area">
+        <textarea id="messageInput" placeholder="請在此輸入您的問題..." rows="1"></textarea>
+        <button id="sendBtn" title="傳送"><i class="fa-solid fa-paper-plane"></i></button>
+      </footer>
+    </div>
+
+    <a href="{{ url_for('dashboard') }}" class="custom-btn primary-btn">返回儀表板</a>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='js/pages/chat.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,350 @@
+/* ===================================
+   檔案：static/css/pages/announcements.css
+   用途：公告詳細頁面樣式
+   =================================== */
+
+/* --- 1. 基礎變數 --- */
+:root {
+    --card-radius: 12px;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --transition: all 0.3s ease;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* --- 2. 容器佈局 --- */
+.announcement-detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    width: 100%;
+}
+
+/* --- 3. 卡片基礎樣式 --- */
+.d-card {
+    background: var(--white-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--card-radius);
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    transition: var(--transition);
+}
+
+.d-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-dark);
+}
+
+.card-title i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+/* --- 4. 公告標題卡片 --- */
+.announcement-header-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white-bg);
+    border: none;
+    padding: var(--spacing-xl);
+}
+
+.announcement-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.announcement-meta-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.announcement-subject {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--white-bg);
+    line-height: 1.3;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.info-item i {
+    color: rgba(255, 255, 255, 0.8);
+    width: 20px;
+    text-align: center;
+}
+
+.info-label {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.info-value {
+    font-weight: 600;
+    color: var(--white-bg);
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+/* --- 5. 公告內容卡片 --- */
+.announcement-content-card {
+    min-height: 400px;
+}
+
+.announcement-body {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--text-dark);
+}
+
+.announcement-body p {
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+.announcement-body h4 {
+    margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.announcement-body ul {
+    margin: 0 0 var(--spacing-md) 0;
+    padding-left: var(--spacing-xl);
+}
+
+.announcement-body li {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.8;
+}
+
+.announcement-body strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.announcement-signature {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+    text-align: right;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* --- 6. 操作按鈕區 --- */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: var(--white-bg);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--white-bg);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--white-bg);
+}
+
+/* 在白色卡片上的按鈕 */
+.action-buttons .btn-outline {
+    color: var(--text-dark);
+    border-color: var(--border-light);
+}
+
+.action-buttons .btn-outline:hover {
+    background: var(--light-bg);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* --- 7. 手機版優化 --- */
+@media (max-width: 768px) {
+    .announcement-header-card {
+        padding: var(--spacing-lg);
+    }
+
+    .announcement-header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .announcement-subject {
+        font-size: 1.5rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+    }
+
+    .d-card {
+        padding: var(--spacing-md);
+    }
+
+    .card-title {
+        font-size: 1rem;
+    }
+
+    .announcement-body {
+        font-size: 0.95rem;
+    }
+
+    .announcement-body h4 {
+        font-size: 1.05rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .announcement-subject {
+        font-size: 1.35rem;
+    }
+
+    .announcement-body {
+        font-size: 0.9rem;
+    }
+}
+
+/* --- 8. 無障礙優化 --- */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.announcement-header-card .btn:focus-visible {
+    outline-color: var(--white-bg);
+}
+
+/* --- 9. 列印樣式 --- */
+@media print {
+    .header-actions,
+    .action-buttons {
+        display: none;
+    }
+
+    .d-card {
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+
+    .announcement-header-card {
+        background: var(--white-bg) !important;
+        color: var(--text-dark) !important;
+        border: 1px solid var(--border-light);
+    }
+
+    .announcement-subject {
+        color: var(--text-dark) !important;
+        text-shadow: none;
+    }
+
+    .info-item,
+    .info-label,
+    .info-value {
+        color: var(--text-dark) !important;
+    }
+
+    .announcement-body {
+        page-break-inside: avoid;
+    }
+}

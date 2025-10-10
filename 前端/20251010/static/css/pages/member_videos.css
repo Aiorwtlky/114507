@@ -1,0 +1,60 @@
+/* 檔案名稱：static/css/pages/member_videos.css */
+.videos-container { max-width: 1200px; margin: 0 auto; padding: 0 1rem 2rem 1rem; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;}
+.page-header h1 { font-size: 1.8rem; margin: 0; }
+.header-subtitle { font-weight: 400; color: var(--text-muted); font-size: 1.2rem; }
+
+/* 篩選器 */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 1rem; background: var(--white-bg); padding: 1rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-light); }
+.filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.filter-group label { font-weight: 600; font-size: 0.9rem; }
+.filter-group input, .filter-group select { padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 1rem; }
+
+/* 影片列表 */
+.daily-videos { margin-bottom: 2rem; }
+.date-header { font-size: 1.5rem; margin-bottom: 1rem; padding-left: 0.5rem; border-left: 4px solid var(--primary-color); }
+.video-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+.no-videos-message { color: var(--text-muted); padding: 2rem; text-align: center; background-color: var(--light-bg); border-radius: 12px; }
+
+/* 影片卡片 */
+.video-card { background: var(--white-bg); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.video-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+/* --- ✨ 這裡是關鍵修改 ✨ --- */
+.video-thumbnail {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9; /* 強制容器維持 16:9 的長寬比 */
+    background-color: #e9ecef; /* 預設背景色，圖片載入失敗時會顯示 */
+    overflow: hidden;
+}
+.video-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 確保圖片不變形地填滿容器 */
+    display: block;
+}
+/* --- ✨ 修改結束 ✨ --- */
+
+.play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 3rem; opacity: 0.8; transition: opacity 0.3s ease; text-shadow: 0 2px 10px rgba(0,0,0,0.5);}
+.video-card:hover .play-icon { opacity: 1; }
+.video-card-content { padding: 1rem; }
+.video-time { margin: 0 0 0.8rem 0; font-size: 1.25rem; }
+.video-meta { display: flex; flex-direction: column; gap: 0.5rem; color: var(--text-muted); font-size: 0.9rem; }
+.video-meta span { display: flex; align-items: center; gap: 0.5rem; }
+
+/* 懸浮窗 (Modal) */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+.modal-content { background: var(--white-bg); border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 1rem; }
+.modal-header h2 { font-size: 1.2rem; margin: 0; }
+.modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s ease; }
+.modal-close-btn:hover { color: var(--text-dark); }
+.btn-download-full { width: 100%; text-align: center; margin-bottom: 1.5rem; }
+.segment-title { font-size: 1rem; color: var(--text-muted); margin-bottom: 1rem; }
+.segment-list { max-height: 250px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 8px; }
+.segment-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; }
+.segment-item:nth-child(odd) { background-color: var(--light-bg); }
+.segment-time { font-weight: 600; }
+.segment-actions { display: flex; gap: 0.5rem; }
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.875rem; }

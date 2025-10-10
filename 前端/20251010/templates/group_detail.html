@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}群組詳情 · My Driving God{% endblock %}
+
+{% block page_heading %}北大物流 C組{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_detail.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="group-detail-container">
+    
+    <!-- ========== 群組資訊卡片（整合所有人員資訊）========== -->
+    <div class="d-card group-info-card">
+        <!-- 群組基本資訊 -->
+        <div class="group-header">
+            <div class="group-icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="group-info">
+                <h2 class="group-name">北大物流 C組</h2>
+                <p class="group-company">
+                    <i class="fa-solid fa-building"></i>
+                    北大物流股份有限公司
+                </p>
+            </div>
+        </div>
+
+        <!-- 群組組長 -->
+        <div class="group-leaders">
+            <span class="leaders-label">
+                <i class="fa-solid fa-crown"></i>
+                群組組長
+            </span>
+            <div class="leaders-list">
+                <span class="leader-badge">張原因</span>
+                <span class="leader-badge">黃庭毅</span>
+            </div>
+        </div>
+
+        <!-- 我的身分 -->
+        <div class="my-identity">
+            <span class="identity-label">
+                <i class="fa-solid fa-id-card"></i>
+                我的身分
+            </span>
+            <div class="identity-content">
+                <img src="{{ url_for('static', filename='images/1.jpg') }}" 
+                     alt="黃仁勳" 
+                     class="identity-avatar">
+                <div class="identity-info">
+                    <span class="identity-name">黃仁勳</span>
+                    <span class="identity-role">
+                        <i class="fa-solid fa-user"></i>
+                        一般組員
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 群組公告（全寬）========== -->
+    <div class="d-card announcements-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-bullhorn"></i>
+                群組公告
+            </h3>
+        </div>
+        <div class="announcements-list">
+            <div class="announcement-item">
+                <div class="announcement-header">
+                    <h4 class="announcement-title">2025年10月1日人事組織命令公告三</h4>
+                    <span class="announcement-date">2025.09.29</span>
+                </div>
+                <div class="announcement-meta">
+                    <span class="announcement-author">
+                        <i class="fa-solid fa-user"></i>
+                        張原因
+                    </span>
+                </div>
+                <a href="{{ url_for('announcements') }}" class="btn-view-announcement">
+                    查看詳情 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="announcement-item">
+                <div class="announcement-header">
+                    <h4 class="announcement-title">A3修配廠路線調整（9/20）</h4>
+                    <span class="announcement-date">2025.09.21</span>
+                </div>
+                <div class="announcement-meta">
+                    <span class="announcement-author">
+                        <i class="fa-solid fa-user"></i>
+                        黃庭毅
+                    </span>
+                </div>
+                <a href="{{ url_for('announcements') }}" class="btn-view-announcement">
+                    查看詳情 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="announcement-item">
+                <div class="announcement-header">
+                    <h4 class="announcement-title">颱風假後立即回報車輛停放地點</h4>
+                    <span class="announcement-date">2025.09.16</span>
+                </div>
+                <div class="announcement-meta">
+                    <span class="announcement-author">
+                        <i class="fa-solid fa-user"></i>
+                        張原因
+                    </span>
+                </div>
+                <a href="{{ url_for('announcements') }}" class="btn-view-announcement">
+                    查看詳情 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="announcement-item">
+                <div class="announcement-header">
+                    <h4 class="announcement-title">共同維護行車安全</h4>
+                    <span class="announcement-date">2025.08.29</span>
+                </div>
+                <div class="announcement-meta">
+                    <span class="announcement-author">
+                        <i class="fa-solid fa-user"></i>
+                        張原因
+                    </span>
+                </div>
+                <a href="{{ url_for('announcements') }}" class="btn-view-announcement">
+                    查看詳情 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="announcement-item">
+                <div class="announcement-header">
+                    <h4 class="announcement-title">晨間酒精檢測務必準時送出</h4>
+                    <span class="announcement-date">2025.08.19</span>
+                </div>
+                <div class="announcement-meta">
+                    <span class="announcement-author">
+                        <i class="fa-solid fa-user"></i>
+                        張原因
+                    </span>
+                </div>
+                <a href="{{ url_for('announcements') }}" class="btn-view-announcement">
+                    查看詳情 <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 返回按鈕 ========== -->
+    <div class="action-buttons">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+            <i class="fa-solid fa-arrow-left"></i>
+            返回儀表板
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/group_detail.js') }}"></script>
+{% endblock %}
