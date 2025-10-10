@@ -1,27 +1,35 @@
 package com.example.mdgapp.ui.screen
 
-import android.util.Log // ⭐ 新增 import
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect // ⭐ 新增 import
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.mdgapp.data.viewmodel.ProfileViewModel
+import com.example.mdgapp.ui.theme.iOsBackground
+import com.example.mdgapp.ui.theme.iOsBlue
+import com.example.mdgapp.ui.theme.iOsTextPrimary
+import com.example.mdgapp.ui.theme.iOsTextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardCheckInScreen(navController: NavController) {
-    // 當這個畫面首次顯示時，輸出一條 Log
-    LaunchedEffect(Unit) {
-        Log.d("NfcApp", "進入「實體卡片註冊」畫面，等待掃描寫入...")
-    }
+fun CardCheckInScreen(
+    navController: NavController,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
+    val uiState by profileViewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -33,13 +41,13 @@ fun CardCheckInScreen(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = iOsBackground,
+                    titleContentColor = iOsTextPrimary,
+                    navigationIconContentColor = iOsTextPrimary
                 )
             )
         },
-        containerColor = Color.Black
+        containerColor = iOsBackground
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -47,19 +55,54 @@ fun CardCheckInScreen(navController: NavController) {
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.CreditCard,
-                    contentDescription = "感應卡圖示",
-                    tint = Color.White,
-                    modifier = Modifier.size(120.dp)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    "請將感應卡放置於手機背面掃描區",
-                    color = Color.Gray,
-                    fontSize = 20.sp
-                )
+            when {
+                uiState.isLoading -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = iOsBlue)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "正在讀取個人資料...",
+                            color = iOsTextSecondary,
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                uiState.errorMessage != null -> {
+                    Text(
+                        text = "資料載入失敗：\n${uiState.errorMessage}",
+                        color = Color.Red,
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                uiState.userProfile != null -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CreditCard,
+                            contentDescription = "感應卡圖示",
+                            tint = iOsTextSecondary,
+                            modifier = Modifier.size(120.dp)
+                        )
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Text(
+                            "準備就緒",
+                            color = iOsTextPrimary,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "請將您的實體卡片，靠近手機背面的 NFC 感應區。",
+                            color = iOsTextSecondary,
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
         }
     }

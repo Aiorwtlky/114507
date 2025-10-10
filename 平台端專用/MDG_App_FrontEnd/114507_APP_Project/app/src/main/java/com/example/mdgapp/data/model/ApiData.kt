@@ -3,7 +3,6 @@ package com.example.mdgapp.data.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// ⭐ 功能 1: 使用者登入
 @Serializable
 data class LoginRequest(
     val username: String,
@@ -16,14 +15,12 @@ data class LoginResponse(
     val refresh: String
 )
 
-
-// ⭐ 功能 2: 取得使用者 Profile
 @Serializable
 data class UserProfileResponse(
     val id: Int,
     val username: String,
-    @SerialName("first_name") val firstName: String,
-    @SerialName("last_name") val lastName: String,
+    @SerialName("first_name") val firstName: String?,
+    @SerialName("last_name") val lastName: String?,
     val email: String,
     @SerialName("is_staff") val isStaff: Boolean,
     @SerialName("is_group_leader") val isGroupLeader: Boolean,
@@ -33,17 +30,18 @@ data class UserProfileResponse(
 
 @Serializable
 data class PersonnelProfileResponse(
-    @SerialName("personnel_number") val personnelNumber: String,
-    val gender: String,
+    @SerialName("personnel_number") val personnelNumber: String?,
+    val gender: String?,
     @SerialName("license_number") val licenseNumber: String?,
     val avatar: String?,
     val phone: String?,
     @SerialName("license_type") val licenseType: String?,
-    @SerialName("driving_experience") val drivingExperience: Int
+    @SerialName("driving_experience") val drivingExperience: Int?,
+
+    // ⭐ 修正重點：在欄位後面加上 `= null`，提供一個預設值
+    @SerialName("nfc_card_id") val nfcCardId: String? = null
 )
 
-
-// ⭐ 功能 3: 綁定 NFC
 @Serializable
 data class NfcBindRequest(
     @SerialName("nfc_id") val nfcId: String

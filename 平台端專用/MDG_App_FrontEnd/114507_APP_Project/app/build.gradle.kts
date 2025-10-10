@@ -81,4 +81,5 @@ dependencies {
     implementation(libs.maps.compose)
     implementation(libs.play.services.location)
     implementation(libs.kotlinx.serialization.json)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }
