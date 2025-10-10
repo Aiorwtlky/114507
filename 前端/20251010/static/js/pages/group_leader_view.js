@@ -265,12 +265,29 @@
     }
 
     // ========== 4. 刪除確認對話框 ==========
-    window.confirmDelete = function(id, title) {
-        const confirmed = confirm(`確定要刪除公告「${title}」嗎？\n\n此操作無法復原。`);
-        if (confirmed) {
-            console.log('確認刪除 ID:', id);
-            alert('刪除功能開發中...');
-            // deleteAnnouncement(id);
+window.confirmDelete = async function(id, title) {
+        if (confirm(`確定要刪除公告「${title}」嗎？\n\n此操作無法復原。`)) {
+            try {
+                const response = await fetchWithAuth(`/api/announcements/${id}/`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) { // HTTP 狀態碼 204 No Content 代表成功
+                    alert('公告已成功刪除！');
+                    window.location.reload(); // 重新整理頁面以更新列表
+                } else {
+                    // 如果後端有回傳錯誤訊息，嘗試顯示
+                    try {
+                        const errorData = await response.json();
+                        alert(`刪除失敗：${JSON.stringify(errorData)}`);
+                    } catch {
+                        alert(`刪除失敗：伺服器回應狀態 ${response.status}`);
+                    }
+                }
+            } catch (error) {
+                console.error('刪除公告時發生錯誤:', error);
+                alert('刪除失敗，請檢查網路連線。');
+            }
         } else {
             console.log('取消刪除');
         }
