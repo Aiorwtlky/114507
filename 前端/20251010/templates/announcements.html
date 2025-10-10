@@ -11,31 +11,30 @@
 {% block content %}
 <div class="announcement-detail-container">
     
-    <!-- ========== 公告標題卡片 ========== -->
     <div class="d-card announcement-header-card">
         <div class="announcement-header-content">
             <div class="announcement-meta-info">
-                <h1 class="announcement-subject">2025年10月1日人事組織命令公告三</h1>
+                <h1 class="announcement-subject" id="announcement-subject">載入中...</h1>
                 <div class="announcement-info-row">
                     <div class="info-item">
                         <i class="fa-solid fa-user"></i>
                         <span class="info-label">發佈人：</span>
-                        <span class="info-value">張原因</span>
+                        <span class="info-value" id="announcement-publisher">--</span>
                     </div>
                     <div class="info-item">
                         <i class="fa-solid fa-calendar"></i>
                         <span class="info-label">發佈日期：</span>
-                        <span class="info-value">2025年09月29日</span>
+                        <span class="info-value" id="announcement-date">--</span>
                     </div>
                     <div class="info-item">
                         <i class="fa-solid fa-users"></i>
                         <span class="info-label">發佈至：</span>
-                        <span class="info-value">北大物流 C組</span>
+                        <span class="info-value" id="announcement-group">--</span>
                     </div>
                 </div>
             </div>
             <div class="header-actions">
-                <a href="{{ url_for('group_detail') }}" class="btn btn-outline">
+                <a href="{{ url_for('group_leader_view') }}" class="btn btn-outline">
                     <i class="fa-solid fa-arrow-left"></i>
                     返回群組
                 </a>
@@ -43,7 +42,6 @@
         </div>
     </div>
 
-    <!-- ========== 公告內容卡片 ========== -->
     <div class="d-card announcement-content-card">
         <div class="card-header">
             <h3 class="card-title">
@@ -51,44 +49,13 @@
                 公告內容
             </h3>
         </div>
-        <div class="announcement-body">
-            <p>各位同仁大家好：</p>
-            
-            <p>茲因應公司業務調整及組織優化需求，經管理階層審慎評估後，現公告以下人事異動事項，自2025年10月1日起正式生效：</p>
-            
-            <h4>一、人事異動</h4>
-            <ul>
-                <li><strong>李明哲</strong>：由「配送組組員」調任為「調度管理專員」，負責路線規劃與車輛調度工作。</li>
-                <li><strong>陳雅婷</strong>：由「北區配送組」調任至「南區配送組」，協助南區業務擴展。</li>
-                <li><strong>王建國</strong>：晉升為「物流管理副理」，統籌北部三區之配送作業與人員管理。</li>
-            </ul>
-
-            <h4>二、組織調整</h4>
-            <ul>
-                <li>原「臨時配送組」併入「常規配送 A 組」，以提升調度效率。</li>
-                <li>新設「客戶服務專組」，由黃庭毅主任擔任組長，專責處理客戶投訴與服務品質改善。</li>
-            </ul>
-
-            <h4>三、注意事項</h4>
-            <ul>
-                <li>異動人員請於9月30日前完成工作交接，並至人事室辦理相關手續。</li>
-                <li>各組組長請協助新進人員熟悉業務，確保工作銜接順暢。</li>
-                <li>如有任何疑問，請洽人事室張小姐（分機：2301）。</li>
-            </ul>
-
-            <p>感謝各位同仁的配合與支持，讓我們共同為公司的成長努力！</p>
-
-            <p class="announcement-signature">
-                <strong>北大物流股份有限公司</strong><br>
-                人事管理部<br>
-                2025年09月29日
-            </p>
+        <div class="announcement-body" id="announcement-body">
+            <p>載入中...</p>
         </div>
     </div>
 
-    <!-- ========== 底部操作按鈕 ========== -->
     <div class="action-buttons">
-        <a href="{{ url_for('group_detail') }}" class="btn btn-outline">
+        <a href="{{ url_for('group_leader_view') }}" class="btn btn-outline">
             <i class="fa-solid fa-arrow-left"></i>
             返回群組
         </a>

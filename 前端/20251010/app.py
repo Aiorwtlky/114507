@@ -126,11 +126,11 @@ def create_announcement():
 
 @app.route('/announcement_detail/<announcement_id>')
 def announcement_detail(announcement_id):
-    return f"這是公告 {announcement_id} 的「詳細內容」佔位頁面。"
+    return render_template('announcements.html', announcement_id=announcement_id)
 
 @app.route('/edit_announcement/<announcement_id>')
 def edit_announcement(announcement_id):
-    return f"這是「編輯公告 {announcement_id}」的佔位頁面。"
+    return render_template('edit_announcement.html')
 
 @app.route('/announcements')
 def announcements():

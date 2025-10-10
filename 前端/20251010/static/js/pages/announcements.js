@@ -1,93 +1,86 @@
-/**
- * 檔案：static/js/pages/announcements.js
- * 用途：公告詳細頁面互動功能
- */
+// 檔案路徑: static/js/pages/announcements.js
 
 (function() {
     'use strict';
 
-    // ========== 等待 DOM 完全載入 ==========
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ 公告詳細頁面已載入');
+    const API_BASE_URL = 'http://127.0.0.1:8000';
 
-        initPrintButton();
-        initScrollProgress();
-    });
+    async function fetchWithAuth(endpoint, options = {}) {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            alert('您尚未登入或登入已逾時，將跳轉至登入頁面。');
+            window.location.href = '/login';
+            throw new Error('Not Authenticated');
+        }
+        const headers = options.headers || new Headers();
+        headers.append('Authorization', `Bearer ${token}`);
+        if (!(options.body instanceof FormData)) {
+            headers.append('Content-Type', 'application/json');
+        }
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (response.status === 401) {
+            alert('您的登入已過期，請重新登入。');
+            localStorage.clear();
+            window.location.href = '/login';
+            throw new Error('Token Expired');
+        }
+        return response;
+    }
 
-    // ========== 1. 列印按鈕功能 ==========
-    function initPrintButton() {
-        const printButtons = document.querySelectorAll('.btn-primary');
+    /**
+     * 更新 UI 的函式
+     */
+    function updateUI(announcementData) {
+        // 從公告內容中提取 H3 作為主旨
+        const contentHtml = new DOMParser().parseFromString(announcementData.content, 'text/html');
+        const subjectTag = contentHtml.querySelector('h3');
+        let subject = '無主旨';
+        if (subjectTag) {
+            subject = subjectTag.textContent;
+            subjectTag.remove(); // 從內容中移除主旨標籤，避免重複顯示
+        }
         
-        printButtons.forEach(button => {
-            if (button.textContent.includes('列印')) {
-                button.addEventListener('click', function(e) {
-                    console.log('準備列印公告...');
-                    // window.print() 已經在 onclick 中處理
-                });
-            }
-        });
-
-        console.log('✅ 列印功能已初始化');
-    }
-
-    // ========== 2. 閱讀進度追蹤（可選） ==========
-    function initScrollProgress() {
-        const announcementBody = document.querySelector('.announcement-body');
+        document.getElementById('announcement-subject').textContent = subject;
+        document.getElementById('announcement-publisher').textContent = announcementData.publisher;
+        document.getElementById('announcement-date').textContent = new Date(announcementData.publish_date).toLocaleDateString();
+        // 後端 API 目前沒有直接回傳群組名稱，我們先用 ID 代替
+        document.getElementById('announcement-group').textContent = `群組 #${announcementData.group}`;
         
-        if (!announcementBody) return;
-
-        let hasReadToBottom = false;
-
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight;
-
-            // 計算閱讀進度
-            const scrollProgress = (scrollTop / (documentHeight - windowHeight)) * 100;
-
-            // 如果滾動到底部（90%以上），標記為已讀
-            if (scrollProgress >= 90 && !hasReadToBottom) {
-                hasReadToBottom = true;
-                console.log('✅ 使用者已閱讀完整公告');
-                // 未來可以在這裡記錄閱讀狀態到後端
-                // markAnnouncementAsRead();
-            }
-        }, { passive: true });
+        // 將剩餘的 HTML 內容填入 body
+        document.getElementById('announcement-body').innerHTML = contentHtml.body.innerHTML;
     }
 
-    // ========== 3. 鍵盤快捷鍵（可選） ==========
-    document.addEventListener('keydown', function(e) {
-        // Ctrl + P 或 Cmd + P 列印
-        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-            e.preventDefault();
-            window.print();
+    /**
+     * 頁面載入後執行的主要函式
+     */
+    async function initializePage() {
+        // 1. 從 URL 路徑中獲取公告 ID
+        const pathParts = window.location.pathname.split('/');
+        const announcementId = pathParts[pathParts.length - 1];
+
+        if (!announcementId || isNaN(announcementId)) {
+            document.getElementById('announcement-subject').textContent = '錯誤：無效的公告 ID';
+            return;
         }
 
-        // ESC 返回上一頁
-        if (e.key === 'Escape') {
-            const backButton = document.querySelector('.btn-outline');
-            if (backButton) {
-                window.location.href = backButton.getAttribute('href');
+        // 2. 根據 ID 獲取公告詳細資料
+        try {
+            const response = await fetchWithAuth(`/api/announcements/${announcementId}/`);
+            if (!response.ok) {
+                throw new Error('找不到該公告或您沒有權限查看');
             }
-        }
-    });
+            const announcementData = await response.json();
+            
+            // 3. 更新頁面內容
+            updateUI(announcementData);
 
-    // ========== 4. 工具函數：標記為已讀（未來功能） ==========
-    function markAnnouncementAsRead() {
-        // 未來可以透過 AJAX 發送到後端
-        // const announcementId = getAnnouncementIdFromURL();
-        // fetch('/api/announcements/' + announcementId + '/mark-read', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' }
-        // });
+        } catch (error) {
+            console.error("載入公告失敗:", error.message);
+            document.getElementById('announcement-subject').textContent = '錯誤';
+            document.getElementById('announcement-body').innerHTML = `<p>${error.message}</p>`;
+        }
     }
 
-    // ========== 5. 公開 API ==========
-    window.AnnouncementDetail = {
-        print: function() {
-            window.print();
-        }
-    };
+    document.addEventListener('DOMContentLoaded', initializePage);
 
 })();

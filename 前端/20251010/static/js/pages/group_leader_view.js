@@ -26,6 +26,12 @@
         }
         return response;
     }
+    function updateSidebarUI(currentUser) {
+        if (!currentUser) return;
+        document.getElementById('sidebar-avatar').src = currentUser.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
+        document.getElementById('sidebar-username').textContent = currentUser.first_name || currentUser.username;
+        document.getElementById('sidebar-user-role').textContent = currentUser.is_staff ? '管理員' : '一般成員';
+    }
 
     function updateGroupInfoUI(group, members, currentUser) {
         document.getElementById('group-name').textContent = group.name;
@@ -121,7 +127,8 @@
             const groupsData = await groupsRes.json();
             const currentUser = await currentUserRes.json();
 
-            // ▼▼▼ 【核心修正】從 groupsData.results 獲取群組陣列 ▼▼▼
+            updateSidebarUI(currentUser);
+
             if (!groupsData.results || groupsData.results.length === 0) {
                 document.getElementById('group-name').textContent = '您尚未加入任何群組';
                 return;
