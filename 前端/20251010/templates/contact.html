@@ -1,0 +1,248 @@
+{% extends 'base2.html' %}
+{% block title %}
+  聯絡我們｜My Driving God 吾駕仙
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/login.css') }}" />
+  <style>
+    .contact-page {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px;
+      background: linear-gradient(135deg, #f5f9ff, #e3f0ff);
+    }
+    
+    .contact-container {
+      display: flex;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      gap: 40px;
+      max-width: 1000px;
+      width: 100%;
+    }
+    
+    .info,
+    .form {
+      flex: 1;
+      background: #f8fbff;
+      border-radius: 16px;
+      padding: 24px 32px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .logo-image {
+        display: block;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin: 0 auto 24px;
+        object-fit: cover;
+    }
+
+    .info h2 {
+      margin-bottom: 24px;
+      color: #333;
+      text-align: center;
+    }
+    
+    .info p {
+      margin: 8px 0;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .info .separator {
+        border-top: 1px solid #e0e0e0;
+        margin: 24px 0;
+    }
+    
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group:last-of-type {
+        margin-bottom: 24px;
+    }
+    
+    label {
+      font-weight: 600;
+      margin-bottom: 8px; 
+      display: block;
+      color: black;
+    }
+    
+    /* --- 修改：新增 textarea 樣式 --- */
+    input[type='text'],
+    input[type='email'],
+    input[type='tel'],
+    textarea {
+      padding: 10px 14px;
+      border: 1px solid #dcdcdc;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box; 
+      color: black;
+      font-family: inherit; /* 確保字體一致 */
+    }
+    
+    /* --- 新增：textarea 可垂直縮放 --- */
+    textarea {
+        resize: vertical;
+    }
+
+    /* --- 修改：新增 textarea:focus 樣式 --- */
+    input:focus,
+    textarea:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+    }
+    
+    button.btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 12px 0; 
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    button.btn:hover {
+      background-color: #0056b3;
+    }
+    
+    .radio-group {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .radio-group input[type="radio"] {
+        display: none; 
+    }
+
+    .radio-group label {
+        padding: 10px 14px;
+        border: 1px solid #dcdcdc;
+        border-radius: 10px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        font-weight: 500;
+        margin-bottom: 0;
+        padding-left: 20px;
+    }
+
+    .radio-group label:hover {
+        border-color: #a0cfff;
+    }
+
+    .radio-group input[type="radio"]:checked + label {
+        background-color: #eaf5ff;
+        border-color: #007bff;
+        color: #0056b3;
+        font-weight: 600;
+    }
+    
+  </style>
+{% endblock %}
+
+{% block content %}
+<section class="contact-page">
+  <div class="contact-container">
+    <form action="{{ url_for('contact') }}" method="post" style="display: contents;">
+      
+      <div class="info">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="My Driving God Logo" class="logo-image">
+        
+        <h2>My Driving God | 吾駕仙</h2>
+
+        <div class="form-group">
+          <label for="name">希望怎麼稱呼您 *</label>
+          <input type="text" id="name" name="name" placeholder="Name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">連絡電話 *</label>
+          <input type="tel" id="phone" name="phone" placeholder="Phone number" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">電子郵件 *</label>
+          <input type="email" id="email" name="email" placeholder="Email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="company_name">您所在的公司名稱 *</label>
+          <input type="text" id="company_name" name="company_name" placeholder="Company's Name" required />
+        </div>
+
+        <div class="separator"></div>
+
+        <p>📞 +886 2 2758 0000</p>
+        <p>✉️ mydrivinggod@gmail.com</p>
+        <p>🕒 09:00 - 17:30</p>
+        <p>📍 台北市中正區濟南路一段321號</p>
+      </div>
+
+      <div class="form">
+        <div class="form-group">
+          <label>公司規模 *</label>
+          <div class="radio-group">
+              <input type="radio" id="size1" name="company_size" value="10人以下" required>
+              <label for="size1">10人以下</label>
+
+              <input type="radio" id="size2" name="company_size" value="10人～50人">
+              <label for="size2">10人～50人</label>
+
+              <input type="radio" id="size3" name="company_size" value="50～200人">
+              <label for="size3">50～200人</label>
+
+              <input type="radio" id="size4" name="company_size" value="200人以上">
+              <label for="size4">200人以上</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>有興趣的服務產品 *</label>
+          <div class="radio-group">
+              <input type="radio" id="service1" name="interested_service" value="MDG Essential" required>
+              <label for="service1">MDG Essential</label>
+
+              <input type="radio" id="service2" name="interested_service" value="MDG Pro">
+              <label for="service2">MDG Pro</label>
+
+              <input type="radio"id="service3" name="interested_service" value="MDG Premium">
+              <label for="service3">MDG Premium</label>
+
+              <input type="radio" id="service4" name="interested_service" value="其他合作">
+              <label for="service4">其他合作</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="message">您的需求或疑問</label>
+          <textarea id="message" name="message" rows="6" placeholder="請在此輸入您的問題..."></textarea>
+        </div>
+        
+        <button type="submit" class="btn">送出</button>
+      </div>
+
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='js/pages/login.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  行車數據分析 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <style>
+    /* ========================================
+       儀表板頁面樣式 - v2 (加入速度表)
+       ======================================== */
+
+    /* --- 全域變數 (與前版相同) --- */
+    :root {
+      --primary-color: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #818cf8;
+      --white-bg: #ffffff;
+      --light-bg: #f8f9fa;
+      --text-dark: #1f2937;
+      --text-muted: #6b7280;
+      --border-light: #e5e7eb;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --success-color: #10b981;
+      --spacing-sm: 0.75rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --transition: all 0.3s ease;
+    }
+
+    /* --- 頁面容器與標題區 (與前版相同) --- */
+    body { background-color: var(--light-bg); }
+    .dashboard-page { max-width: 1400px; margin: 0 auto; padding: var(--spacing-xl); }
+    .page-header { background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: var(--white-bg); padding: var(--spacing-lg) var(--spacing-xl); border-radius: 12px; margin-bottom: var(--spacing-xl); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); }
+    .page-title { font-size: 2rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: var(--spacing-md); }
+    .btn-header-action { display: flex; align-items: center; gap: var(--spacing-sm); padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.9); color: var(--primary-dark); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); text-decoration: none; }
+    .btn-header-action:hover { background: var(--white-bg); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+    .filter-bar { background: var(--white-bg); padding: var(--spacing-md) var(--spacing-xl); border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: var(--spacing-md); flex-wrap: wrap; }
+    .filter-bar-label { font-weight: 600; color: var(--text-dark); font-size: 1rem; }
+    .filter-bar input { padding: 0.6rem 1rem; border: 1px solid var(--border-light); border-radius: 8px; min-width: 250px; font-size: 1rem; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-xl); }
+    .d-card { background: var(--white-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); padding: var(--spacing-lg); display: flex; flex-direction: column; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); padding-bottom: var(--spacing-md); border-bottom: 2px solid var(--border-light); }
+    .card-title { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: var(--spacing-sm); }
+    .card-title i { color: var(--primary-color); }
+    .card-body { flex-grow: 1; display: flex; flex-direction: column; }
+    .stat-card { grid-column: span 2; }
+    .stat-card .card-body { justify-content: center; align-items: center; text-align: center; }
+    .stat-value { font-size: 3rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+    .stat-label { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
+    .chart-card { grid-column: span 4; }
+    .chart-area { flex-grow: 1; position: relative; min-height: 300px; }
+    
+    /* --- 新增：卡片內的篩選器 --- */
+    .card-header-control select {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        background-color: var(--light-bg);
+        font-weight: 500;
+    }
+
+    /* --- 新增：速度表 (Speedometer) 樣式 --- */
+    .gauge-card { grid-column: span 4; }
+    .gauge-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+        padding: var(--spacing-md) 0;
+    }
+    .speedometer-gauge {
+        width: 300px;
+        height: 150px; /* 寬度的一半，形成半圓 */
+        position: relative;
+        overflow: hidden;
+    }
+    .gauge-body {
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        /* 使用錐形漸層來畫出顏色弧度 */
+        background: conic-gradient(
+            from -90deg,
+            var(--danger-color) 0% 25%, 
+            var(--warning-color) 25% 60%, 
+            var(--success-color) 60% 100%
+        );
+        /* 透過 clip-path 只顯示上半部分 */
+        clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%);
+    }
+    .gauge-mask { /* 白色遮罩，製造出環形效果 */
+        width: 260px;
+        height: 260px;
+        background: var(--white-bg);
+        border-radius: 50%;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 1;
+    }
+    .gauge-needle {
+        width: 4px;
+        height: 120px;
+        background: var(--text-dark);
+        border-radius: 2px;
+        position: absolute;
+        bottom: -90px; /* 調整位置讓旋轉中心在底部 */
+        left: calc(50% - 2px);
+        transform-origin: bottom center;
+        transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* 加入回彈動畫 */
+        z-index: 2;
+    }
+    .gauge-center-circle {
+        width: 20px;
+        height: 20px;
+        background: var(--text-dark);
+        border: 4px solid var(--white-bg);
+        border-radius: 50%;
+        position: absolute;
+        top: 130px;
+        left: calc(50% - 10px);
+        z-index: 3;
+    }
+    .gauge-display {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 2;
+    }
+    .gauge-score {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+    .gauge-score-label {
+        font-size: 1rem;
+        color: var(--text-muted);
+    }
+
+    /* --- 其他 (與前版相同) --- */
+    .btn-return { display: block; width: fit-content; margin: var(--spacing-xl) auto 0; padding: 0.875rem 2rem; background: var(--light-bg); color: var(--text-dark); border: 1px solid var(--border-light); border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); text-decoration: none; }
+    .btn-return:hover { background: var(--border-light); transform: translateY(-2px); }
+    @media (max-width: 992px) { .stat-card { grid-column: span 4; } }
+    @media (max-width: 768px) { .dashboard-page { padding: var(--spacing-md); } .page-header { flex-direction: column; align-items: stretch; text-align: center; } .card-header { flex-direction: column; align-items: stretch; } }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+  <header class="page-header">
+    <h1 class="page-title"><i class="fa-solid fa-chart-line"></i> 行車數據分析</h1>
+    <a href="javascript:window.print()" class="btn-header-action">
+      <i class="fa-solid fa-print"></i> 列印報表
+    </a>
+  </header>
+
+  <div class="filter-bar">
+    <label for="date-range-picker" class="filter-bar-label"><i class="fa-solid fa-calendar-days"></i> 趨勢圖日期範圍：</label>
+    <input type="text" id="date-range-picker" placeholder="請選擇日期..." />
+  </div>
+
+  <div class="dashboard-grid">
+
+    <div class="d-card stat-card">
+      <div class="card-body">
+        <div class="stat-value">128</div>
+        <div class="stat-label">總趟數 (趟)</div>
+      </div>
+    </div>
+    <div class="d-card stat-card">
+        <div class="card-body">
+          <div class="stat-value">42.5</div>
+          <div class="stat-label">總時長 (小時)</div>
+        </div>
+      </div>
+
+    <div class="d-card chart-card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fa-solid fa-arrow-trend-up"></i> 分數趨勢</h3>
+      </div>
+      <div class="card-body">
+        <div class="chart-area">
+          <canvas id="trendsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-card gauge-card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fa-solid fa-gauge-high"></i> 平均分數</h3>
+        <div class="card-header-control">
+            <select name="gauge-period" id="gauge-period-select" aria-label="選擇時間單位">
+                <option value="day">今日平均</option>
+                <option value="month" selected>本月平均</option>
+                <option value="year">本年平均</option>
+            </select>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="gauge-area">
+          <div class="speedometer-gauge">
+            <div class="gauge-body"></div>
+            <div class="gauge-mask"></div>
+            <div class="gauge-needle" id="gauge-needle"></div>
+            <div class="gauge-center-circle"></div>
+            <div class="gauge-display">
+                <div class="gauge-score" id="gauge-score">72</div>
+                <div class="gauge-score-label">分數</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a href="{{ url_for('dashboard') }}" class="btn-return">返回儀表板</a>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    // 當頁面載入完成後執行
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- 初始化日期範圍選擇器 (與前版相同) ---
+        flatpickr("#date-range-picker", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            defaultDate: ["2025-10-01", "2025-10-10"],
+        });
+
+        // --- 初始化趨勢圖表 (與前版相同) ---
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['10/01', '10/02', '10/03', '10/04', '10/05', '10/06', '10/07'],
+                datasets: [{
+                    label: '每日駕駛分數',
+                    data: [85, 88, 76, 90, 92, 81, 85],
+                    borderColor: 'var(--primary-color)',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // --- 新增：速度表儀表板邏輯 ---
+        const scoreElement = document.getElementById('gauge-score');
+        const needleElement = document.getElementById('gauge-needle');
+        const periodSelect = document.getElementById('gauge-period-select');
+
+        // 更新儀表板的函式
+        function updateGauge(score) {
+            // 確保分數在 0-100 之間
+            const clampedScore = Math.max(0, Math.min(100, score));
+            
+            // 將分數 (0-100) 轉換為角度 (-90 to +90 degrees)
+            // 0分 = -90度 (最左邊), 100分 = 90度 (最右邊)
+            const rotation = (clampedScore / 100) * 180 - 90;
+
+            // 更新畫面
+            scoreElement.textContent = score;
+            needleElement.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        // 模擬當下拉選單改變時，從後端取得新分數並更新
+        periodSelect.addEventListener('change', function(event) {
+            // 這裡您可以加入 fetch API 來跟後端要資料
+            // 以下為模擬假資料
+            let newScore = 72;
+            switch (event.target.value) {
+                case 'day':
+                    newScore = 85;
+                    break;
+                case 'month':
+                    newScore = 72;
+                    break;
+                case 'year':
+                    newScore = 78;
+                    break;
+            }
+            updateGauge(newScore);
+        });
+
+        // --- 頁面首次載入時，立即更新一次儀表板 ---
+        // 取得目前顯示的分數 (來自 HTML)
+        const initialScore = parseInt(scoreElement.textContent, 10);
+        updateGauge(initialScore);
+
+    });
+  </script>
+{% endblock %}

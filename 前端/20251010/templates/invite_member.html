@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% block title %}
+  邀請管理 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/invite_member.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="invite-container">
+    <!-- 頁面標題 - 參考 group_leader_view 的群組資訊卡片 -->
+    <div class="d-card group-info-card">
+        <div class="group-header">
+            <div class="group-icon">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div class="group-info">
+                <h1 class="group-name">北大物流C組</h1>
+                <p class="group-company">
+                    <i class="fa-solid fa-building"></i>
+                    邀請管理中心
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 建立邀請 -->
+    <div class="d-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-plus-circle"></i>
+                建立新的邀請
+            </h3>
+        </div>
+        
+        <form class="create-invite-form" id="createInviteForm">
+            <div class="form-group">
+                <label for="inviteName">
+                    <i class="fa-solid fa-tag"></i>
+                    邀請名稱
+                </label>
+                <input 
+                    type="text" 
+                    id="inviteName" 
+                    placeholder="例如：2025年十月新進人員、週末臨時駕駛"
+                    required
+                >
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="inviteExpiry">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        有效期限
+                    </label>
+                    <input 
+                        type="text" 
+                        id="inviteExpiry" 
+                        class="filter-select"
+                        placeholder="點擊選擇日期與時間"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fa-solid fa-shield-halved"></i>
+                        需要手動審核
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="requireApproval" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">開啟後需管理員批准才能加入</span>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                產生邀請碼
+            </button>
+        </form>
+        
+        <!-- 產生結果 -->
+        <div class="invite-result" id="inviteResult" style="display: none;">
+            <div class="result-header">
+                <i class="fa-solid fa-circle-check"></i>
+                <h4>邀請碼產生成功！</h4>
+            </div>
+            <div class="result-content">
+                <div class="code-display">
+                    <label>邀請碼</label>
+                    <div class="url-input-group">
+                        <input type="text" id="generatedCode" value="" readonly>
+                        <button type="button" class="btn-copy" id="copyCodeBtn">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>複製</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="code-url">
+                    <label>完整邀請連結</label>
+                    <div class="url-input-group">
+                        <input type="text" id="generatedUrl" value="" readonly>
+                        <button type="button" class="btn-copy" id="copyUrlBtn">
+                            <i class="fa-solid fa-link"></i>
+                            <span>複製連結</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 邀請碼列表 -->
+    <div class="d-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-list-check"></i>
+                邀請碼列表
+            </h3>
+            <div class="header-actions">
+                <span class="count-badge">共 <strong id="inviteCount">3</strong> 個</span>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>邀請名稱</th>
+                        <th>邀請碼</th>
+                        <th>狀態</th>
+                        <th>需審核</th>
+                        <th>建立時間</th>
+                        <th>有效期限</th>
+                        <th class="actions-col">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="inviteListBody">
+                    <tr>
+                        <td>
+                            <div class="name-cell">
+                                <i class="fa-solid fa-user-group"></i>
+                                <span>2025年十月新進人員</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="code-cell">
+                                <code>8G5F-E4H3</code>
+                                <button class="btn-action" data-code="8G5F-E4H3" title="複製">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td><span class="score-badge excellent">有效</span></td>
+                        <td><i class="fa-solid fa-check-circle icon-yes"></i></td>
+                        <td>2025-10-01 09:00</td>
+                        <td>2025-10-31 23:59</td>
+                        <td class="actions-col">
+                            <button class="btn-action danger" onclick="revokeInvite('8G5F-E4H3')" title="撤銷">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="name-cell">
+                                <i class="fa-solid fa-user-clock"></i>
+                                <span>臨時駕駛員 (週末)</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="code-cell">
+                                <code>K9J8-L7M6</code>
+                                <button class="btn-action" data-code="K9J8-L7M6" title="複製">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td><span class="score-badge danger">已過期</span></td>
+                        <td><i class="fa-solid fa-check-circle icon-yes"></i></td>
+                        <td>2025-09-15 14:30</td>
+                        <td>2025-09-30 18:00</td>
+                        <td class="actions-col">
+                            <button class="btn-action" disabled title="已失效">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="name-cell">
+                                <i class="fa-solid fa-user-plus"></i>
+                                <span>快速註冊通道</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="code-cell">
+                                <code>X1Y2-Z3W4</code>
+                                <button class="btn-action" data-code="X1Y2-Z3W4" title="複製">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td><span class="score-badge excellent">有效</span></td>
+                        <td><i class="fa-solid fa-times-circle icon-no"></i></td>
+                        <td>2025-10-05 16:20</td>
+                        <td>2025-12-31 23:59</td>
+                        <td class="actions-col">
+                            <button class="btn-action danger" onclick="revokeInvite('X1Y2-Z3W4')" title="撤銷">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 成員申請列表 -->
+    <div class="d-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-user-check"></i>
+                待審核的成員申請
+            </h3>
+            <div class="header-actions">
+                <span class="count-badge pending">待處理 <strong id="pendingCount">2</strong> 件</span>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>申請人資訊</th>
+                        <th>使用邀請碼</th>
+                        <th>申請時間</th>
+                        <th>狀態</th>
+                        <th class="actions-col">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="applicationListBody">
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="member-avatar-small">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                <div class="user-details">
+                                    <strong>陳小明</strong>
+                                    <span>ming.chen@example.com</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><code>8G5F-E4H3</code></td>
+                        <td>2025-10-09 10:30</td>
+                        <td><span class="score-badge warning">等待審核</span></td>
+                        <td class="actions-col">
+                            <button class="btn-action success" onclick="approveApplication('app001')" title="批准">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button class="btn-action danger" onclick="rejectApplication('app001')" title="拒絕">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="member-avatar-small">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                <div class="user-details">
+                                    <strong>林美麗</strong>
+                                    <span>mei.li@example.com</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><code>8G5F-E4H3</code></td>
+                        <td>2025-10-08 15:45</td>
+                        <td><span class="score-badge warning">等待審核</span></td>
+                        <td class="actions-col">
+                            <button class="btn-action success" onclick="approveApplication('app002')" title="批准">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button class="btn-action danger" onclick="rejectApplication('app002')" title="拒絕">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 返回按鈕 -->
+    <div class="action-buttons">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+            <i class="fa-solid fa-arrow-left"></i>
+            返回儀表板
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+  <script src="{{ url_for('static', filename='js/pages/invite_member.js') }}" defer></script>
+{% endblock %}

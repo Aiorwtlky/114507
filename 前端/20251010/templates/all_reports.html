@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}
+  所有過往行程 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  
+  <style>
+    /* --- 基本 & 整體佈局 --- */
+    body { background-color: #f4f7fa; font-family: 'Inter', 'Noto Sans TC', sans-serif; }
+    .all-reports-section { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .mega-title { font-size: 2.5rem; font-weight: 800; text-align: center; margin-bottom: 2rem; }
+    .gradient-text { background: linear-gradient(45deg, #1a2a5f, #2c46a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
+
+    /* --- 篩選與搜尋控制區 --- */
+    .controls-container { background-color: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 2.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end; }
+    .filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .filter-group label { font-weight: 500; color: #555; font-size: 0.9rem; }
+    .filter-group input[type="date"], .filter-group input[type="search"] { padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; min-width: 180px; }
+    .filter-group.search-group { flex-grow: 1; }
+    .btn-filter { padding: 0.75rem 1.5rem; background-color: #1a2a5f; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; }
+    .btn-filter:hover { background-color: #2c46a0; }
+
+    /* --- 行程卡片網格 --- */
+    .reports-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    .report-card { background-color: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); padding: 1.5rem; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+    .report-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+    
+    /* --- [重構] 卡片標頭 --- */
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start; /* 頂部對齊 */
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.75rem;
+    }
+    .report-meta { color: #666; font-size: 0.9rem; }
+    .report-meta p { margin: 0 0 0.25rem 0; }
+    .report-id span { font-weight: 600; color: #333; }
+
+    /* --- [新增] 行程總分樣式 --- */
+    .report-score {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0; /* 防止被壓縮 */
+    }
+    /* 分數顏色 */
+    .score-high { background-color: #16a34a; } /* 優良 - 綠色 */
+    .score-medium { background-color: #f59e0b; } /* 普通 - 橘色 */
+    .score-low { background-color: #dc2626; } /* 待改進 - 紅色 */
+
+
+    .report-body { flex-grow: 1; }
+    
+    /* --- [新增] 名稱 + 編輯圖示 --- */
+    .report-name-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin: 0.5rem 0 1rem 0;
+    }
+    .report-name { font-size: 1.5rem; font-weight: 600; color: #1a2a5f; margin: 0; }
+    .edit-icon { color: #aaa; font-size: 1.1rem; cursor: pointer; transition: color 0.2s; }
+    .edit-icon:hover { color: #1a2a5f; }
+    
+    .report-name.placeholder { color: #888; font-style: italic; font-weight: 500; }
+
+    /* --- 按鈕樣式 (與前版相同) --- */
+    .btn { display: block; width: 100%; text-align: center; padding: 0.75rem; border-radius: 8px; text-decoration: none; font-weight: 500; transition: background-color 0.2s, color 0.2s, border-color 0.2s; margin-top: 1rem; border: 1px solid transparent; cursor: pointer; }
+    .btn-details { background-color: #1a2a5f; color: white; }
+    .btn-details:hover { background-color: #2c46a0; }
+
+    /* --- 分頁 --- */
+    .pagination-container { margin-top: 3rem; display: flex; justify-content: center; }
+    .pagination { display: flex; list-style: none; padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .page-item .page-link { padding: 0.75rem 1rem; display: block; background-color: #fff; color: #1a2a5f; text-decoration: none; border-left: 1px solid #dee2e6; }
+    .page-item:first-child .page-link { border-left: none; }
+    .page-item .page-link:hover { background-color: #f4f7f9; }
+    .page-item.active .page-link { background-color: #1a2a5f; color: white; font-weight: bold; }
+    .page-item.disabled .page-link { color: #aaa; background-color: #f8f9fa; pointer-events: none; }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <section class="all-reports-section">
+    <h1 class="mega-title gradient-text">所有過往行程</h1>
+
+    <div class="controls-container">
+      <form id="filter-form" class="filter-group">
+        <label for="start-date">日期範圍</label>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="date" id="start-date" name="start_date">
+            <span>-</span>
+            <input type="date" id="end-date" name="end_date">
+        </div>
+      </form>
+      <div class="filter-group search-group">
+        <label for="trip-name-search">搜尋行程名稱</label>
+        <input type="search" id="trip-name-search" name="q" placeholder="例如：客戶拜訪、機場...">
+      </div>
+      <button type="submit" form="filter-form" class="btn-filter"><i class="fa-solid fa-filter"></i><span>篩選</span></button>
+    </div>
+
+    <div class="reports-grid">
+      <div class="report-card">
+        <div class="report-header">
+            <div class="report-meta">
+                <p class="report-id">行程編號: <span>TRIP-0723A</span></p>
+                <p class="report-date">2025-07-23</p>
+            </div>
+            <div class="report-score score-high">95</div>
+        </div>
+        <div class="report-body">
+            <div class="report-name-wrapper">
+                <h3 class="report-name">長途客戶急件</h3>
+                <i class="fa-solid fa-pencil edit-icon"></i>
+            </div>
+        </div>
+        <a href="#" class="btn btn-details">查看詳細</a>
+      </div>
+      
+      <div class="report-card">
+        <div class="report-header">
+            <div class="report-meta">
+                <p class="report-id">行程編號: <span>TRIP-0722D</span></p>
+                <p class="report-date">2025-07-22</p>
+            </div>
+            <div class="report-score score-medium">82</div>
+        </div>
+        <div class="report-body">
+            <div class="report-name-wrapper">
+                <h3 class="report-name placeholder">未命名的行程 (07-22)</h3>
+                <i class="fa-solid fa-pencil edit-icon"></i>
+            </div>
+        </div>
+        <a href="#" class="btn btn-details">查看詳細</a>
+      </div>
+      
+      <div class="report-card">
+        <div class="report-header">
+            <div class="report-meta">
+                <p class="report-id">行程編號: <span>TRIP-0722C</span></p>
+                <p class="report-date">2025-07-22</p>
+            </div>
+            <div class="report-score score-medium">88</div>
+        </div>
+        <div class="report-body">
+            <div class="report-name-wrapper">
+                <h3 class="report-name">機場急件運輸</h3>
+                <i class="fa-solid fa-pencil edit-icon"></i>
+            </div>
+        </div>
+        <a href="#" class="btn btn-details">查看詳細</a>
+      </div>
+
+      <div class="report-card">
+        <div class="report-header">
+            <div class="report-meta">
+                <p class="report-id">行程編號: <span>TRIP-0720B</span></p>
+                <p class="report-date">2025-07-20</p>
+            </div>
+            <div class="report-score score-low">65</div>
+        </div>
+        <div class="report-body">
+            <div class="report-name-wrapper">
+                <h3 class="report-name">內湖倉儲補貨</h3>
+                <i class="fa-solid fa-pencil edit-icon"></i>
+            </div>
+        </div>
+        <a href="#" class="btn btn-details">查看詳細</a>
+      </div>
+    </div>
+
+    <nav class="pagination-container" aria-label="過往行程分頁">
+      <ul class="pagination">
+        <li class="page-item disabled"><a class="page-link" href="#">« 上一頁</a></li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">下一頁 »</a></li>
+      </ul>
+    </nav>
+  </section>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // JavaScript 維持不變，用於前端演示表單提交
+    document.addEventListener('DOMContentLoaded', function() {
+      const filterForm = document.getElementById('filter-form');
+      if (filterForm) {
+        const handleSubmit = function(event) {
+          event.preventDefault(); 
+          const startDate = document.getElementById('start-date').value;
+          const endDate = document.getElementById('end-date').value;
+          const searchQuery = document.getElementById('trip-name-search').value;
+          console.log('篩選條件：', { startDate, endDate, searchQuery });
+          alert('篩選功能已觸發，請在開發者工具(F12)的 Console 中查看篩選條件！');
+        };
+        filterForm.addEventListener('submit', handleSubmit);
+      }
+    });
+  </script>
+{% endblock %}

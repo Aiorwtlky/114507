@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}
+  群組設定 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_settings.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <div class="settings-container">
+    <div class="d-card settings-card">
+        <div class="d-card-header">
+            <h3><i class="fas fa-cog"></i> 群組設定</h3>
+        </div>
+      <div class="d-card-body">
+        <form class="settings-form">
+          <div class="form-row">
+            <label for="group-name">群組名稱</label>
+            <input type="text" id="group-name" name="group-name" value="北大物流 C組" />
+          </div>
+
+          <div class="form-row">
+            <label>所屬單位</label>
+            <p class="info-text">臺灣北大物流股份有限公司</p>
+          </div>
+
+          <div class="form-row">
+            <label>組長</label>
+            <div class="leaders-management">
+              <div class="leader-tag">
+                <span>張原因</span>
+                <button type="button" class="remove-btn" title="移除組長">⊖</button>
+              </div>
+              <div class="leader-tag">
+                <span>黃庭毅</span>
+                <button type="button" class="remove-btn" title="移除組長">⊖</button>
+              </div>
+              <button type="button" class="add-btn" title="新增組長">⊕</button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-danger">刪除此群組</button>
+            <button type="submit" class="btn btn-primary">儲存變更</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="back-button-area">
+        <a href="{{ url_for('group_leader_view') }}" class="custom-btn primary-btn">返回</a>
+    </div>
+  </div>
+{% endblock %}

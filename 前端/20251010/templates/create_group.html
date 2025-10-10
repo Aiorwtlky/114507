@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}
+  創建新群組 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    /* ========================================
+       創建群組頁面樣式 v2 (新增所屬單位)
+       ======================================== */
+
+    /* --- 全域變數 & 基礎設定 (與前版相同) --- */
+    :root {
+      --primary-color: #4f46e5;
+      --primary-dark: #4338ca;
+      --success-color: #10b981;
+      --white-bg: #ffffff;
+      --light-bg: #f8f9fa;
+      --text-dark: #1f2937;
+      --text-muted: #6b7280;
+      --border-light: #e5e7eb;
+      --spacing-sm: 0.75rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --transition: all 0.3s ease;
+    }
+    body { background-color: var(--light-bg); }
+    
+    /* --- 頁面容器 & 卡片基礎樣式 (與前版相同) --- */
+    .page-container { max-width: 900px; margin: 0 auto; padding: var(--spacing-xl); }
+    .d-card { background: var(--white-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); margin-bottom: var(--spacing-xl); padding: var(--spacing-xl); }
+    .card-header { margin: -2rem -2rem 1.5rem -2rem; padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-light); }
+    .card-title { font-size: 1.25rem; font-weight: 600; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: var(--spacing-sm); }
+    .card-title i { color: var(--primary-color); }
+
+    /* --- 頂部資訊卡 (與前版相同) --- */
+    .page-header-card { padding: var(--spacing-lg) var(--spacing-xl); background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: var(--white-bg); }
+    .page-title { font-size: 2rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: var(--spacing-md); }
+    
+    /* --- 表單樣式 --- */
+    .create-group-form { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+    .form-group { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+    .form-group label { font-weight: 600; color: var(--text-dark); }
+    .form-group input[type="text"] {
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: 8px; font-size: 1rem;
+        transition: var(--transition);
+    }
+    .form-group input[type="text"]:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+    
+    /* ✨ 新增：唯讀輸入框的樣式 ✨ */
+    .form-group input[readonly] {
+      background-color: var(--light-bg);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .form-group input[readonly]:focus {
+      box-shadow: none; /* 唯讀欄位不需要 focus 效果 */
+    }
+
+    /* --- Toggle Switch & 按鈕樣式 (與前版相同) --- */
+    .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 28px; transition: .4s; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s; }
+    input:checked + .slider { background-color: var(--primary-color); }
+    input:checked + .slider:before { transform: translateX(22px); }
+    .toggle-label { color: var(--text-muted); font-size: 0.875rem; }
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: var(--primary-color); color: white; padding: 0.875rem 1.5rem; border-radius: 8px; text-decoration: none; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; transition: var(--transition); width: 100%; }
+    .btn-primary:hover { background-color: var(--primary-dark); }
+    
+    /* --- 邀請碼結果樣式 (與前版相同) --- */
+    .invite-result { border: 2px dashed var(--success-color); border-radius: 10px; padding: var(--spacing-lg); margin-top: var(--spacing-xl); }
+    .result-header { text-align: center; color: var(--success-color); font-size: 1.25rem; margin-bottom: var(--spacing-lg); }
+    .code-display { margin-top: var(--spacing-md); }
+    .url-input-group { display: flex; }
+    .url-input-group input { flex-grow: 1; background-color: var(--light-bg); border: 1px solid var(--border-light); border-right: none; padding: 0.75rem 1rem; border-radius: 6px 0 0 6px; }
+    .btn-copy { border: 1px solid var(--border-light); background: var(--white-bg); padding: 0 1rem; border-radius: 0 6px 6px 0; cursor: pointer; }
+    .btn-copy:hover { background: var(--light-bg); }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  <div class="d-card page-header-card">
+      <h1 class="page-title">
+          <i class="fa-solid fa-users-medical"></i>
+          創建新群組
+      </h1>
+  </div>
+
+  <div class="d-card">
+    <form class="create-group-form" id="createGroupForm">
+      
+      <div class="card-section">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-pen-to-square"></i>
+                步驟 1：設定群組資訊
+            </h3>
+        </div>
+        
+        <div class="form-group">
+            <label for="organizationName">所屬單位</label>
+            <input 
+              type="text" 
+              id="organizationName" 
+              value="台灣北大物流股份有限公司萬華分公司" 
+              readonly
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="groupName">群組名稱</label>
+            <input type="text" id="groupName" placeholder="例如：北大物流C組、2025雙十一臨時宅配" required>
+        </div>
+      </div>
+      
+      <div class="card-section">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fa-solid fa-key"></i>
+                步驟 2：建立第一個邀請碼 (讓成員加入)
+            </h3>
+        </div>
+        <div class="form-group">
+            <label for="inviteExpiry">邀請碼有效期限</label>
+            <input type="text" id="inviteExpiry" placeholder="點擊選擇日期與時間" required>
+        </div>
+        <div class="form-group">
+            <label>新成員加入時需要手動審核？</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="requireApproval" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label">建議開啟，可確保只有對的人員加入</span>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          建立群組並產生邀請碼
+      </button>
+    </form>
+    
+    <div class="invite-result" id="inviteResult" style="display: none;">
+      <div class="result-header">
+          <i class="fa-solid fa-circle-check"></i>
+          <h4>群組與邀請碼已成功建立！</h4>
+      </div>
+      <div class="result-content">
+          <p>您現在可以將下方的邀請碼或連結傳給您想邀請的成員。</p>
+          <div class="code-display">
+              <label>邀請碼</label>
+              <div class="url-input-group">
+                  <input type="text" id="generatedCode" value="ABCD-1234" readonly>
+                  <button type="button" class="btn-copy" id="copyCodeBtn">
+                    <i class="fa-solid fa-copy"></i>
+                  </button>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  {# ... JavaScript 內容維持不變 ... #}
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化 flatpickr 日期時間選擇器
+      flatpickr("#inviteExpiry", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        locale: "zh_tw", // 使用繁體中文
+        defaultDate: new Date().fp_incr(7) // 預設為 7 天後
+      });
+
+      const form = document.getElementById('createGroupForm');
+      const resultDiv = document.getElementById('inviteResult');
+      const copyCodeBtn = document.getElementById('copyCodeBtn');
+      const generatedCodeInput = document.getElementById('generatedCode');
+
+      // 模擬表單提交
+      form.addEventListener('submit', function(event) {
+        event.preventDefault(); // 防止頁面真的提交
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+      });
+
+      // 複製邀請碼功能
+      copyCodeBtn.addEventListener('click', function() {
+        generatedCodeInput.select();
+        document.execCommand('copy');
+        this.innerHTML = '<i class="fa-solid fa-check"></i>';
+        setTimeout(() => {
+          this.innerHTML = '<i class="fa-solid fa-copy"></i>';
+        }, 1500);
+      });
+    });
+  </script>
+{% endblock %}

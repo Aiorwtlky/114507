@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}
+  行車影片 · My Driving God
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/member_videos.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="videos-container">
+    <div class="page-header">
+        <h1>
+            <i class="fa-solid fa-truck-pickup"></i>
+            黃仁勳 <span class="header-subtitle">/ 北大物流 C組 / 行車影片</span>
+        </h1>
+        <a href="#" class="btn btn-secondary">返回組員列表</a>
+    </div>
+
+    <section class="filter-bar">
+        <div class="filter-group">
+            <label for="date-picker">選擇日期</label>
+            <input type="date" id="date-picker" name="date" value="2025-08-27">
+        </div>
+        <div class="filter-group">
+            <label for="vehicle-select">選擇車機</label>
+            <select id="vehicle-select" name="vehicle">
+                <option value="all">全部車機</option>
+                <option value="A01">車機-A01</option>
+                <option value="B02">車機-B02</option>
+            </select>
+        </div>
+        <button class="btn btn-primary">篩選</button>
+    </section>
+
+    <div class="videos-list">
+      <section class="daily-videos">
+        <h2 class="date-header">2025 / 08 / 27</h2>
+        <div class="video-gallery">
+          <div class="video-card" data-starttime="14:00" data-endtime="15:36" data-vehicle="車機-A01" data-size="1.2 GB">
+            <div class="video-thumbnail">
+              <img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽">
+              <div class="play-icon"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="video-card-content">
+              <h3 class="video-time">14:00 - 15:36</h3>
+              <div class="video-meta">
+                <span><i class="fa-solid fa-truck"></i> 車機-A01</span>
+                <span><i class="fa-solid fa-database"></i> 1.2 GB</span>
+                <span><i class="fa-solid fa-clock"></i> 1 小時 36 分鐘</span>
+              </div>
+            </div>
+          </div>
+          <div class="video-card" data-starttime="10:15" data-endtime="11:05" data-vehicle="車機-B02" data-size="850 MB">
+            <div class="video-thumbnail">
+                <img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽">
+                <div class="play-icon"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="video-card-content">
+              <h3 class="video-time">10:15 - 11:05</h3>
+              <div class="video-meta">
+                <span><i class="fa-solid fa-truck"></i> 車機-B02</span>
+                <span><i class="fa-solid fa-database"></i> 850 MB</span>
+                <span><i class="fa-solid fa-clock"></i> 50 分鐘</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="daily-videos">
+        <h2 class="date-header">2025 / 08 / 26</h2>
+        <p class="no-videos-message">本日無行車影片記錄</p>
+      </section>
+
+      <section class="daily-videos">
+        <h2 class="date-header">2025 / 08 / 25</h2>
+        <div class="video-gallery">
+          <div class="video-card" data-starttime="18:30" data-endtime="19:10" data-vehicle="車機-A01" data-size="650 MB">
+            <div class="video-thumbnail"><img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
+            <div class="video-card-content"><h3 class="video-time">18:30 - 19:10</h3><div class="video-meta"><span><i class="fa-solid fa-truck"></i> 車機-A01</span><span><i class="fa-solid fa-database"></i> 650 MB</span><span><i class="fa-solid fa-clock"></i> 40 分鐘</span></div></div>
+          </div>
+          <div class="video-card" data-starttime="16:00" data-endtime="17:30" data-vehicle="車機-A01" data-size="1.5 GB">
+            <div class="video-thumbnail"><img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
+            <div class="video-card-content"><h3 class="video-time">16:00 - 17:30</h3><div class="video-meta"><span><i class="fa-solid fa-truck"></i> 車機-A01</span><span><i class="fa-solid fa-database"></i> 1.5 GB</span><span><i class="fa-solid fa-clock"></i> 1 小時 30 分鐘</span></div></div>
+          </div>
+          <div class="video-card" data-starttime="14:10" data-endtime="15:00" data-vehicle="車機-B02" data-size="780 MB">
+            <div class="video-thumbnail"><img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
+            <div class="video-card-content"><h3 class="video-time">14:10 - 15:00</h3><div class="video-meta"><span><i class="fa-solid fa-truck"></i> 車機-B02</span><span><i class="fa-solid fa-database"></i> 780 MB</span><span><i class="fa-solid fa-clock"></i> 50 分鐘</span></div></div>
+          </div>
+          <div class="video-card" data-starttime="12:30" data-endtime="13:00" data-vehicle="車機-A01" data-size="400 MB">
+            <div class="video-thumbnail"><img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
+            <div class="video-card-content"><h3 class="video-time">12:30 - 13:00</h3><div class="video-meta"><span><i class="fa-solid fa-truck"></i> 車機-A01</span><span><i class="fa-solid fa-database"></i> 400 MB</span><span><i class="fa-solid fa-clock"></i> 30 分鐘</span></div></div>
+          </div>
+          <div class="video-card" data-starttime="09:00" data-endtime="12:15" data-vehicle="車機-A01" data-size="3.2 GB">
+            <div class="video-thumbnail"><img src="https://via.placeholder.com/400x225.png/007bff/ffffff?text=Video+Preview" alt="影片預覽"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
+            <div class="video-card-content"><h3 class="video-time">09:00 - 12:15</h3><div class="video-meta"><span><i class="fa-solid fa-truck"></i> 車機-A01</span><span><i class="fa-solid fa-database"></i> 3.2 GB</span><span><i class="fa-solid fa-clock"></i> 3 小時 15 分鐘</span></div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+</div>
+
+<div class="modal-overlay" id="videoModalOverlay" style="display: none;">
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/member_videos.js') }}" defer></script>
+{% endblock %}
