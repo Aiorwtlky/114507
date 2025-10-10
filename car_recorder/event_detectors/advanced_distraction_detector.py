@@ -21,18 +21,16 @@ class DistractionDetector:
 
         self.phone_use_start_time, self.looking_away_start_time, self.face_away_start_time = None, None, None
         
-        # <<< 修改重點：引入偵測平滑化機制 >>>
-        self.phone_detection_history = deque(maxlen=int(fps / 2)) # 儲存過去半秒(15幀)的偵測結果
+        self.phone_detection_history = deque(maxlen=int(fps / 2))
 
     def estimate_head_pose(self, face_landmarks, frame_shape):
         h, w = frame_shape
         face_3d = np.array([(0.0, 0.0, 0.0), (0.0, -330.0, -65.0), (-225.0, 170.0, -135.0), (225.0, 170.0, -135.0), (-150.0, -150.0, -125.0), (150.0, -150.0, -125.0)], dtype=np.float64)
         face_2d = np.array([(face_landmarks[1].x * w, face_landmarks[1].y * h), (face_landmarks[152].x * w, face_landmarks[152].y * h), (face_landmarks[263].x * w, face_landmarks[263].y * h), (face_landmarks[33].x * w, face_landmarks[33].y * h), (face_landmarks[287].x * w, face_landmarks[287].y * h), (face_landmarks[57].x * w, face_landmarks[57].y * h)], dtype=np.float64)
         cam_matrix = np.array([[w, 0, w/2], [0, w, h/2], [0, 0, 1]])
-        success, _, _ = cv2.solvePnP(face_3d, face_2d, cam_matrix, np.zeros((4, 1)))
+        success, rot_vec, trans_vec = cv2.solvePnP(face_3d, face_2d, cam_matrix, np.zeros((4, 1)))
         if not success: return None
-        # 為簡化並聚焦於手機偵測，此處暫不重複貼出完整PnP程式碼，沿用上一版即可
-        rmat, _ = cv2.Rodrigues(_)
+        rmat, _ = cv2.Rodrigues(rot_vec)
         pitch = -np.arcsin(rmat[1, 2]) * 180 / np.pi
         yaw = np.arctan2(rmat[0, 2], rmat[2, 2]) * 180 / np.pi
         return {'pitch': pitch, 'yaw': yaw}
@@ -61,11 +59,12 @@ class DistractionDetector:
 
             timer_duration = (time.time() - self.phone_use_start_time) if self.phone_use_start_time else 0
             if self.DEBUG_MODE:
-                # 計算歷史偵測成功率
                 history_ratio = sum(self.phone_detection_history) / len(self.phone_detection_history) if self.phone_detection_history else 0
                 print(f"\r[PHONE DEBUG] Score: {score:3d} | Timer: {timer_duration:.2f}s | History: {history_ratio:.2f} | Cond: {'-'.join(debug_info) if debug_info else 'None'}", end="")
 
-            if score >= 49: return True
+            # <<< 修改重點：將分數門檻從 49 提高到 59 >>>
+            if score >= 59:
+                return True
         
         if self.DEBUG_MODE:
              history_ratio = sum(self.phone_detection_history) / len(self.phone_detection_history) if self.phone_detection_history else 0
@@ -89,21 +88,16 @@ class DistractionDetector:
                 else: self.looking_away_start_time = None
                 self.visualize(frame, head_pose_data)
             
-            # --- 手機偵測 ---
             phone_detected_this_frame = self.detect_phone_use(hand_results.multi_hand_landmarks, face_lms) if hand_results.multi_hand_landmarks else False
             self.phone_detection_history.append(phone_detected_this_frame)
-
-            # <<< 修改重點：基於平滑後的結果來計時 >>>
-            # 如果過去半秒內，有超過 40% 的時間偵測到手機，就認為是連續動作
-            is_stably_detected = (sum(self.phone_detection_history) / len(self.phone_detection_history)) > 0.4 if self.phone_detection_history else False
             
+            is_stably_detected = (sum(self.phone_detection_history) / len(self.phone_detection_history)) > 0.4 if self.phone_detection_history else False
             if is_stably_detected:
                 if self.phone_use_start_time is None: self.phone_use_start_time = time.time()
                 elif time.time() - self.phone_use_start_time > self.PHONE_USE_TIME: events.append("A03: 偵測到手持通話或操作手機")
             else:
                 self.phone_use_start_time = None
-
-        else: # 沒有偵測到臉部
+        else:
             self.looking_away_start_time, self.phone_use_start_time = None, None
             if self.face_away_start_time is None: self.face_away_start_time = time.time()
             elif time.time() - self.face_away_start_time > self.FACE_AWAY_TIME: events.append("A05: 臉部離開偵測區域")

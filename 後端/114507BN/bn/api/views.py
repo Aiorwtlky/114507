@@ -1,6 +1,7 @@
 # api/views.py
 
 from rest_framework import generics, status, permissions, views
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -30,6 +31,31 @@ from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbo
 from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPublisherOrAdmin
 
 logger = logging.getLogger(__name__)
+
+class ApiRootView(APIView):
+    """API 根路由視圖，提供 API 入口資訊。"""
+
+    def get(self, request, *args, **kwargs):
+        """處理 GET 請求，返回 API 入口資訊。"""
+        api_info = {
+            "users": {
+                "register": "/auth/register/",
+                "profile": "/auth/profile/",
+            },
+            "groups": {
+                "list": "/me/groups/",
+                "create": "/groups/",
+            },
+            "trips": {
+                "list": "/trips/",
+                "create": "/trips/start/",
+            },
+            "videos": {
+                "list": "/videos/",
+                "register": "/videos/register/",
+            },
+        }
+        return Response(api_info)
 
 # =============================================================================
 # 輔助函式 (Helper Functions)

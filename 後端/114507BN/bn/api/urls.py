@@ -1,11 +1,13 @@
 # api/urls.py
 
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 from .views import (
+    ApiRootView,
     # 認證與使用者
     UserRegisterAPIView, UserProfileAPIView, UserSelfBindNFCAPIView,
     # NFC 相關
@@ -28,6 +30,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('',ApiRootView.as_view(), name='api-root'),
     # 1. 認證 API
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
