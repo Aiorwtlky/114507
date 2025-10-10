@@ -1,6 +1,5 @@
 # api/signals.py
 
-# 【修改】匯入 Django 的 settings，以便讀取寄件人郵件地址
 from django.conf import settings
 from django.core.mail import send_mail
 from django.dispatch import receiver
@@ -17,6 +16,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     """
     # 建立指向前端重設密碼頁面的 URL，並附上 token
     # 【重要】這是前端頁面的 URL (port 5000)，不是後端 API 的
+    # reset_password_url = f"https://mdgitrc.ntub.edu.tw/reset-password?token={reset_password_token.key}"
     reset_password_url = f"http://127.0.0.1:5000/reset-password?token={reset_password_token.key}"
 
     # 郵件內容
@@ -32,12 +32,8 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     # Django 會自動使用我們在 settings.py 中設定的 EMAIL_BACKEND
     # (目前應該是 'console.EmailBackend'，所以會印在終端機上)
     send_mail(
-        # 郵件主旨:
         "【MDG Pro】重設您的帳戶密碼",
-        # 郵件內容:
         email_plaintext_message,
-        # 寄件人: 【修改】從 settings.py 讀取，更具彈性
         settings.DEFAULT_FROM_EMAIL,
-        # 收件人:
         [reset_password_token.user.email]
     )
