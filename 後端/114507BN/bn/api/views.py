@@ -26,7 +26,8 @@ from .serializers import (
     AiVisionLogCreateSerializer, TripEndSerializer,
     UserRegisterSerializer, GroupMemberSerializer,
     GroupAnnouncementSerializer, InvitationCodeSerializer,
-    TripSuggestionFeedbackSerializer, VideoRegisterSerializer, VideoRecordSerializer
+    TripSuggestionFeedbackSerializer, VideoRegisterSerializer, VideoRecordSerializer,
+    InvitationCodeCreateSerializer
 )
 from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPublisherOrAdmin
@@ -233,16 +234,58 @@ class RecentAnnouncementsAPIView(generics.ListAPIView):
 
 class InvitationCodeCreateAPIView(generics.CreateAPIView):
     """(需權限) 為特定群組建立一個新的邀請碼。"""
-    serializer_class = InvitationCodeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = InvitationCodeCreateSerializer 
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        # 覆寫 create 方法，以便在成功後回傳完整的邀請碼物件
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        # 使用 InvitationCodeSerializer 來序列化新建立的物件並回傳
+        instance = serializer.instance
+        response_serializer = InvitationCodeSerializer(instance, context=self.get_serializer_context())
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         group = get_object_or_404(Group, pk=self.kwargs['group_pk'])
+        # 權限檢查：必須是群組管理員或建立者
         is_owner = (group.created_by == self.request.user)
         is_group_admin = GroupMember.objects.filter(group=group, user=self.request.user, role='ADMIN').exists()
         if not (is_owner or self.request.user.is_staff or is_group_admin):
             raise PermissionDenied("您沒有權限為此群組生成邀請碼。")
+        # 自動填入建立者和所屬群組
         serializer.save(created_by=self.request.user, group=group)
+
+class InvitationCodeListAPIView(generics.ListAPIView):
+    """【新增】獲取特定群組的所有邀請碼列表。"""
+    serializer_class = InvitationCodeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        group_pk = self.kwargs['group_pk']
+        group = get_object_or_404(Group, pk=group_pk)
+        # 權限檢查：必須是群組成員
+        if not group.members.filter(id=self.request.user.id).exists() and group.created_by != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("您沒有權限查看此群組的邀請碼。")
+        return InvitationCode.objects.filter(group=group).order_by('-created_at')
+
+class InvitationCodeManageAPIView(generics.DestroyAPIView):
+    """【新增】管理（目前只有刪除/撤銷）單一邀請碼。"""
+    queryset = InvitationCode.objects.all()
+    serializer_class = InvitationCodeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_destroy(self, instance):
+        # 權限檢查：必須是邀請碼的建立者，或是群組的管理員/建立者
+        user = self.request.user
+        is_creator = instance.created_by == user
+        is_group_owner = instance.group.created_by == user
+        is_group_admin = GroupMember.objects.filter(group=instance.group, user=user, role='ADMIN').exists()
+        if not (is_creator or is_group_owner or is_group_admin or user.is_staff):
+            raise PermissionDenied("您沒有權限撤銷此邀請碼。")
+        instance.delete()
 
 # =============================================================================
 # 4. 數據讀取與報表 API (Data & Report APIs)

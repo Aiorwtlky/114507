@@ -17,7 +17,8 @@ from .views import (
     GroupMembersListAPIView, GroupMemberRoleAPIView, GroupMemberDeleteAPIView,
     # 公告與邀請碼
     GroupAnnouncementListCreateAPIView, GroupAnnouncementDetailAPIView,
-    InvitationCodeCreateAPIView, RecentAnnouncementsAPIView,
+    InvitationCodeCreateAPIView, InvitationCodeListAPIView, InvitationCodeManageAPIView,
+    RecentAnnouncementsAPIView,
     # 數據讀取與報表
     TripListAPIView, TripDetailAPIView, VideoListAPIView, generate_trip_report_pdf,
     # 車機上傳
@@ -52,9 +53,11 @@ urlpatterns = [
     
     # 4. 公告與邀請碼 API
     path('groups/<int:group_pk>/announcements/', GroupAnnouncementListCreateAPIView.as_view(), name='group-announcement-list-create'),
-    path('groups/<int:group_pk>/invitations/', InvitationCodeCreateAPIView.as_view(), name='group-invitation-create'),
     path('announcements/<int:pk>/', GroupAnnouncementDetailAPIView.as_view(), name='announcement-detail'),
     path('announcements/recent/', RecentAnnouncementsAPIView.as_view(), name='recent-announcements'),
+    path('groups/<int:group_pk>/invitations/create/', InvitationCodeCreateAPIView.as_view(), name='invitation-code-create'),
+    path('groups/<int:group_pk>/invitations/', InvitationCodeListAPIView.as_view(), name='invitation-code-list'),
+    path('invitations/<int:pk>/', InvitationCodeManageAPIView.as_view(), name='invitation-code-manage'),
     
     # 5. 數據讀取與報表 API
     path('trips/', TripListAPIView.as_view(), name='trip-list'),

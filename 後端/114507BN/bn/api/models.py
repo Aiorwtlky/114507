@@ -132,6 +132,7 @@ class GroupAnnouncement(models.Model):
 
 class InvitationCode(models.Model):
     """具時效性、一次性的群組邀請碼。"""
+    name = models.CharField(max_length=100, default='Default Invite', verbose_name="邀請名稱") 
     code = models.CharField(max_length=8, unique=True, verbose_name="邀請碼")
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="所屬群組")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="建立者")

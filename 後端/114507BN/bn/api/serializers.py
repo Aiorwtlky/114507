@@ -191,12 +191,24 @@ class TripDetailSerializer(serializers.ModelSerializer):
         ]
 
 class InvitationCodeSerializer(serializers.ModelSerializer):
-    """唯讀序列化器，用於顯示已生成的邀請碼資訊。"""
+    """【讀取用】唯讀序列化器，用於顯示已生成的邀請碼資訊。"""
+    group = serializers.StringRelatedField() # 顯示群組名稱而非 ID
+    created_by = serializers.StringRelatedField() # 顯示建立者名稱而非 ID
+
     class Meta:
         model = InvitationCode
-        fields = ['code', 'expires_at', 'group']
+        # 我們新增了 'name' 欄位來對應前端的「邀請名稱」
+        fields = ['id', 'name', 'code', 'expires_at', 'is_used', 'group', 'created_by']
         read_only_fields = fields
 
+class InvitationCodeCreateSerializer(serializers.ModelSerializer):
+    """【建立用】寫入專用序列化器，用於建立新的邀請碼。"""
+    class Meta:
+        model = InvitationCode
+        # 前端只需要提供 'name' 和 'expires_at'
+        # 'group' 和 'created_by' 將由 view 自動填入
+        fields = ['name', 'expires_at']
+        
 class GroupAnnouncementSerializer(serializers.ModelSerializer):
     """序列化群組公告，部分欄位為唯讀。"""
     publisher = serializers.StringRelatedField(read_only=True)

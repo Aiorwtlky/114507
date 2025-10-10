@@ -114,7 +114,7 @@ def group_settings():
 
 @app.route('/invite_member')
 def invite_member():
-    return "這是「新增成員」的佔位頁面。"
+    return render_template('invite_member.html')
 
 @app.route('/member_dashboard/<member_id>')
 def member_dashboard(member_id):
