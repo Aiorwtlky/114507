@@ -22,7 +22,7 @@ class PersonnelProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PersonnelProfile
-        fields = ['personnel_number', 'gender', 'license_number', 'avatar', 'phone', 'license_type', 'driving_experience']
+        fields = ['personnel_number', 'gender', 'license_number', 'avatar', 'phone', 'license_type', 'driving_experience', 'nfc_card_id']
 
     def get_avatar(self, obj):
         request = self.context.get('request')
@@ -94,33 +94,38 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     
 class GroupMemberSerializer(serializers.ModelSerializer):
-    """序列化群組成員資料，包含其在特定群組的角色與 Profile。"""
+    """【已修正】序列化群組成員資料，新增 joined_at 欄位以滿足前端需求。"""
     average_score = serializers.FloatField(read_only=True, default=0)
     role = serializers.SerializerMethodField()
-    personnelprofile = serializers.SerializerMethodField()
+    personnelprofile = PersonnelProfileSerializer(read_only=True)
+    # ▼▼▼ 【核心修正】新增 joined_at 欄位 ▼▼▼
+    joined_at = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role', 'personnelprofile']
+        fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role', 'personnelprofile', 'joined_at'] # <-- 加入到 fields
 
     def get_role(self, obj):
-        """根據從 View 傳入的 context 中的 group_id，查詢使用者在該群組中的角色。"""
         group_id = self.context.get('group_id')
         if not group_id: return 'MEMBER'
         try:
             membership = GroupMember.objects.get(user=obj, group__id=group_id)
             return membership.role
         except GroupMember.DoesNotExist:
-            return 'MEMBER' # 如果出錯，預設為一般成員
+            return 'MEMBER'
 
-    def get_personnelprofile(self, obj):
-        """手動序列化 Profile，確保 request context 被正確傳遞以生成頭像 URL。"""
-        try:
-            profile = obj.personnelprofile
-            request = self.context.get('request')
-            return PersonnelProfileSerializer(profile, context={'request': request}).data
-        except PersonnelProfile.DoesNotExist:
+    # ▼▼▼ 【核心修正】新增 get_joined_at 方法 ▼▼▼
+    def get_joined_at(self, obj):
+        """從 GroupMember 中介表中，查詢這位使用者是在何時加入這個群組的。"""
+        group_id = self.context.get('group_id')
+        if not group_id:
             return None
+        try:
+            membership = GroupMember.objects.get(user=obj, group__id=group_id)
+            return membership.joined_at
+        except GroupMember.DoesNotExist:
+            return None
+
 
 class GroupSerializer(serializers.ModelSerializer):
     """序列化群組的基本資料。"""

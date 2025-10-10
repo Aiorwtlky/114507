@@ -109,22 +109,22 @@
       <div class="header-main-info">
         <h1 class="page-title"><i class="fa-solid fa-bullhorn"></i> 發布新公告</h1>
         <div class="group-context">
-          <p><strong>發布單位:</strong> 台灣北大物流股份有限公司萬華分公司</p>
-          <p><strong>所屬群組:</strong> 北大物流 C組 (組長: 張原因, 黃庭毅)</p>
+          <p><strong>發布單位:</strong> <span id="publisher-unit">載入中...</span></p>
+          <p><strong>所屬群組:</strong> <span id="group-context-name">載入中...</span></p>
         </div>
       </div>
       <div class="publisher-card">
-        <img src="{{ url_for('static', filename='images/chang.png') }}" alt="張原因" class="publisher-avatar" />
+        <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}" alt="發布者頭像" class="publisher-avatar" id="publisher-avatar" />
         <div class="publisher-details">
-          <span class="publisher-name">張原因</span>
-          <span class="publisher-role">發布者 (組長)</span>
+          <span class="publisher-name" id="publisher-name">載入中...</span>
+          <span class="publisher-role">發布者</span>
         </div>
       </div>
-    </div>
+       </div>
   </div>
 
   <div class="d-card form-card">
-    <form class="announcement-form">
+    <form id="announcementForm" class="announcement-form">
       <div class="card-header">
           <h2 class="card-title">公告編輯</h2>
       </div>
@@ -172,7 +172,9 @@
 {% block extra_js %}
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   
-  <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+  <script src="https://cdn.tiny.cloud/1/mrkaq8vn4883iw5q9a4p8ulcaupokh8r658azp048c9z3qj8/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+  <script src="{{ url_for('static', filename='js/pages/create_announcement.js') }}"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {

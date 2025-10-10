@@ -122,7 +122,7 @@ def member_dashboard(member_id):
 
 @app.route('/create_announcement')
 def create_announcement():
-    return "這是「新增公告」的佔位頁面。"
+    return render_template('create_announcement.html')
 
 @app.route('/announcement_detail/<announcement_id>')
 def announcement_detail(announcement_id):
