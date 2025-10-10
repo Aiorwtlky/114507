@@ -101,17 +101,26 @@ class MainActivity : ComponentActivity() {
                     val existingNfcId = userProfileFromApi.personnelprofile?.nfcCardId
                     Log.d(TAG, "使用者已綁定的卡片序號: $existingNfcId")
 
+                    val localUserProfile = userProfileFromApi.toLocalUserProfile(scannedSerialNumber)
+
                     if (!existingNfcId.isNullOrBlank() && existingNfcId.equals(scannedSerialNumber, ignoreCase = true)) {
-                        Log.i(TAG, "此卡片已綁定至您的帳號，無需重複操作。")
-                        runOnUiThread { Toast.makeText(this, "此卡片已是您的註冊卡片", Toast.LENGTH_SHORT).show() }
+                        Log.i(TAG, "偵測到為同一張已綁定卡片，執行資料更新流程...")
+
+                        val result = nfcHandler.writeUserProfile(tag, localUserProfile)
+                        if (result is NfcHandler.NfcResult.WriteSuccess) {
+                            Log.i(TAG, "卡片上的個人資料已更新成功。")
+                            runOnUiThread { Toast.makeText(this, "卡片資料已更新", Toast.LENGTH_SHORT).show() }
+                        } else if (result is NfcHandler.NfcResult.Error) {
+                            Log.e(TAG, "更新卡片資料時發生錯誤: ${result.message}")
+                            runOnUiThread { Toast.makeText(this, "更新失敗: ${result.message}", Toast.LENGTH_LONG).show() }
+                        }
+                        navController.popBackStack()
 
                     } else {
                         val message = if (existingNfcId.isNullOrBlank()) "首次綁定新卡" else "更換為新的卡片"
-                        Log.i(TAG, message)
+                        Log.i(TAG, "$message，執行完整註冊流程...")
 
-                        val localUserProfile = userProfileFromApi.toLocalUserProfile()
                         Log.d(TAG, "準備寫入個人資料: $localUserProfile")
-
                         val result = nfcHandler.writeUserProfile(tag, localUserProfile)
                         handleNfcResult(result)
                     }
@@ -128,16 +137,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // ⭐ 修正重點：補上 when 判斷式中缺少的 is ReadSuccess 和 is Error 兩種情況
     private fun handleNfcResult(result: NfcHandler.NfcResult) {
         when (result) {
             is NfcHandler.NfcResult.WriteSuccess -> {
-                Log.i(TAG, "--- NFC 卡片寫入成功 ---")
+                Log.i(TAG, "--- NFC 卡片寫入成功 (首次/更換) ---")
                 Log.i(TAG, "卡片序號: ${result.serialNumber}")
 
                 Log.d(TAG, "卡片寫入成功，準備將序號 ${result.serialNumber} 回傳伺服器進行綁定...")
                 nfcViewModel.bindNfcCard(result.serialNumber)
 
-                // ⭐ 修正重點：在綁定 API 送出後，命令 ProfileViewModel 重新整理資料
                 Log.d(TAG, "命令 ProfileViewModel 重新整理以同步最新資料...")
                 profileViewModel.fetchUserProfile()
 
@@ -163,7 +172,7 @@ class MainActivity : ComponentActivity() {
 
     private fun ByteArray.toHexString(): String = joinToString("") { "%02X".format(it) }
 
-    private fun UserProfileResponse.toLocalUserProfile(): UserProfile {
+    private fun UserProfileResponse.toLocalUserProfile(serialNumber: String): UserProfile {
         val fullName = listOfNotNull(this.lastName, this.firstName).joinToString("")
 
         return UserProfile(
@@ -174,7 +183,7 @@ class MainActivity : ComponentActivity() {
             phone = this.personnelprofile?.phone ?: "N/A",
             currentVehiclePlate = "MDG-0000",
             groupName = "總部第一車隊",
-            nfcCardNumber = "NFC-暫存",
+            nfcCardNumber = serialNumber,
             licenseNumber = this.personnelprofile?.licenseNumber ?: "N/A",
             licenseClass = this.personnelprofile?.licenseType ?: "N/A",
             linkedAccounts = emptyList(),
