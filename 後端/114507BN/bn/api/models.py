@@ -64,6 +64,36 @@ class GroupMember(models.Model):
         verbose_name = "群組成員"
         verbose_name_plural = "3. 群組成員"
 
+class ActivationCode(models.Model):
+    """用於管理系統級別的一次性註冊啟用碼。"""
+    code = models.CharField(max_length=16, unique=True, verbose_name="啟用碼")
+    is_used = models.BooleanField(default=False, verbose_name="是否已使用")
+    used_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='used_activation_code',
+        verbose_name="使用者"
+    )
+    used_at = models.DateTimeField(null=True, blank=True, verbose_name="使用時間")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="建立時間")
+    expires_at = models.DateTimeField(null=True, blank=True, verbose_name="過期時間")
+    notes = models.TextField(blank=True, verbose_name="備註") # 例如：這批 code 是給哪個客戶的
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            # 生成一個更複雜、不易猜測的 code
+            self.code = f"MDG-{secrets.token_hex(6).upper()}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        verbose_name = "系統啟用碼"
+        verbose_name_plural = "14. 系統啟用碼管理" # 讓它在 Admin 後台排後面
+        
 # =============================================================================
 # 2. 系統與公告 (System & Announcement)
 # =============================================================================

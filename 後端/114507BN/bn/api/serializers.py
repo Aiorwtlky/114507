@@ -4,11 +4,12 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Avg
-from django.utils import timezone 
+from django.utils import timezone
 from .models import (
     PersonnelProfile, Group, Trip, ScoringStandard,
     AiVisionLog, VideoRecord, VehicleDevice, GroupAnnouncement,
-    InvitationCode, GroupMember, TripSuggestionFeedback
+    InvitationCode, GroupMember, TripSuggestionFeedback,
+    ActivationCode  # 【修改】匯入新模型
 )
 
 # =============================================================================
@@ -163,7 +164,7 @@ class VehicleDeviceSerializer(serializers.ModelSerializer):
 # =============================================================================
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    """處理使用者註冊請求，支援扁平化的 Profile 欄位、頭像上傳和邀請碼。"""
+    """處理使用者註冊請求，支援扁平化的 Profile 欄位、頭像上傳、邀請碼與啟用碼。"""
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     personnel_number = serializers.CharField(write_only=True)
     phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -171,23 +172,41 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     driving_experience = serializers.IntegerField(write_only=True, required=False, default=0)
     avatar = serializers.ImageField(write_only=True, required=False)
     invitation_code = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=8)
-    # ▼▼▼【後端修改】新增前端需要的欄位 ▼▼▼
     gender = serializers.CharField(write_only=True, required=False, allow_blank=True)
     license_number = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    
+    # ▼▼▼【後端修改】新增 activation_code 欄位 ▼▼▼
+    activation_code = serializers.CharField(write_only=True, required=True, label="MDG Pro 啟用碼")
     # ▲▲▲【後端修改】▲▲▲
 
     class Meta:
         model = User
-        # ---【修改】將新欄位加入 fields ---
         fields = [
             'username', 'password', 'email', 'first_name', 'last_name', 
             'personnel_number', 'phone', 'license_type', 'driving_experience', 'avatar',
-            'invitation_code', 'gender', 'license_number'
+            'invitation_code', 'gender', 'license_number',
+            'activation_code'  # <---【後端修改】加入到 fields
         ]
+
+    # ▼▼▼【後端修改】新增啟用碼的驗證邏輯 ▼▼▼
+    def validate_activation_code(self, value):
+        """自訂驗證邏輯，檢查啟用碼是否存在、是否已使用、是否過期。"""
+        try:
+            code = ActivationCode.objects.get(code=value, is_used=False)
+            if code.expires_at and code.expires_at < timezone.now():
+                raise serializers.ValidationError("此啟用碼已過期。")
+            return value
+        except ActivationCode.DoesNotExist:
+            raise serializers.ValidationError("無效的啟用碼或已被使用。")
+    # ▲▲▲【後端修改】▲▲▲
 
     @transaction.atomic
     def create(self, validated_data):
-        """覆寫 create 方法，以在同一個事務中同時建立 User 和 PersonnelProfile。"""
+        """覆寫 create 方法，以在同一個事務中同時建立 User、Profile 並處理啟用碼。"""
+        # ▼▼▼【後端修改】從 validated_data 中彈出啟用碼 ▼▼▼
+        activation_code_str = validated_data.pop('activation_code')
+        # ▲▲▲【後端修改】▲▲▲
+
         profile_data = {
             'personnel_number': validated_data.pop('personnel_number'),
             'phone': validated_data.pop('phone', ''),
@@ -198,8 +217,25 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             'license_number': validated_data.pop('license_number', ''),
         }
         invitation_code = validated_data.pop('invitation_code', None)
+        
+        # 建立 User 和 Profile (既有邏輯)
         user = User.objects.create_user(**validated_data)
         PersonnelProfile.objects.create(user=user, **profile_data)
+
+        # ▼▼▼【後端修改】在使用者成功建立後，將啟用碼標記為已使用 ▼▼▼
+        try:
+            activation_code_obj = ActivationCode.objects.get(code=activation_code_str)
+            activation_code_obj.is_used = True
+            activation_code_obj.used_by = user
+            activation_code_obj.used_at = timezone.now()
+            activation_code_obj.save()
+        except ActivationCode.DoesNotExist:
+            # 正常情況下，因為 validate 已通過，這裡不應該發生錯誤
+            # 但為了系統穩健性，加上保護
+            pass
+        # ▲▲▲【後端修改】▲▲▲
+
+        # 處理群組邀請碼 (既有邏輯)
         if invitation_code:
             try:
                 invite = InvitationCode.objects.get(code=invitation_code.upper(), is_used=False, expires_at__gt=timezone.now())
