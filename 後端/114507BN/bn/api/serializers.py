@@ -38,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 
+        fields = ['id', 'username', 'last_login',
                   'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile', 'administered_groups']
 
     def get_is_group_leader(self, obj):
@@ -171,13 +171,18 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     driving_experience = serializers.IntegerField(write_only=True, required=False, default=0)
     avatar = serializers.ImageField(write_only=True, required=False)
     invitation_code = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=8)
+    # ▼▼▼【後端修改】新增前端需要的欄位 ▼▼▼
+    gender = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    license_number = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    # ▲▲▲【後端修改】▲▲▲
 
     class Meta:
         model = User
+        # ---【修改】將新欄位加入 fields ---
         fields = [
             'username', 'password', 'email', 'first_name', 'last_name', 
             'personnel_number', 'phone', 'license_type', 'driving_experience', 'avatar',
-            'invitation_code'
+            'invitation_code', 'gender', 'license_number'
         ]
 
     @transaction.atomic
@@ -188,7 +193,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             'phone': validated_data.pop('phone', ''),
             'license_type': validated_data.pop('license_type', ''),
             'driving_experience': validated_data.pop('driving_experience', 0),
-            'avatar': validated_data.pop('avatar', None)
+            'avatar': validated_data.pop('avatar', None),
+            'gender': validated_data.pop('gender', 'UNSPECIFIED'),
+            'license_number': validated_data.pop('license_number', ''),
         }
         invitation_code = validated_data.pop('invitation_code', None)
         user = User.objects.create_user(**validated_data)
