@@ -55,7 +55,7 @@ fun NfcLogInScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    "請將已註冊的卡片靠近手機背面",
+                    "請將手機靠近感應點",
                     color = Color.Gray,
                     fontSize = 20.sp
                 )

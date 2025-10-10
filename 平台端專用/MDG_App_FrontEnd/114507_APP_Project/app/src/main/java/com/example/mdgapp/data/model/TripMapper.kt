@@ -1,5 +1,5 @@
 // 檔案路徑: app/src/main/java/com/example/mdgapp/data/model/TripMapper.kt
-
+/*
 package com.example.mdgapp.data.model
 
 import com.example.mdgapp.data.viewmodel.LastTripInfo
@@ -56,4 +56,4 @@ fun DrivingReport.toLastTripInfo(): LastTripInfo {
         violations = violations,
         aiSuggestion = this.geminiFeedback
     )
-}
+}*/

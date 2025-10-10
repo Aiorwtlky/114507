@@ -25,7 +25,7 @@ import com.example.mdgapp.ui.component.GaugeScoreCard
 import com.example.mdgapp.ui.component.TrendChart
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
-
+/*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnifiedHomeScreen(
@@ -288,4 +288,4 @@ fun PastTrendCard(
             )
         }
     }
-}
+}*/

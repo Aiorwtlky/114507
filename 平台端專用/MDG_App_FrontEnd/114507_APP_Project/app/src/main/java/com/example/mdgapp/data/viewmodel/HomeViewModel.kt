@@ -1,5 +1,5 @@
 package com.example.mdgapp.data.viewmodel
-
+/*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mdgapp.data.model.DrivingReport
@@ -131,4 +131,4 @@ class HomeViewModel : ViewModel() {
             else -> (1..30).map { Random.nextInt(68, 99) } to (1..30).map { it.toString() }
         }
     }
-}
+}*/

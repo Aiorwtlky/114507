@@ -1,6 +1,6 @@
 // 檔案路徑: app/src/main/java/com/example/mdgapp/data/model/TripDetailData.kt
 package com.example.mdgapp.data.model
-
+/*
 import com.google.gson.annotations.SerializedName
 
 // 對應整個 API 回應的最外層物件
@@ -67,4 +67,4 @@ data class VideoRecord(
     @SerializedName("end_time")
     val endTime: String,
     val location: String // Video URL
-)
+)*/

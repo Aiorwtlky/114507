@@ -1,38 +1,38 @@
-// 檔案路徑: app/src/main/java/com/example/mdgapp/data/remote/RetrofitInstance.kt
-
 package com.example.mdgapp.data.remote
 
-import okhttp3.OkHttpClient
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
 
-    // 從 API 文件來的主機位置
-    private const val BASE_URL = "http://140.131.114.182/"
+    private const val BASE_URL = "http://140.131.114.182:8000/"
 
-    // 建立一個日誌攔截器，方便在 Logcat 中看到詳細的網路請求資訊
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+    private val json = Json {
+        ignoreUnknownKeys = true
     }
 
-    // 建立 OkHttp 客戶端，並加入日誌攔截器和我們自訂的認證攔截器
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .addInterceptor(AuthInterceptor()) // 👈 【重點】加上這一行
+    // ⭐ 1. 取得信任所有憑證的 OkHttpClient Builder
+    private val unsafeOkHttpClientBuilder = getUnsafeOkHttpClientBuilder()
+
+    // ⭐ 2. 在這個 Builder 上加入您的攔截器
+    private val client = unsafeOkHttpClientBuilder
+        .addInterceptor(HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        })
+        .addInterceptor(AuthInterceptor())
         .build()
 
-    // 透過懶加載 (by lazy) 的方式建立 Retrofit 實例，確保只在第一次使用時才被初始化
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create()) // 使用 Gson 作為 JSON 解析器
+            .client(client) // ⭐ 3. 使用我們新建的 client
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
 
-    // 對外提供一個獲取 ApiService 實例的方法
     val api: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }

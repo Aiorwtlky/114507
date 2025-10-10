@@ -1,59 +1,77 @@
 package com.example.mdgapp.data.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.mdgapp.R
-import com.example.mdgapp.data.model.LinkedAccount
+import androidx.lifecycle.viewModelScope
+import com.example.mdgapp.data.local.TokenManager
 import com.example.mdgapp.data.model.NotificationSettings
-import com.example.mdgapp.data.model.UserProfile
+import com.example.mdgapp.data.model.UserProfileResponse
+import com.example.mdgapp.data.remote.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
+
+data class ProfileUiState(
+    val isLoading: Boolean = true,
+    val userProfile: UserProfileResponse? = null,
+    val errorMessage: String? = null,
+    val notificationSettings: NotificationSettings = NotificationSettings(
+        receiveDangerousEvent = true,
+        receiveSystemAnnouncements = true,
+        downloadOnlyOnWifi = false
+    )
+)
 
 class ProfileViewModel : ViewModel() {
 
-    private val _userProfile = MutableStateFlow<UserProfile?>(null)
-    val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
+    private val _uiState = MutableStateFlow(ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadUserProfile()
+        fetchUserProfile()
     }
 
-    private fun loadUserProfile() {
-        _userProfile.value = UserProfile(
-            fullName = "黃仁勳",
-            employeeId = "EMP-001",
-            avatarUrl = "", // 留空，UI 層將使用預設圖示
-            currentVehiclePlate = "MDG-0000",
-            groupName = "總部第一車隊",
-            nfcCardNumber = "NFC-123456789", // ✅ 新增 NFC 卡號
-            email = "j.huang@example.com",
-            phone = "0912345678",
-            licenseNumber = "T123456789",
-            licenseClass = "普通小型車",
-            linkedAccounts = listOf(
-                LinkedAccount("Google", "MDGDriver@gmail.com", R.drawable.ic_google)
-            ),
-            notificationSettings = NotificationSettings(
-                receiveDangerousEvent = true,
-                receiveSystemAnnouncements = true,
-                downloadOnlyOnWifi = false
-            )
-        )
+    fun fetchUserProfile() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            // ⭐ 從 TokenManager 取得儲存的 Token
+            val token = TokenManager.getToken()
+
+            if (token.isNullOrBlank()) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "使用者未登入") }
+                return@launch
+            }
+
+            try {
+                val response = RetrofitInstance.api.getUserProfile()
+                _uiState.update { it.copy(isLoading = false, userProfile = response) }
+
+            } catch (e: HttpException) {
+                val errorMsg = if (e.code() == 401) "登入已過期，請重新登入" else "無法載入資料"
+                _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg) }
+            } catch (e: IOException) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "網路連線失敗") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "發生未知的錯誤") }
+            }
+        }
     }
 
-    // 更新通知設定的方法
     fun onSettingChanged(
         event: Boolean? = null,
         announcement: Boolean? = null,
         wifiOnly: Boolean? = null
     ) {
-        _userProfile.update { currentProfile ->
-            currentProfile?.copy(
-                notificationSettings = currentProfile.notificationSettings.copy(
-                    receiveDangerousEvent = event ?: currentProfile.notificationSettings.receiveDangerousEvent,
-                    receiveSystemAnnouncements = announcement ?: currentProfile.notificationSettings.receiveSystemAnnouncements,
-                    downloadOnlyOnWifi = wifiOnly ?: currentProfile.notificationSettings.downloadOnlyOnWifi
+        _uiState.update { currentState ->
+            currentState.copy(
+                notificationSettings = currentState.notificationSettings.copy(
+                    receiveDangerousEvent = event ?: currentState.notificationSettings.receiveDangerousEvent,
+                    receiveSystemAnnouncements = announcement ?: currentState.notificationSettings.receiveSystemAnnouncements,
+                    downloadOnlyOnWifi = wifiOnly ?: currentState.notificationSettings.downloadOnlyOnWifi
                 )
             )
         }

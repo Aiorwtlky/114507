@@ -4,11 +4,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // ⭐ 1. 從這裡移除 id("org.jetbrains.kotlin.plugin.serialization") ... 這一行
+
+    kotlin("plugin.serialization")
 }
 
-// ⭐ 2. 在 plugins 區塊外面，用傳統方式套用插件
-apply(plugin = "kotlinx-serialization")
 
 android {
     namespace = "com.example.mdgapp"

@@ -9,7 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels // ⭐ 1. 新增 import
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,9 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.mdgapp.data.model.UserProfile
-import com.example.mdgapp.data.viewmodel.ProfileViewModel // ⭐ 2. 新增 import
+import com.example.mdgapp.data.model.UserProfileResponse
+import com.example.mdgapp.data.viewmodel.ProfileViewModel
 import com.example.mdgapp.navigation.AppNavGraph
 import com.example.mdgapp.ui.theme.MyApplicationTheme
+import com.example.mdgapp.data.model.NotificationSettings
 
 class MainActivity : ComponentActivity() {
 
@@ -30,7 +32,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private val TAG = "NfcApp"
 
-    // ⭐ 3. 透過 by viewModels() 取得 ViewModel 實例
     private val profileViewModel: ProfileViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,9 +45,6 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     navController = rememberNavController()
-                    // 為了讓 AppNavGraph 也能存取到同一個 ViewModel 實例，可以將它作為參數傳遞下去
-                    // AppNavGraph(navController = navController, profileViewModel = profileViewModel)
-                    // 這裡暫時維持原樣，因為目前只有 MainActivity 需要用到
                     AppNavGraph(navController = navController)
                 }
             }
@@ -88,18 +86,21 @@ class MainActivity : ComponentActivity() {
 
             when (currentRoute) {
                 "cardCheckIn" -> {
-                    // ⭐ 4. 從 ViewModel 獲取使用者資料，取代原本寫死的物件
-                    val currentUserProfile = profileViewModel.userProfile.value
+                    // ⭐ 修正 1: 從 uiState 中取得 userProfile
+                    val userProfileFromApi = profileViewModel.uiState.value.userProfile
 
-                    if (currentUserProfile == null) {
+                    if (userProfileFromApi == null) {
                         Log.e(TAG, "無法獲取使用者資料，ViewModel 中的 Profile 為 null")
                         runOnUiThread { Toast.makeText(this, "錯誤：無法獲取使用者資料", Toast.LENGTH_SHORT).show() }
                         return
                     }
 
-                    Log.d(TAG, "準備從 ViewModel 寫入個人資料: $currentUserProfile")
+                    // ⭐ 修正 2: 將 API 的 UserProfileResponse 轉換為本地的 UserProfile
+                    val localUserProfile = userProfileFromApi.toLocalUserProfile()
 
-                    val result = nfcHandler.writeUserProfile(tag, currentUserProfile)
+                    Log.d(TAG, "準備從 ViewModel 寫入個人資料: $localUserProfile")
+
+                    val result = nfcHandler.writeUserProfile(tag, localUserProfile)
                     handleNfcResult(result)
                     if (result is NfcHandler.NfcResult.WriteSuccess) {
                         runOnUiThread { navController.popBackStack() }
@@ -140,5 +141,34 @@ class MainActivity : ComponentActivity() {
                 runOnUiThread { Toast.makeText(this, "操作失敗: ${result.message}", Toast.LENGTH_LONG).show() }
             }
         }
+    }
+
+    /**
+     * 輔助轉換函式：將從 API 獲取的 UserProfileResponse 轉換為 NFC 寫入所需的 UserProfile。
+     */
+    private fun UserProfileResponse.toLocalUserProfile(): UserProfile {
+        // 這個函式負責將從網路 API 取得的資料格式 (UserProfileResponse)
+        // 轉換為您 NFC 處理邏輯需要的本地資料格式 (UserProfile)
+        return UserProfile(
+            fullName = "${this.lastName}${this.firstName}",
+            employeeId = this.personnelprofile?.personnelNumber ?: "N/A",
+            avatarUrl = this.personnelprofile?.avatar ?: "",
+            email = this.email,
+            phone = this.personnelprofile?.phone ?: "N/A",
+            // 注意：以下欄位在 UserProfileResponse 中不存在，暫時給予預設值
+            currentVehiclePlate = "MDG-0000",
+            groupName = "總部第一車隊",
+            nfcCardNumber = "NFC-暫存", // 寫入時這個欄位可能不需要，取決於您的 NfcHandler 實作
+            licenseNumber = this.personnelprofile?.licenseNumber ?: "N/A",
+            licenseClass = this.personnelprofile?.licenseType ?: "N/A",
+            linkedAccounts = emptyList(), // 暫時給予空列表
+
+            // ⭐ 修正：提供一個預設的 NotificationSettings 物件，而不是 null
+            notificationSettings = NotificationSettings(
+                receiveDangerousEvent = true,
+                receiveSystemAnnouncements = true,
+                downloadOnlyOnWifi = true
+            )
+        )
     }
 }

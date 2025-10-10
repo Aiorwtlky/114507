@@ -31,12 +31,13 @@ fun UnifiedHomeScreen(
     navController: NavController,
     viewModel: ProfileViewModel = viewModel()
 ) {
-    val userProfile by viewModel.userProfile.collectAsState()
+    // ⭐ 1. 訂閱整個 UiState
+    val uiState by viewModel.uiState.collectAsState()
+    val userProfile = uiState.userProfile
 
     Scaffold(
         containerColor = Color.Black,
         bottomBar = {
-            // 底部只有一個打卡按鈕
             BottomAppBar(
                 containerColor = Color(0xFF1A1A1A),
                 contentColor = Color.White
@@ -72,95 +73,74 @@ fun UnifiedHomeScreen(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // 個人資料顯示區域
-            userProfile?.let { profile ->
-                // 頭像
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF2A2A2A)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "個人頭像",
-                        tint = Color.White,
-                        modifier = Modifier.size(60.dp)
-                    )
+            // ⭐ 2. 根據 UiState 顯示個人資料或載入動畫
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator()
                 }
+                uiState.errorMessage != null -> {
+                    Text(text = uiState.errorMessage ?: "發生錯誤", color = Color.White)
+                }
+                userProfile != null -> {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF2A2A2A)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "個人頭像",
+                            tint = Color.White,
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    // ⭐ 3. 更新資料來源
+                    Text(
+                        text = "${userProfile.lastName}${userProfile.firstName}",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // 姓名
-                Text(
-                    text = profile.fullName,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                    Text(
+                        text = "員工編號：${userProfile.personnelprofile?.personnelNumber ?: "N/A"}",
+                        fontSize = 16.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "車輛：MDG-0000", fontSize = 16.sp, color = Color.Gray) // API 暫無
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // 員工編號
-                Text(
-                    text = "員工編號：${profile.employeeId}",
-                    fontSize = 16.sp,
-                    color = Color.Gray
-                )
+                    Text(text = "群組：總部第一車隊", fontSize = 16.sp, color = Color.Gray) // API 暫無
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // 車牌號碼
-                Text(
-                    text = "車輛：${profile.currentVehiclePlate}",
-                    fontSize = 16.sp,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // 群組
-                Text(
-                    text = "群組：${profile.groupName}",
-                    fontSize = 16.sp,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // NFC 卡號
-                Text(
-                    text = "NFC 卡號：${profile.nfcCardNumber}",
-                    fontSize = 16.sp,
-                    color = Color.Gray
-                )
-            } ?: CircularProgressIndicator()
+                    Text(text = "NFC 卡號：NFC-暫存", fontSize = 16.sp, color = Color.Gray) // API 暫無
+                }
+            }
 
             Spacer(modifier = Modifier.height(60.dp))
 
-            // 手機 NFC 註冊按鈕
             RegisterButton(
                 icon = Icons.Default.Nfc,
                 text = "手機 NFC 註冊",
                 onClick = { navController.navigate("nfcCheckIn") }
             )
-
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 實體卡片註冊按鈕
             RegisterButton(
                 icon = Icons.Default.CreditCard,
                 text = "實體卡片註冊",
                 onClick = { navController.navigate("cardCheckIn") }
             )
-
             Spacer(modifier = Modifier.weight(1f))
 
-            // 個人資料按鈕
-            TextButton(
-                onClick = { navController.navigate("profile") }
-            ) {
+            TextButton(onClick = { navController.navigate("profile") }) {
                 Text("查看完整個人資料", color = Color.Gray, fontSize = 14.sp)
             }
         }

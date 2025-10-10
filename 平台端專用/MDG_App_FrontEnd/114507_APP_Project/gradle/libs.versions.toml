@@ -13,10 +13,11 @@ lifecycle-compose = "2.6.1"
 accompanist = "0.34.0"
 maps-compose = "4.3.3"
 play-services-location = "21.2.0"
-retrofit = "2.9.0"
 okhttp = "4.11.0"
 kotlinxCoroutines = "1.7.3"
 kotlinxSerializationJson = "1.6.0"
+retrofit = "2.9.0"
+kotlinxSerializationConverter = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,7 +56,8 @@ maps-compose = { group = "com.google.maps.android", name = "maps-compose", versi
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location" }
 # Retrofit & OkHttp
 retrofit-core = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
-retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+#retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+retrofit-converter-kotlinx-serialization = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "kotlinxSerializationConverter" }
 okhttp-core = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-loggingInterceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
 
@@ -63,14 +65,17 @@ okhttp-loggingInterceptor = { module = "com.squareup.okhttp3:logging-interceptor
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlinSerialization = { id = "org.jetbrains.kotlinx.plugin.serialization", version.ref = "kotlin" }
+
 
 [bundles]
 # 建立一個 bundle 可以讓您在 build.gradle.kts 中一次性引入，更方便
-retrofit = ["retrofit-core", "retrofit-converter-gson", "okhttp-core", "okhttp-loggingInterceptor"]
+#retrofit = ["retrofit-core", "retrofit-converter-gson", "okhttp-core", "okhttp-loggingInterceptor"]
+retrofit = ["retrofit-core", "retrofit-converter-kotlinx-serialization", "okhttp-core", "okhttp-loggingInterceptor"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
+
 

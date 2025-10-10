@@ -1,5 +1,5 @@
 // 檔案路徑: app/src/main/java/com/example/mdgapp/data/model/AuthData.kt
-
+/*
 package com.example.mdgapp.data.model
 
 import com.google.gson.annotations.SerializedName
@@ -82,4 +82,4 @@ data class LoginRequest(
 data class LoginResponse(
     @SerializedName("token")
     val token: String
-)
+)*/

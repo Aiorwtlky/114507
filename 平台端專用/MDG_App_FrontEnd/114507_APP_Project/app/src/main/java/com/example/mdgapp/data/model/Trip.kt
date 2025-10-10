@@ -1,5 +1,5 @@
 package com.example.mdgapp.data.model
-
+/*
 import com.google.gson.annotations.SerializedName
 
 data class Trip(
@@ -29,4 +29,4 @@ data class Trip(
 
     @SerializedName("device")
     val device: String
-)
+)*/
