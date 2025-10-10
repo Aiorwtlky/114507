@@ -40,68 +40,7 @@ footer {
 }
 
 /* ---------- Header ---------- */
-#topbar {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  background: rgba(0, 0, 0, .55);
-  backdrop-filter: blur(1px);
-  z-index: 999
-}
 
-.wrap {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.2rem 3rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center
-}
-
-.brand {
-  /* font-size: var(--nav); */
-  font-weight: 900;
-  letter-spacing: 3px;
-  text-shadow: 0 0 12px var(--primary);
-  font-size: 30px;
-  margin-left: 5%;
-  text-decoration: none;
-}
-
-.nav-links {
-  display: flex;
-  gap: 2.4rem;
-  list-style: none;
-  margin-right: 5%;
-}
-
-.nav-links a {
-  font-size: var(--nav);
-  position: relative;
-  transition: .3s;
-  text-decoration: none;
-}
-
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -8px;
-  width: 0;
-  height: 4px;
-  background: var(--primary);
-  border-radius: 2px;
-  transition: .3s
-}
-
-.nav-links a:hover {
-  color: var(--primary);
-  text-shadow: 0 0 8px var(--primary)
-}
-
-.nav-links a:hover::after {
-  width: 100%
-}
 
 
 
@@ -520,9 +459,7 @@ main {
   filter: drop-shadow(0 0 8px rgba(0, 0, 0, .35))
 }
 
-.nav-links a {
-  font-size: 30px;
-}
+
 
 .cta-group {
   position: relative;
