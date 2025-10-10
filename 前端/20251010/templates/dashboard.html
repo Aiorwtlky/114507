@@ -11,32 +11,29 @@
 {% block content %}
 <div class="dashboard-container">
     
-    <!-- ========== 第一排：個人資訊 + 前次行程 ========== -->
     <div class="dashboard-row">
         
-        <!-- 左側：個人資訊 + 群組列表 -->
         <div class="dashboard-col sidebar-col">
             
-            <!-- 個人檔案卡片 -->
             <div class="d-card profile-card">
                 <div class="profile-header">
-                    <img src="{{ url_for('static', filename='images/1.jpg') }}" 
-                         alt="黃仁勳" 
-                         class="profile-avatar">
+                    <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}" 
+                         alt="使用者頭像" 
+                         class="profile-avatar"
+                         id="dashboard-avatar">
                     <div class="profile-info">
-                        <h3 class="profile-name">黃仁勳</h3>
-                        <p class="profile-username">@jensen_huang</p>
+                        <h3 class="profile-name" id="dashboard-username">載入中...</h3>
+                        <p class="profile-username" id="dashboard-email">@</p>
                     </div>
                 </div>
                 <div class="profile-stats">
                     <div class="stat-item">
                         <i class="fa-solid fa-clock"></i>
-                        <span>上次登入: 2025/08/18 09:57</span>
+                        <span id="dashboard-last-login">上次登入: --</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 我的群組卡片 -->
             <div class="d-card groups-card">
                 <div class="card-header">
                     <h3 class="card-title">
@@ -47,180 +44,32 @@
                         查看全部 <i class="fa-solid fa-chevron-right"></i>
                     </a>
                 </div>
-                <ul class="list-group">
-                    <li class="list-item">
-                        <a href="#" class="list-link">
-                            <i class="fa-solid fa-user-group"></i>
-                            <span>北大物流 C 組</span>
-                        </a>
-                    </li>
-                    <li class="list-item">
-                        <a href="#" class="list-link">
-                            <i class="fa-solid fa-user-group"></i>
-                            <span>2024雙十一宅配臨時</span>
-                        </a>
-                    </li>
-                    <li class="list-item">
-                        <a href="#" class="list-link">
-                            <i class="fa-solid fa-user-group"></i>
-                            <span>北大物流職訓23A</span>
-                        </a>
-                    </li>
-                    <li class="list-item">
-                        <a href="#" class="list-link">
-                            <i class="fa-solid fa-user-group"></i>
-                            <span>南區配送 B 隊</span>
-                        </a>
-                    </li>
-                    <li class="list-item">
-                        <a href="#" class="list-link">
-                            <i class="fa-solid fa-user-group"></i>
-                            <span>企業客戶專送組</span>
-                        </a>
-                    </li>
+                <ul class="list-group" id="dashboard-groups-list">
+                    <li class="list-item"><span>載入中...</span></li>
                 </ul>
             </div>
         </div>
 
-        <!-- 右側：前次行程報告 -->
         <div class="dashboard-col main-col">
-            <div class="d-card trip-report-card">
-                
-                <!-- 標題區 -->
+            <div class="d-card trip-report-card" id="latest-trip-report">
                 <div class="card-header with-meta">
                     <div>
                         <h3 class="card-title">
                             <i class="fa-solid fa-flag-checkered"></i>
                             前次行程報告
                         </h3>
-                        <p class="card-meta">2025/07/23 07:37 - 15:50</p>
+                        <p class="card-meta">正在載入資料...</p>
                     </div>
                 </div>
-
-                <!-- 分數總覽 -->
-                <div class="scores-grid">
-                    <div class="score-box primary">
-                        <div class="score-value">87</div>
-                        <div class="score-label">安全總分</div>
-                    </div>
-                    <div class="score-box">
-                        <div class="score-value">92</div>
-                        <div class="score-label">車內分數</div>
-                    </div>
-                    <div class="score-box">
-                        <div class="score-value">82</div>
-                        <div class="score-label">車外分數</div>
-                    </div>
-                    <div class="score-box">
-                        <div class="score-value">8h 13m</div>
-                        <div class="score-label">總耗時</div>
-                    </div>
-                </div>
-<!-- 違規項目 -->
-                <div class="violations-section">
-                    <div class="violation-col">
-                        <h4 class="section-subtitle">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            車內違規項目
-                        </h4>
-                        <div class="violation-list">
-                            <div class="violation-item">
-                                <div class="violation-time">
-                                    <span class="interval-badge">A1</span>
-                                    07:45:23
-                                </div>
-                                <div class="violation-desc">疲勞閉眼 (4秒)</div>
-                                <div class="violation-score">-2</div>
-                            </div>
-                            <div class="violation-item">
-                                <div class="violation-time">
-                                    <span class="interval-badge">A2</span>
-                                    09:15:47
-                                </div>
-                                <div class="violation-desc">行車中使用手機</div>
-                                <div class="violation-score">-4</div>
-                            </div>
-                            <div class="violation-item">
-                                <div class="violation-time">
-                                    <span class="interval-badge">A3</span>
-                                    10:08:12
-                                </div>
-                                <div class="violation-desc">未繫安全帶</div>
-                                <div class="violation-score">-5</div>
-                            </div>
-                        </div>
-                        <a href="{{ url_for('trip_report') }}" class="link-more-small">查看其餘 2 條...</a>
-                    </div>
-
-                    <div class="violation-col">
-                        <h4 class="section-subtitle">
-                            <i class="fa-solid fa-road"></i>
-                            車外違規項目
-                        </h4>
-                        <div class="violation-list">
-                            <div class="violation-item">
-                                <div class="violation-time">
-                                    <span class="interval-badge interval-b">B2</span>
-                                    11:03:42
-                                </div>
-                                <div class="violation-desc">轉彎未打方向燈</div>
-                                <div class="violation-score">-1</div>
-                            </div>
-                            <div class="violation-item">
-                                <div class="violation-time">
-                                    <span class="interval-badge interval-b">B3</span>
-                                    12:35:18
-                                </div>
-                                <div class="violation-desc">未保持安全距離</div>
-                                <div class="violation-score">-2</div>
-                            </div>
-                            <div class="violation-item">
-                                <div class="violation-time">
-                                    <span class="interval-badge interval-b">B4</span>
-                                    13:18:55
-                                </div>
-                                <div class="violation-desc">違規超車</div>
-                                <div class="violation-score">-3</div>
-                            </div>
-                        </div>
-                        <a href="{{ url_for('trip_report') }}" class="link-more-small">查看其餘 2 條...</a>
-                    </div>
-                </div>
-
-                <!-- AI 建議 -->
-                <div class="ai-suggestions">
-                    <h4 class="section-subtitle">
-                        <i class="fa-solid fa-lightbulb"></i>
-                        AI 行車建議
-                    </h4>
-                    <div class="tags-group">
-                        <span class="tag">#疲勞駕駛風險</span>
-                        <span class="tag">#注意手機使用</span>
-                        <span class="tag">#路口轉向規範</span>
-                    </div>
-                </div>
-
-                <!-- 操作按鈕 -->
-                <div class="card-actions">
-                    <a href="{{ url_for('print_report') }}" class="btn btn-outline">
-                        <i class="fa-solid fa-print"></i>
-                        列印報表
-                    </a>
-                    <a href="{{ url_for('trip_report') }}" class="btn btn-primary">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i>
-                        查看詳細報告
-                    </a>
-                </div>
+                <div style="text-align: center; padding: 2rem;">載入中...</div>
             </div>
         </div>
     </div>
 
-    <!-- ========== 第二排：過往數據 + 過往行程（統一在一個白色矩形內）========== -->
     <div class="dashboard-row">
         <div class="d-card bottom-unified-card">
             <div class="bottom-grid">
                 
-                <!-- 過往數據總覽 -->
                 <div class="bottom-section stats-section">
                     <div class="section-header">
                         <h3 class="card-title">
@@ -230,21 +79,19 @@
                     </div>
 
                     <div class="stats-content">
-                        <!-- 儀表盤 -->
                         <div class="gauge-section">
                             <h4 class="section-label">本季平均</h4>
                             <div class="gauge-container">
                                 <div class="gauge-bg"></div>
-                                <div class="gauge-needle" style="--gauge-value: 72;"></div>
+                                <div class="gauge-needle" id="trends-gauge-needle" style="--gauge-value: 0;"></div>
                                 <div class="gauge-center"></div>
-                                <div class="gauge-text">
-                                    <strong>72</strong>
+                                <div class="gauge-text" id="trends-gauge-text">
+                                    <strong>--</strong>
                                     <span>分</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 趨勢圖表 -->
                         <div class="chart-section">
                             <h4 class="section-label">近期趨勢</h4>
                             <div class="chart-wrapper">
@@ -260,7 +107,6 @@
                     </div>
                 </div>
 
-                <!-- 過往行程 -->
                 <div class="bottom-section trips-section">
                     <div class="section-header">
                         <h3 class="card-title">
@@ -271,43 +117,8 @@
                             查看全部 <i class="fa-solid fa-chevron-right"></i>
                         </a>
                     </div>
-
-                    <ul class="trips-list">
-                        <li class="trip-item">
-                            <div class="trip-info">
-                                <span class="trip-date">2025/07/23</span>
-                                <span class="trip-group">北大物流 C 組</span>
-                            </div>
-                            <span class="trip-score excellent">87分</span>
-                        </li>
-                        <li class="trip-item">
-                            <div class="trip-info">
-                                <span class="trip-date">2025/07/22</span>
-                                <span class="trip-group">北大物流 C 組</span>
-                            </div>
-                            <span class="trip-score excellent">83分</span>
-                        </li>
-                        <li class="trip-item">
-                            <div class="trip-info">
-                                <span class="trip-date">2025/07/20</span>
-                                <span class="trip-group">北大物流 C 組</span>
-                            </div>
-                            <span class="trip-score excellent">89分</span>
-                        </li>
-                        <li class="trip-item">
-                            <div class="trip-info">
-                                <span class="trip-date">2025/06/20</span>
-                                <span class="trip-group">南大物流 C 組</span>
-                            </div>
-                            <span class="trip-score warning">69分</span>
-                        </li>
-                        <li class="trip-item">
-                            <div class="trip-info">
-                                <span class="trip-date">2025/06/18</span>
-                                <span class="trip-group">北大物流 C 組</span>
-                            </div>
-                            <span class="trip-score excellent">91分</span>
-                        </li>
+                    <ul class="trips-list" id="dashboard-trips-list">
+                        <li class="trip-item"><span>載入中...</span></li>
                     </ul>
                 </div>
                 

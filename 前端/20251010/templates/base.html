@@ -149,16 +149,16 @@
 
             <div class="sidebar-content">
                 <div class="user-profile">
-                    <img src="https://i.pravatar.cc/100?img=12" 
+                    <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}" 
                          alt="使用者頭像" 
                          class="user-avatar"
+                         id="sidebar-avatar"
                          loading="lazy">
                     <div class="user-details">
-                        <span class="user-name">黃仁勳</span>
-                        <span class="user-group">管理員</span>
+                        <span class="user-name" id="sidebar-username">載入中...</span>
+                        <span class="user-group" id="sidebar-user-role"></span>
                     </div>
                 </div>
-
                 <nav class="sidebar-nav">
                     <a href="{{ url_for('dashboard') }}" 
                        class="nav-item {% if request.endpoint == 'dashboard' %}is-active{% endif %}"
@@ -205,11 +205,11 @@
             </div>
 
             <div class="sidebar-footer">
-                <a href="{{ url_for('logout') }}" class="nav-item nav-logout-btn">
+                <a href="#" class="nav-item nav-logout-btn" id="logoutButton">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     <span>登出</span>
                 </a>
-            </div>
+                </div>
         </aside>
 
         <div class="main-content-wrapper">
@@ -275,13 +275,11 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // 這段程式碼只跟客服小工具有關，與您原本的 main_app.js 不會衝突
         const chatFab = document.getElementById('chatFab');
         const chatWidget = document.getElementById('chatWidgetContainer');
         const chatCloseBtn = document.getElementById('chatCloseBtn');
         
         if (chatFab && chatWidget && chatCloseBtn) {
-            // --- 1. 控制視窗開關的邏輯 ---
             chatFab.addEventListener('click', () => chatWidget.classList.toggle('is-open'));
             chatCloseBtn.addEventListener('click', () => chatWidget.classList.remove('is-open'));
             document.addEventListener('keydown', (e) => {
@@ -290,13 +288,10 @@
                 }
             });
 
-            // --- 2. 聊天功能邏輯 ---
             const messagesArea = document.getElementById('messagesArea');
             const messageInput = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
-
             const scrollToBottom = () => messagesArea.scrollTop = messagesArea.scrollHeight;
-
             const addMessage = (text, type, author = '吾駕仙 AI') => {
                 const bubble = document.createElement('div');
                 bubble.classList.add('msg-bubble', type);
@@ -313,13 +308,11 @@
                 messagesArea.appendChild(bubble);
                 scrollToBottom();
             };
-
             const simulateAiReply = () => {
                 setTimeout(() => {
                     addMessage('感謝您的提問，我們的真人客服將在稍後與您聯繫。', 'is-admin');
                 }, 1000);
             };
-
             const handleSendMessage = () => {
                 const messageText = messageInput.value.trim();
                 if (messageText) {
@@ -328,7 +321,6 @@
                     simulateAiReply();
                 }
             };
-
             sendBtn.addEventListener('click', handleSendMessage);
             messageInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {

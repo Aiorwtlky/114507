@@ -1,0 +1,157 @@
+/* 引用儀表板的所有基礎樣式 */
+@import url('dashboard.css');
+
+/* --- 【全新】成員資訊卡片樣式 --- */
+.member-info-card .profile-name {
+    margin-left: 0;
+    /* 移除多餘的左邊距 */
+}
+
+/* --- 【修改】讓右欄的「過往行程」卡片填滿整個高度 --- */
+.dashboard-column-right {
+    height: 100%;
+}
+
+.past-trips-card-large {
+    flex-grow: 1;
+    /* 讓卡片填滿父層高度 */
+    display: flex;
+    flex-direction: column;
+}
+
+.past-trips-card-large .d-card-body {
+    flex-grow: 1;
+    /* 讓卡片內容區填滿 */
+    overflow-y: auto;
+    /* 內容過多時滾動 */
+}
+
+.past-trips-card-large ul {
+    height: 100%;
+}
+
+/* --- 【新增】放大「過往行程」卡片內的字體 --- */
+
+/* 增加每行的上下間距 */
+.past-trips-card-large .trip-list li {
+    padding: 20px 0;
+    /* 讓行高更寬敞 */
+}
+
+/* 放大日期/群組文字 */
+.past-trips-card-large .trip-date-group {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    /* 增加與下方路線的間距 */
+}
+
+/* 放大時間/路線文字 */
+.past-trips-card-large .trip-time-route {
+    font-size: 1rem;
+}
+
+/* 大幅放大分數 */
+.past-trips-card-large .trip-score {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* --- 【全新】過往行程列表三欄式佈局 --- */
+
+.past-trips-card-large .trip-item {
+    display: flex;
+    /* 啟用 Flexbox 佈局 */
+    justify-content: space-between;
+    /* 讓元素靠兩側對齊 */
+    align-items: center;
+    /* 垂直置中 */
+    padding: 20px 10px;
+    /* 增加上下間距 */
+    border-bottom: 1px solid #eee;
+}
+
+/* 左欄：日期和時間 */
+.trip-col-datetime {
+    display: flex;
+    flex-direction: column;
+    /* 讓日期和時間垂直排列 */
+    flex-shrink: 0;
+    /* 不壓縮此欄位寬度 */
+}
+
+/* 中欄：群組和路線 */
+.trip-col-route {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* 佔滿中間所有剩餘空間 */
+    margin: 0 24px;
+    /* 與左右兩欄的間距 */
+}
+
+/* 右欄：分數 */
+.trip-col-score {
+    flex-shrink: 0;
+    /* 不壓縮此欄位寬度 */
+}
+
+/* --- 字體樣式 --- */
+
+.trip-date,
+.trip-group {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.trip-time,
+.trip-location {
+    font-size: 1rem;
+    color: #777;
+}
+
+.trip-score {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #1a2a5f;
+}
+
+.custom-btn.primary-btn {
+    display: block;
+    margin: 40px auto 60px auto;
+    /* 自動置中 */
+    font-size: 24px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    width: fit-content;
+    /* 寬度剛好包文字 */
+
+    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
+    background-color: #1a2a5f;
+    color: white;
+    border: 1px solid #1a2a5f;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.member-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;           /* 關鍵：讓圖片填滿容器 */
+  object-position: center top; /* 關鍵修改：優先顯示圖片頂部 */
+  /* 其他您已有的樣式，例如 border */
+}
+
+/* 適用於組員列表表格中的小頭像 */
+.table-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;           /* 關鍵：讓圖片填滿容器 */
+  object-position: center 25%; /* 關鍵修改：將對焦點從頂部(0%)往下移到 25% 的位置 */
+  /* 其他您已有的樣式 */
+}

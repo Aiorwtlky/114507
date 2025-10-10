@@ -1,0 +1,488 @@
+/* ===================================
+   檔案：static/css/pages/group_detail.css
+   用途：群組詳情頁面樣式（一般組員版）
+   =================================== */
+
+/* --- 1. 基礎變數 --- */
+:root {
+    --card-radius: 12px;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --transition: all 0.3s ease;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* --- 2. 容器佈局 --- */
+.group-detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    width: 100%;
+}
+
+/* --- 3. 群組資訊卡片（整合版）--- */
+.group-info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white-bg);
+    border: none;
+    padding: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.group-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    backdrop-filter: blur(10px);
+}
+
+.group-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.group-name {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--white-bg);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.group-company {
+    margin: 0.5rem 0 0 0;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* 群組組長區域 */
+.group-leaders {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    flex-wrap: wrap;
+}
+
+.leaders-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.leaders-list {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.leader-badge {
+    padding: 0.4rem 1rem;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--white-bg);
+}
+
+/* 我的身分區域 */
+.my-identity {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.identity-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.identity-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: var(--spacing-md);
+    border-radius: 12px;
+}
+
+.identity-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    flex-shrink: 0;
+}
+
+.identity-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.identity-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--white-bg);
+}
+
+.identity-role {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* --- 4. 公告卡片（全寬）--- */
+.announcements-card {
+    min-height: 400px;
+    /* 使用預設的白色背景，不繼承漸層 */
+}
+
+/* --- 5. 卡片基礎樣式 --- */
+.d-card {
+    background: var(--white-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--card-radius);
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    transition: var(--transition);
+}
+
+/* ✨ 群組資訊卡片例外：使用紫色漸層 */
+.d-card.group-info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white-bg);
+    border: none;
+}
+
+.d-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-dark);
+}
+
+.card-title i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+/* --- 6. 公告列表 --- */
+.announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    flex: 1;
+}
+
+.announcement-item {
+    padding: var(--spacing-lg);
+    background: var(--light-bg);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.announcement-item:hover {
+    background: #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.announcement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+.announcement-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    flex: 1;
+    line-height: 1.4;
+}
+
+.announcement-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.announcement-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.announcement-author {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.announcement-author i {
+    color: var(--primary-color);
+}
+
+.btn-view-announcement {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: var(--white-bg);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transition);
+    align-self: flex-start;
+}
+
+.btn-view-announcement:hover {
+    background: var(--primary-hover);
+    transform: translateX(4px);
+}
+
+.btn-view-announcement i {
+    font-size: 0.8rem;
+}
+
+/* --- 7. 連結樣式 --- */
+.link-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.link-more:hover {
+    gap: 0.5rem;
+    color: var(--primary-hover);
+}
+
+/* --- 8. 操作按鈕區 --- */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-dark);
+    border: 1px solid var(--border-light);
+}
+
+.btn-outline:hover {
+    background: var(--light-bg);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* --- 9. 手機版優化 --- */
+@media (max-width: 768px) {
+    .group-info-card {
+        padding: var(--spacing-lg);
+    }
+
+    .group-header {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+
+    .group-icon {
+        width: 64px;
+        height: 64px;
+        font-size: 2rem;
+    }
+
+    .group-name {
+        font-size: 1.5rem;
+    }
+
+    .group-company {
+        justify-content: center;
+    }
+
+    .group-leaders,
+    .my-identity {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .leaders-label,
+    .identity-label {
+        justify-content: center;
+    }
+
+    .leaders-list {
+        justify-content: center;
+    }
+
+    .identity-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .identity-role {
+        justify-content: center;
+    }
+
+    .d-card {
+        padding: var(--spacing-md);
+    }
+
+    .card-title {
+        font-size: 1rem;
+    }
+
+    .announcement-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .announcement-title {
+        font-size: 0.95rem;
+    }
+
+    .btn-view-announcement {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .group-name {
+        font-size: 1.35rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+/* --- 10. 無障礙優化 --- */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.btn:focus-visible,
+.link-more:focus-visible,
+.btn-view-announcement:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* --- 11. 列印樣式 --- */
+@media print {
+    .action-buttons,
+    .btn-view-announcement,
+    .link-more {
+        display: none;
+    }
+
+    .d-card {
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+
+    .group-info-card {
+        background: var(--white-bg) !important;
+        color: var(--text-dark) !important;
+        border: 1px solid var(--border-light);
+    }
+}

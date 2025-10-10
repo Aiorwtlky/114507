@@ -19,8 +19,7 @@
         <div class="progress-step" data-step="3">駕駛資訊</div>
     </div>
 
-    <form class="register-form" id="registerForm" method="post" action="{{ url_for('register') }}" enctype="multipart/form-data">
-      
+  <form class="register-form" id="registerForm" enctype="multipart/form-data">      
       <div class="form-step active" data-step="1">
         <h3 class="step-title">1. 設定您的帳戶</h3>
         <div class="form-grid">
@@ -53,7 +52,7 @@
                         <img id="photoPreview" src="{{ url_for('static', filename='img/user-placeholder.svg') }}" alt="預覽">
                         <span class="upload-icon"><i class="fa-solid fa-camera"></i></span>
                     </label>
-                    <input type="file" id="photo" name="photo" accept="image/*" hidden>
+                    <input type="file" id="photo" name="avatar" accept="image/*" hidden>
                 </div>
             </div>
             <div class="profile-fields">

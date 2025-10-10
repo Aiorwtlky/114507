@@ -24,44 +24,57 @@
     </div>
 
     <div class="login-form-wrapper">
-        <form class="login-form" action="{{ url_for('login') }}" method="post">
-            <h2>登入您的帳戶</h2>
-            
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="you@example.com" required />
-            </div>
-    
-            <div class="form-group">
-              <label for="password">密碼</label>
-              <input type="password" id="password" name="password" placeholder="請輸入您的密碼" required />
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">立即登入</button>
-            </div>
       
-            <div class="forgot-password-link">
-                <a href="{{ url_for('forgot_password') }}">忘記密碼？</a>
-            </div>
-    
-            <div class="social-login">
-                <div class="divider">或透過以下方式登入</div>
-                <div class="social-buttons">
-                    <button type="button" class="btn-social google"><i class="fa-brands fa-google"></i> Google</button>
-                    <button type="button" class="btn-social apple"><i class="fa-brands fa-apple"></i> Apple</button>
-                </div>
-            </div>
-      
-        </form>
-    
-        <div class="register-prompt">
-            <p>還沒有帳戶嗎？ <a href="{{ url_for('register') }}">立即註冊</a></p>
-        </div>
-    </div>
+      <form class="login-form" id="loginForm">
+          <h2>登入您的帳戶</h2>
 
+          <div id="errorMessage" class="flash-message flash-error" style="display: none;"></div>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="flash-messages">
+                {% for category, message in messages %}
+                  <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+          
+          <div class="form-group">
+            <label for="username">使用者名稱</label>
+            <input type="text" id="username" name="username" placeholder="請輸入您的使用者名稱" required />
+          </div>
+  
+          <div class="form-group">
+            <label for="password">密碼</label>
+            <input type="password" id="password" name="password" placeholder="請輸入您的密碼" required />
+          </div>
+          
+          <div class="form-actions">
+              <button type="submit" class="btn btn-primary">立即登入</button>
+          </div>
+    
+          <div class="forgot-password-link">
+              <a href="{{ url_for('forgot_password') }}">忘記密碼？</a>
+          </div>
+  
+          <div class="social-login">
+              <div class="divider">或透過以下方式登入</div>
+              <div class="social-buttons">
+                  <button type="button" class="btn-social google"><i class="fa-brands fa-google"></i> Google</button>
+                  <button type="button" class="btn-social apple"><i class="fa-brands fa-apple"></i> Apple</button>
+              </div>
+          </div>
+      </form>
+  
+      <div class="register-prompt">
+          <p>還沒有帳戶嗎？ <a href="{{ url_for('register') }}">立即註冊</a></p>
+      </div>
+
+    </div>
   </div>
 {% endblock %}
 
 {% block extra_js %}
+  <script src="{{ url_for('static', filename='js/pages/login.js') }}"></script>
 {% endblock %}

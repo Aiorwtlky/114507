@@ -1,0 +1,184 @@
+ /* 頁面主容器 */
+    .chat-page-container {
+        padding: 3rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 90vh;
+    }
+
+    /* ===== Gemini 風格升級 1：卡片設計 ===== */
+    .chat-card {
+        width: 100%;
+        max-width: 800px;
+        height: 90vh;
+        background-color: #ffffff;
+        /* 移除藍色邊框，改用陰影和漸層頂線 */
+        border: 1px solid #e0e0e0; 
+        border-radius: 16px; /* 更大的圓角 */
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12); /* 更柔和的陰影 */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        /* 新增：卡片頂部的漸層裝飾線 */
+        border-top: 4px solid transparent;
+        border-image: linear-gradient(135deg, #4e54c8, #8f94fb) 1;
+    }
+
+    /* 聊天室標題 */
+    .chat-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e9ecef; /* 更細緻的分隔線 */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .chat-header h3 { margin: 0; font-size: 1.2rem; color: #343a40; }
+    .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: #2f9e44; }
+    .status-indicator .dot { width: 10px; height: 10px; background-color: #2f9e44; border-radius: 50%; }
+
+    /* 訊息顯示區域 */
+    .messages-area {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* ===== Gemini 風格升級 2：訊息泡泡 ===== */
+    .msg-bubble {
+        max-width: 75%;
+        padding: 0.8rem 1.2rem;
+        border-radius: 20px; /* 更圓潤的泡泡 */
+        line-height: 1.6;
+        word-wrap: break-word;
+    }
+    /* 管理員訊息 (靠左) */
+    .msg-bubble.is-admin {
+        background-color: #e9ecef; /* 更柔和的灰色 */
+        color: #212529;
+        border-bottom-left-radius: 5px;
+        align-self: flex-start;
+    }
+    /* 使用者訊息 (靠右) */
+    .msg-bubble.is-user {
+        /* 關鍵：使用 Gemini 風格的漸層背景 */
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        color: #ffffff;
+        border-bottom-right-radius: 5px;
+        align-self: flex-end;
+        box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3); /* 增加同色系的陰影 */
+    }
+
+    /* ===== Gemini 風格升級 3：輸入框與按鈕 ===== */
+    .composer-area {
+        padding: 1rem;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        align-items: flex-end;
+        gap: 0.75rem;
+        background-color: #f8f9fa;
+        flex-shrink: 0;
+    }
+    .composer-area textarea {
+        flex-grow: 1;
+        resize: none;
+        border: 2px solid transparent; /* 預設無邊框 */
+        background-color: #e9ecef; /* 柔和的背景色 */
+        border-radius: 12px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        font-family: inherit;
+        max-height: 120px;
+        line-height: 1.5;
+        transition: all 0.2s ease;
+    }
+    .composer-area textarea:focus {
+        outline: none;
+        background-color: #fff;
+        border-color: #8f94fb; /* Focus 時顯示紫色邊框 */
+        box-shadow: 0 0 0 3px rgba(143, 148, 251, 0.2); /* Focus 時的柔和光暈 */
+    }
+    .composer-area button {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: none;
+        background: #4e54c8; /* 沉穩的藍紫色 */
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .composer-area button:hover {
+        background: #8f94fb; /* Hover 時變亮 */
+        transform: scale(1.05); /* 輕微放大 */
+        box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3);
+    }
+
+/* 返回按鈕 */
+.back-to-dashboard-btn {
+  margin-top: 2rem;
+  padding: 10px 20px;
+  border: 2px solid #1a2a5f;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #1a2a5f;
+  font-weight: bold;
+  background-color: white;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.back-to-dashboard-btn:hover {
+  background-color: #1a2a5f;
+  color: white;
+}
+
+.custom-btn.primary-btn {
+  display: block;
+  margin: 40px auto 60px auto;
+  /* 自動置中 */
+  font-size: 24px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+  width: fit-content;
+  /* 寬度剛好包文字 */
+
+  /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
+  background-color: #1a2a5f;
+  color: white;
+  border: 1px solid #1a2a5f;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* 修正1：強制讓管理員的訊息泡泡文字變成深色 */
+.msg-bubble.is-admin > .text{
+  color: #212529;
+  /* 深灰色 */
+}
+
+/* 修正2：強制讓「線上」狀態文字變成綠色 */
+.chat-header .status-indicator >.online{
+  color: #2f9e44;
+  /* 綠色 */
+}
+
+/* 新增修正：讓輸入框的文字顏色變成黑色 */
+.composer-area textarea {
+    color: #212529; /* 設定打字時的文字顏色為深灰色 */
+}
+
+/* 新增：管理員名字的樣式 */
+.msg-bubble.is-admin .author-name {
+    font-weight: 700; /* 粗體 */
+    color: #4e54c8; /* 使用者泡泡的藍紫色，建立視覺關聯性 */
+    margin-bottom: 0.5rem; /* 與訊息內容的間距 */
+    font-size: 0.9rem;
+}

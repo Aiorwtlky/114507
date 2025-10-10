@@ -1,0 +1,169 @@
+/* --- 基礎佈局 --- */
+.all-reports-section {
+  padding: 3rem 5vw;
+  /* --- 修改點：移除了 background-color: #f8f9fa; --- */
+}
+
+.mega-title {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shift 6s ease-in-out infinite;
+}
+
+.reports-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
+}
+
+.toggle-button-area,
+.back-button-area {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+/* --- 卡片白底化樣式 --- */
+.report-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+  color: #333;
+  transition: all 0.4s ease-out;
+  overflow: hidden;
+  position: relative;
+}
+
+.report-date {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: #000;
+}
+
+.report-route {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.report-score {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.score-number {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #007bff;
+}
+
+/* --- 卡片展開的細節樣式 --- */
+.report-details {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.5s ease-in-out;
+}
+
+.report-details .divider {
+  height: 1px;
+  background: #eeeeee;
+  margin: 1rem 0;
+}
+
+.report-details .detail-item {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555555;
+}
+
+.report-details .detail-item span {
+  font-weight: 600;
+  color: #333333;
+}
+
+/* --- 卡片 Hover 互動效果 --- */
+.report-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  border-color: #007bff;
+  z-index: 10;
+}
+
+.report-card:hover .report-details {
+  opacity: 1;
+  max-height: 250px;
+  transform: translateY(0);
+}
+
+/* --- 按鈕樣式 --- */
+.all-reports-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background-image: linear-gradient(45deg, #007bff 0%, #44c2fd 100%);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  margin-top: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.all-reports-toggle:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.45);
+}
+
+.all-reports-toggle i {
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.custom-btn.primary-btn {
+  display: inline-block;
+  font-size: 20px;
+  padding: 8px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+  width: fit-content;
+  background-color: #1a2a5f;
+  color: white;
+  border: 1px solid #1a2a5f;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.custom-btn.primary-btn:hover {
+  background-color: #fff;
+  color: #1a2a5f;
+}
+
+/* --- JS 操作用的隱藏樣式 --- */
+.report-card.is-hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-width: 0;
+  overflow: hidden;
+}
