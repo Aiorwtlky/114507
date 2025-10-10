@@ -4,43 +4,59 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Avg
-from django.utils import timezone
+from django.utils import timezone 
 from .models import (
     PersonnelProfile, Group, Trip, ScoringStandard,
     AiVisionLog, VideoRecord, VehicleDevice, GroupAnnouncement,
     InvitationCode, GroupMember, TripSuggestionFeedback,
-    ActivationCode  # 【修改】匯入新模型
+    ActivationCode
 )
 
 # =============================================================================
-# 1. 唯讀與巢狀序列化器 (For Data Reading & Nesting)
+# 區塊 1：唯讀與巢狀序列化器 (For Data Reading & Nesting)
+# 這些 Serializer 主要用於 GET 請求，提供豐富且適合前端展示的資料結構。
 # =============================================================================
 
 class PersonnelProfileSerializer(serializers.ModelSerializer):
-    """序列化人員詳細資料，並將頭像路徑轉為完整 URL。"""
-    avatar = serializers.SerializerMethodField()
+    """序列化人員詳細資料 (PersonnelProfile)，並處理頭像的完整 URL。"""
+    # 讓 avatar 欄位在更新時也能被接收，但非必填
+    avatar = serializers.ImageField(required=False, allow_null=True) 
     
     class Meta:
         model = PersonnelProfile
         fields = ['personnel_number', 'gender', 'license_number', 'avatar', 'phone', 'license_type', 'driving_experience']
 
     def get_avatar(self, obj):
-        """自訂 avatar 欄位的輸出，產生絕對 URL。"""
+        """
+        覆寫 avatar 欄位的輸出，將相對路徑轉換為前端可直接使用的絕對 URL。
+        """
         request = self.context.get('request')
+        # 檢查 obj.avatar 是否存在且有 url 屬性
         if obj.avatar and hasattr(obj.avatar, 'url'):
             return request.build_absolute_uri(obj.avatar.url)
         return None
 
 class UserSerializer(serializers.ModelSerializer):
-    """序列化使用者基本資料，並巢狀包含 Profile 與管理權限。"""
-    personnelprofile = serializers.SerializerMethodField()
+    """
+    序列化使用者核心資料 (User)，並巢狀包含 Profile。
+    【已強化】此 Serializer 同時支援個人資料的讀取與巢狀更新。
+    """
+    # 直接將 PersonnelProfileSerializer 作為巢狀欄位。
+    # DRF 會自動處理讀取時的巢狀序列化。更新邏輯則由下面的 update 方法處理。
+    personnelprofile = PersonnelProfileSerializer()
+    
+    # 使用 SerializerMethodField 產生一些計算後的唯讀欄位
     is_group_leader = serializers.SerializerMethodField()
     administered_groups = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'last_login',
-                  'first_name', 'last_name', 'email', 'is_staff', 'is_group_leader', 'personnelprofile', 'administered_groups']
+        fields = [
+            'id', 'username', 'last_login', 'first_name', 'last_name', 'email', 
+            'is_staff', 'is_group_leader', 'administered_groups', 'personnelprofile'
+        ]
+        # 確保在讀取 Profile 時，這些核心欄位是唯讀的
+        read_only_fields = ['id', 'username', 'last_login', 'is_staff', 'is_group_leader', 'administered_groups']
 
     def get_is_group_leader(self, obj):
         """檢查使用者是否為任何群組的建立者。"""
@@ -51,17 +67,28 @@ class UserSerializer(serializers.ModelSerializer):
         admin_memberships = GroupMember.objects.filter(user=obj, role='ADMIN')
         return [membership.group.id for membership in admin_memberships]
 
-    def get_personnelprofile(self, obj):
-        """手動序列化 Profile，以確保 request context 被正確傳遞。"""
-        try:
-            profile = obj.personnelprofile
-            request = self.context.get('request')
-            return PersonnelProfileSerializer(profile, context={'request': request}).data
-        except PersonnelProfile.DoesNotExist:
-            return None
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        # 【微調】從 validated_data 中手動分離出 profile 的欄位
+        profile_fields = ['personnel_number', 'gender', 'license_number', 'avatar', 'phone', 'license_type', 'driving_experience']
+        profile_data = {}
+        for field in profile_fields:
+            if field in validated_data:
+                profile_data[field] = validated_data.pop(field)
+
+        # 更新 Profile 物件
+        if profile_data:
+            profile = instance.personnelprofile
+            profile_serializer = PersonnelProfileSerializer(instance=profile, data=profile_data, partial=True, context=self.context)
+            if profile_serializer.is_valid(raise_exception=True):
+                profile_serializer.save()
+
+        # 更新 User 物件
+        instance = super().update(instance, validated_data)
+        return instance
 
 class GroupMemberSerializer(serializers.ModelSerializer):
-    """序列化群組成員資料，包含其角色與 Profile。"""
+    """序列化群組成員資料，包含其在特定群組的角色與 Profile。"""
     average_score = serializers.FloatField(read_only=True, default=0)
     role = serializers.SerializerMethodField()
     personnelprofile = serializers.SerializerMethodField()
@@ -71,17 +98,17 @@ class GroupMemberSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role', 'personnelprofile']
 
     def get_role(self, obj):
-        """根據 context 中的 group_id，查詢使用者在該群組中的角色。"""
+        """根據從 View 傳入的 context 中的 group_id，查詢使用者在該群組中的角色。"""
         group_id = self.context.get('group_id')
         if not group_id: return 'MEMBER'
         try:
             membership = GroupMember.objects.get(user=obj, group__id=group_id)
             return membership.role
         except GroupMember.DoesNotExist:
-            return 'MEMBER'
+            return 'MEMBER' # 如果出錯，預設為一般成員
 
     def get_personnelprofile(self, obj):
-        """手動序列化 Profile，以確保 request context 能被傳遞。"""
+        """手動序列化 Profile，確保 request context 被正確傳遞以生成頭像 URL。"""
         try:
             profile = obj.personnelprofile
             request = self.context.get('request')
@@ -116,7 +143,7 @@ class VideoRecordSerializer(serializers.ModelSerializer):
         fields = ['video_number', 'start_time', 'end_time', 'location', 'video_url']
 
 class TripListSerializer(serializers.ModelSerializer):
-    """序列化行程列表，用於顯示簡化的行程資訊。"""
+    """序列化行程列表，用於顯示簡化的行程資訊，提高 API 效能。"""
     personnel = serializers.StringRelatedField()
     group = serializers.StringRelatedField()
     device = serializers.StringRelatedField()
@@ -160,11 +187,15 @@ class VehicleDeviceSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 # =============================================================================
-# 2. 寫入專用序列化器 (For Data Writing & Creation)
+# 區塊 2：寫入專用序列化器 (For Data Writing & Creation)
+# 這些 Serializer 主要用於 POST, PUT, PATCH 請求，處理資料的建立與更新。
 # =============================================================================
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    """處理使用者註冊請求，支援扁平化的 Profile 欄位、頭像上傳、邀請碼與啟用碼。"""
+    """
+    【僅限建立】處理使用者註冊請求，支援扁平化的 Profile 欄位、頭像上傳、邀請碼與啟用碼。
+    """
+    # write_only=True 確保這些欄位只在接收請求時有效，不會在回應中洩漏
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     personnel_number = serializers.CharField(write_only=True)
     phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -174,23 +205,23 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     invitation_code = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=8)
     gender = serializers.CharField(write_only=True, required=False, allow_blank=True)
     license_number = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    
-    # ▼▼▼【後端修改】新增 activation_code 欄位 ▼▼▼
     activation_code = serializers.CharField(write_only=True, required=True, label="MDG Pro 啟用碼")
-    # ▲▲▲【後端修改】▲▲▲
 
     class Meta:
         model = User
         fields = [
             'username', 'password', 'email', 'first_name', 'last_name', 
             'personnel_number', 'phone', 'license_type', 'driving_experience', 'avatar',
-            'invitation_code', 'gender', 'license_number',
-            'activation_code'  # <---【後端修改】加入到 fields
+            'invitation_code', 'gender', 'license_number', 'activation_code'
         ]
 
-    # ▼▼▼【後端修改】新增啟用碼的驗證邏輯 ▼▼▼
     def validate_activation_code(self, value):
-        """自訂驗證邏輯，檢查啟用碼是否存在、是否已使用、是否過期。"""
+        """
+        自訂驗證邏輯：在儲存前檢查啟用碼的有效性。
+        1. 檢查 code 是否存在
+        2. 檢查 code 是否已被使用 (is_used=False)
+        3. 檢查 code 是否已過期
+        """
         try:
             code = ActivationCode.objects.get(code=value, is_used=False)
             if code.expires_at and code.expires_at < timezone.now():
@@ -198,15 +229,18 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             return value
         except ActivationCode.DoesNotExist:
             raise serializers.ValidationError("無效的啟用碼或已被使用。")
-    # ▲▲▲【後端修改】▲▲▲
 
     @transaction.atomic
     def create(self, validated_data):
-        """覆寫 create 方法，以在同一個事務中同時建立 User、Profile 並處理啟用碼。"""
-        # ▼▼▼【後端修改】從 validated_data 中彈出啟用碼 ▼▼▼
+        """
+        覆寫 create 方法，以在同一個資料庫事務中完成以下操作：
+        1. 從驗證資料中分離出 User 和 Profile 的欄位。
+        2. 建立 User 實例。
+        3. 建立與之關聯的 PersonnelProfile 實例。
+        4. 將使用的 ActivationCode 標記為已使用。
+        5. (可選) 處理群組邀請碼。
+        """
         activation_code_str = validated_data.pop('activation_code')
-        # ▲▲▲【後端修改】▲▲▲
-
         profile_data = {
             'personnel_number': validated_data.pop('personnel_number'),
             'phone': validated_data.pop('phone', ''),
@@ -218,11 +252,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         }
         invitation_code = validated_data.pop('invitation_code', None)
         
-        # 建立 User 和 Profile (既有邏輯)
         user = User.objects.create_user(**validated_data)
         PersonnelProfile.objects.create(user=user, **profile_data)
-
-        # ▼▼▼【後端修改】在使用者成功建立後，將啟用碼標記為已使用 ▼▼▼
+        
+        # 標記啟用碼為已使用
         try:
             activation_code_obj = ActivationCode.objects.get(code=activation_code_str)
             activation_code_obj.is_used = True
@@ -230,12 +263,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             activation_code_obj.used_at = timezone.now()
             activation_code_obj.save()
         except ActivationCode.DoesNotExist:
-            # 正常情況下，因為 validate 已通過，這裡不應該發生錯誤
-            # 但為了系統穩健性，加上保護
+            # 此處應不會觸發，因為 validate 方法已先檢查過。作為防呆。
             pass
-        # ▲▲▲【後端修改】▲▲▲
 
-        # 處理群組邀請碼 (既有邏輯)
+        # 處理群組邀請碼
         if invitation_code:
             try:
                 invite = InvitationCode.objects.get(code=invitation_code.upper(), is_used=False, expires_at__gt=timezone.now())
@@ -243,6 +274,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 invite.is_used = True
                 invite.save()
             except InvitationCode.DoesNotExist:
+                # 若邀請碼無效，靜默失敗，不影響主註冊流程
                 pass 
         return user
 
@@ -259,7 +291,7 @@ class TripEndSerializer(serializers.ModelSerializer):
     """(車機用) 結束一趟行程的序列化器。"""
     class Meta:
         model = Trip
-        fields = ['end_time', 'total_mileage'] # 允許車機回報總里程
+        fields = ['end_time', 'total_mileage']
 
 class AiVisionLogCreateSerializer(serializers.ModelSerializer):
     """(車機用) 新增一筆 AI 視覺事件紀錄的序列化器。"""

@@ -4,8 +4,8 @@ from rest_framework import generics, status, permissions, views
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAdminUser
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -15,15 +15,16 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 import logging
 
+# 專案內部模組匯入
 from .models import (
     Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile,
-    GroupAnnouncement, InvitationCode, GroupMember, TripSuggestionFeedback, ScoringStandard
+    GroupAnnouncement, InvitationCode, GroupMember, TripSuggestionFeedback
 )
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
     TripDetailSerializer, VehicleDeviceSerializer, TripStartSerializer,
     AiVisionLogCreateSerializer, TripEndSerializer,
-    UserRegisterSerializer, PersonnelProfileSerializer, GroupMemberSerializer,
+    UserRegisterSerializer, GroupMemberSerializer,
     GroupAnnouncementSerializer, InvitationCodeSerializer,
     TripSuggestionFeedbackSerializer, VideoRegisterSerializer, VideoRecordSerializer
 )
@@ -33,27 +34,23 @@ from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPubl
 logger = logging.getLogger(__name__)
 
 class ApiRootView(APIView):
-    """API 根路由視圖，提供 API 入口資訊。"""
+    """API 根路由視圖，提供 API 入口點的概覽。"""
+    permission_classes = [AllowAny] # 允許任何人訪問
 
     def get(self, request, *args, **kwargs):
-        """處理 GET 請求，返回 API 入口資訊。"""
         api_info = {
-            "users": {
-                "register": "/auth/register/",
-                "profile": "/auth/profile/",
-            },
-            "groups": {
-                "list": "/me/groups/",
-                "create": "/groups/",
-            },
-            "trips": {
-                "list": "/trips/",
-                "create": "/trips/start/",
-            },
-            "videos": {
-                "list": "/videos/",
-                "register": "/videos/register/",
-            },
+            "message": "歡迎使用 MDG Pro API 系統",
+            "endpoints": {
+                "authentication": {
+                    "token_obtain": "/token/",
+                    "token_refresh": "/token/refresh/",
+                    "register": "/auth/register/",
+                    "profile": "/auth/profile/",
+                },
+                "groups": "/me/groups/",
+                "trips": "/trips/",
+                "chatbot": "/chatbot/",
+            }
         }
         return Response(api_info)
 
@@ -61,11 +58,18 @@ class ApiRootView(APIView):
 # 輔助函式 (Helper Functions)
 # =============================================================================
 
-def is_leader_of(leader, member):
-    """檢查 'leader' 是否為 'member' 的組長 (群組建立者) 或管理員。"""
-    if not leader or not member or not leader.is_authenticated: return False
-    if leader.is_staff: return True
-    return Group.objects.filter(members=member, created_by=leader).exists()
+def is_leader_of(leader: User, member: User) -> bool:
+    """檢查 'leader' 是否為 'member' 的管理者。"""
+    if not leader or not member or not leader.is_authenticated:
+        return False
+    # 網站管理員 (Superuser/Staff) 擁有最高權限
+    if leader.is_staff:
+        return True
+    # 檢查 leader 是否為 member 所在任何群組的建立者或管理員
+    return GroupMember.objects.filter(
+        user=member,
+        group__in=GroupMember.objects.filter(user=leader, role='ADMIN').values('group')
+    ).exists()
 
 # =============================================================================
 # 1. 認證與使用者 API (Authentication & User APIs)
@@ -75,110 +79,118 @@ class UserRegisterAPIView(generics.CreateAPIView):
     """(公開) 註冊新使用者。"""
     queryset = User.objects.all()
     serializer_class = UserRegisterSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny] # 任何人都可註冊
 
+# ▼▼▼【核心修改】簡化 UserProfileAPIView ▼▼▼
 class UserProfileAPIView(generics.RetrieveUpdateAPIView):
-    """(需登入) 讓使用者讀取與更新自己的個人資料。"""
-    permission_classes = [permissions.IsAuthenticated]
+    """
+    (需登入) 讓使用者讀取與更新自己的個人資料。
+    - GET: 獲取當前登入者的完整個人資料 (包含 Profile)。
+    - PATCH/PUT: 更新當前登入者的個人資料 (支援巢狀更新 Profile)。
+    【已簡化】更新邏輯已完全移至 UserSerializer，此處無需自訂方法。
+    """
+    permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
 
     def get_object(self):
+        # 此 API 的操作對象永遠是發出請求的當前使用者
         return self.request.user
-
-    def partial_update(self, request, *args, **kwargs):
-        """覆寫 PATCH 方法以同時處理 User 和 PersonnelProfile 的更新。"""
-        user = self.get_object()
-        profile_data = request.data.copy()
-        user_serializer = self.get_serializer(user, data=profile_data, partial=True)
-        user_serializer.is_valid(raise_exception=True)
-        if password := profile_data.pop('password', None):
-            user.set_password(password)
-        user_serializer.save()
-        profile = user.personnelprofile
-        profile_serializer = PersonnelProfileSerializer(profile, data=profile_data, partial=True, context=self.get_serializer_context())
-        profile_serializer.is_valid(raise_exception=True)
-        profile_serializer.save()
-        return Response(UserSerializer(user, context=self.get_serializer_context()).data)
+# ▲▲▲【核心修改】▲▲▲
 
 # =============================================================================
 # 2. 群組與成員管理 API (Group & Member APIs)
+# (此區塊維持原樣，結構良好)
 # =============================================================================
 
 class MyGroupsListAPIView(generics.ListAPIView):
     """(需登入) 獲取當前使用者所屬或建立的所有群組。"""
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
+        # 使用 Q 物件組合查詢：是成員(members)或是建立者(created_by)
         return Group.objects.filter(Q(members=user) | Q(created_by=user)).distinct().order_by('-created_at')
 
 class GroupCreateAPIView(generics.CreateAPIView):
-    """(需登入) 建立新群組，並自動將建立者設為成員。"""
+    """(需登入) 建立新群組，並自動將建立者設為管理員。"""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         group = serializer.save(created_by=self.request.user)
-        GroupMember.objects.create(group=group, user=self.request.user, role='ADMIN') # 建立者預設為管理員
+        # 建立群組的同時，在 GroupMember 中介表中新增一筆紀錄，並設定角色為 ADMIN
+        GroupMember.objects.create(group=group, user=self.request.user, role='ADMIN')
 
 class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """(需權限) 讀取、更新、刪除單一群組。"""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated, IsGroupOwnerOrAdmin]
+    permission_classes = [IsAuthenticated, IsGroupOwnerOrAdmin]
 
 class GroupMembersListAPIView(generics.ListAPIView):
     """(需登入) 獲取特定群組的成員列表 (含平均分數)。"""
     serializer_class = GroupMemberSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         group_id = self.kwargs['pk']
+        # 透過 annotate 計算每個成員的平均分數
         return User.objects.filter(joined_groups__id=group_id).annotate(average_score=Avg('trip__score')).order_by('username')
     
     def get_serializer_context(self):
+        # 將 group_id 傳入 serializer context，以便 GroupMemberSerializer 能查詢對應的角色
         context = super().get_serializer_context()
         context['group_id'] = self.kwargs['pk']
         return context
 
 class GroupMemberRoleAPIView(views.APIView):
     """(需權限) 更新群組成員的角色 (ADMIN/MEMBER)。"""
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def patch(self, request, group_pk, user_pk):
         group = get_object_or_404(Group, pk=group_pk)
         target_member_profile = get_object_or_404(GroupMember, group=group, user__id=user_pk)
+        
+        # 權限檢查：操作者必須是群組建立者、群組管理員或網站管理員
         is_owner = (group.created_by == request.user)
         is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
         if not (is_owner or request.user.is_staff or is_group_admin):
             raise PermissionDenied("您沒有權限變更成員角色。")
+        
+        # 規則檢查：不能移除群組建立者的管理員權限
         if group.created_by == target_member_profile.user and request.data.get('role') == 'MEMBER':
             raise PermissionDenied("不能移除群組建立者的管理員權限。")
+            
         new_role = request.data.get('role')
         if new_role not in ['MEMBER', 'ADMIN']:
-            return Response({"error": "無效的角色"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "無效的角色，只能是 'MEMBER' 或 'ADMIN'。"}, status=status.HTTP_400_BAD_REQUEST)
+            
         target_member_profile.role = new_role
         target_member_profile.save()
         return Response({"success": f"使用者 {target_member_profile.user.username} 的角色已更新為 {new_role}"}, status=status.HTTP_200_OK)
 
 class GroupMemberDeleteAPIView(views.APIView):
     """(需權限) 從群組中移除一名成員。"""
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, group_pk, user_pk):
         group = get_object_or_404(Group, pk=group_pk)
         target_user = get_object_or_404(User, pk=user_pk)
         membership = get_object_or_404(GroupMember, group=group, user=target_user)
+        
         is_owner = (group.created_by == request.user)
         is_group_admin = GroupMember.objects.filter(group=group, user=request.user, role='ADMIN').exists()
+        
+        # 權限與規則檢查
         if not (is_owner or is_group_admin or request.user.is_staff):
             raise PermissionDenied("您沒有權限移除成員。")
         if group.created_by == target_user:
             return Response({"error": "不能移除群組的建立者。"}, status=status.HTTP_403_FORBIDDEN)
         if membership.role == 'ADMIN' and not is_owner:
-             return Response({"error": "管理員之間不能互相移除。"}, status=status.HTTP_403_FORBIDDEN)
+             return Response({"error": "只有群組建立者可以移除其他管理員。"}, status=status.HTTP_403_FORBIDDEN)
+             
         membership.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
