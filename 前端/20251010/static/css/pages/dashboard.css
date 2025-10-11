@@ -569,7 +569,7 @@
     background: linear-gradient(to top, #343a40, #6c757d);
     transform-origin: bottom center;
     transform: translateX(-50%) rotate(var(--gauge-rotation));
-    transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     border-radius: 2px 2px 0 0;
     z-index: 2;
 }

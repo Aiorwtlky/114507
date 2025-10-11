@@ -9,10 +9,11 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.db.models import Avg, Q
+from django.db.models import Avg, Max, Min, Q
 from django.db.models.functions import TruncMonth
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from django.utils import timezone
 from datetime import datetime
 import logging
 
@@ -466,6 +467,53 @@ class UserTrendsAPIView(views.APIView):
         # 格式化回傳結果
         formatted_trends = [
             {"month": item['month'].strftime('%Y-%m'), "average_score": round(item['average_score'], 1)} 
+            for item in trends
+        ]
+        return Response(formatted_trends)
+    
+
+class GroupTrendsAPIView(views.APIView):
+    """
+    (需權限) 特定群組的駕駛分數趨勢 API (月平均)。
+    支援 start_date 和 end_date 篩選。
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, group_pk, *args, **kwargs):
+        group = get_object_or_404(Group, pk=group_pk)
+
+        # 權限檢查：使用者必須是該群組的成員
+        if not group.members.filter(id=request.user.id).exists() and not request.user.is_staff:
+            raise PermissionDenied("您沒有權限查看此群組的統計資料。")
+
+        queryset = Trip.objects.filter(group=group, score__isnull=False)
+
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
+
+        if start_date_str and end_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                queryset = queryset.filter(start_time__date__gte=start_date, start_time__date__lte=end_date)
+            except ValueError:
+                return Response({"error": "日期格式錯誤，請使用 'YYYY-MM-DD'。"}, status=status.HTTP_400_BAD_REQUEST)
+
+        trends = queryset.annotate(
+            month=TruncMonth('start_time')
+        ).values('month').annotate(
+            average_score=Avg('score'),
+            max_score=Max('score'),
+            min_score=Min('score')
+        ).values('month', 'average_score', 'max_score', 'min_score').order_by('month')
+        
+        formatted_trends = [
+            {
+                "month": item['month'].strftime('%Y-%m'), 
+                "average_score": round(item['average_score'], 1) if item['average_score'] else 0,
+                "max_score": item['max_score'],
+                "min_score": item['min_score']
+            } 
             for item in trends
         ]
         return Response(formatted_trends)
