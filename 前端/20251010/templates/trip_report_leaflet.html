@@ -8,299 +8,65 @@
 {% block content %}
 <div class="trip-report-container">
     
-    <!-- 頁面標題 -->
     <div class="d-card group-info-card">
         <div class="group-header">
-            <div class="group-icon">
-                <i class="fa-solid fa-route"></i>
-            </div>
+            <div class="group-icon"><i class="fa-solid fa-route"></i></div>
             <div class="group-info">
                 <div class="editable-title-row">
-                    <h1 class="group-name" id="tripTitle">2025/07/23 北大物流配送</h1>
-                    <button class="btn-edit-title" id="editTitleBtn">
-                        <i class="fa-solid fa-pencil"></i>
-                    </button>
+                    <h1 class="group-name" id="tripTitle">載入中...</h1>
+                    <button class="btn-edit-title" id="editTitleBtn"><i class="fa-solid fa-pencil"></i></button>
                 </div>
-                <p class="group-company">
-                    <i class="fa-solid fa-calendar"></i>
-                    2025/07/23 07:37 - 15:50 · 總耗時 8h 13m
-                </p>
+                <p class="group-company" id="tripTimeInfo"><i class="fa-solid fa-calendar"></i> -- </p>
             </div>
-            <a href="#" class="btn-print-report" onclick="window.print(); return false;">
+            <a href="#" class="btn-print-report">
                 <i class="fa-solid fa-print"></i>
                 <span>列印報表</span>
             </a>
         </div>
     </div>
 
-    <!-- 分數總覽 -->
     <div class="d-card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fa-solid fa-chart-simple"></i>
-                分數總覽
-            </h3>
-        </div>
+        <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-chart-simple"></i> 分數總覽</h3></div>
         <div class="scores-grid">
-            <div class="score-box primary">
-                <div class="score-value">87</div>
-                <div class="score-label">安全總分</div>
-            </div>
-            <div class="score-box">
-                <div class="score-value">92</div>
-                <div class="score-label">車內分數</div>
-            </div>
-            <div class="score-box">
-                <div class="score-value">82</div>
-                <div class="score-label">車外分數</div>
-            </div>
-            <div class="score-box">
-                <div class="score-value">47.3 km</div>
-                <div class="score-label">總里程</div>
-            </div>
+            <div class="score-box primary"><div class="score-value" id="score-total">--</div><div class="score-label">安全總分</div></div>
+            <div class="score-box"><div class="score-value" id="score-in-car">--</div><div class="score-label">車內分數</div></div>
+            <div class="score-box"><div class="score-value" id="score-out-car">--</div><div class="score-label">車外分數</div></div>
+            <div class="score-box"><div class="score-value" id="score-mileage">--</div><div class="score-label">總里程</div></div>
         </div>
     </div>
 
-    <!-- 違規項目 -->
     <div class="d-card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                違規項目明細
-            </h3>
-        </div>
+        <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> 違規項目明細</h3></div>
         <div class="violations-section">
             <div class="violation-col">
-                <h4 class="section-subtitle">
-                    <i class="fa-solid fa-user"></i>
-                    車內違規項目
-                </h4>
-                <div class="violation-list">
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge">A1</span>
-                                07:45:23
-                            </div>
-                            <div class="violation-score">-2</div>
-                        </div>
-                        <div class="violation-desc">疲勞閉眼 (4秒)</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge">A2</span>
-                                09:15:47
-                            </div>
-                            <div class="violation-score">-4</div>
-                        </div>
-                        <div class="violation-desc">行車中使用手機</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge">A3</span>
-                                10:08:12
-                            </div>
-                            <div class="violation-score">-5</div>
-                        </div>
-                        <div class="violation-desc">未繫安全帶</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge">A4</span>
-                                11:32:05
-                            </div>
-                            <div class="violation-score">-3</div>
-                        </div>
-                        <div class="violation-desc">分心駕駛 - 視線偏離</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge">A5</span>
-                                13:05:39
-                            </div>
-                            <div class="violation-score">-2</div>
-                        </div>
-                        <div class="violation-desc">疲勞打哈欠 (連續3次)</div>
-                    </div>
-                </div>
+                <h4 class="section-subtitle"><i class="fa-solid fa-user"></i> 車內違規項目</h4>
+                <div class="violation-list" id="in-car-violations-list"><p>載入中...</p></div>
             </div>
-
             <div class="violation-col">
-                <h4 class="section-subtitle">
-                    <i class="fa-solid fa-road"></i>
-                    車外違規項目
-                </h4>
-                <div class="violation-list">
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge interval-b">B1</span>
-                                08:22:18
-                            </div>
-                            <div class="violation-score">-1</div>
-                        </div>
-                        <div class="violation-desc">轉彎未打方向燈</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge interval-b">B2</span>
-                                09:47:55
-                            </div>
-                            <div class="violation-score">-2</div>
-                        </div>
-                        <div class="violation-desc">未保持安全距離</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge interval-b">B3</span>
-                                11:03:42
-                            </div>
-                            <div class="violation-score">-3</div>
-                        </div>
-                        <div class="violation-desc">違規超車</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge interval-b">B4</span>
-                                12:35:27
-                            </div>
-                            <div class="violation-score">-4</div>
-                        </div>
-                        <div class="violation-desc">車速過快 (超速 15km/h)</div>
-                    </div>
-                    <div class="violation-item">
-                        <div class="violation-header">
-                            <div class="violation-time">
-                                <span class="interval-badge interval-b">B5</span>
-                                14:18:03
-                            </div>
-                            <div class="violation-score">-2</div>
-                        </div>
-                        <div class="violation-desc">變換車道未打方向燈</div>
-                    </div>
-                </div>
+                <h4 class="section-subtitle"><i class="fa-solid fa-road"></i> 車外違規項目</h4>
+                <div class="violation-list" id="out-car-violations-list"><p>載入中...</p></div>
             </div>
         </div>
-        
-        <!-- 區間分數總覽 -->
-        <div class="interval-scores-section">
-            <h4 class="section-subtitle">
-                <i class="fa-solid fa-chart-column"></i>
-                區間分數明細
-            </h4>
-            <div class="interval-scores-grid">
-                <div class="interval-score-group">
-                    <h5>車內區間 (A)</h5>
-                    <div class="interval-score-list">
-                        <div class="interval-score-item">
-                            <span class="interval-label">A1</span>
-                            <span class="interval-value excellent">98分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">A2</span>
-                            <span class="interval-value excellent">96分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">A3</span>
-                            <span class="interval-value excellent">95分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">A4</span>
-                            <span class="interval-value excellent">97分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">A5</span>
-                            <span class="interval-value excellent">98分</span>
-                        </div>
-                    </div>
-                    <div class="interval-average">
-                        平均：<strong>92分</strong>
-                    </div>
-                </div>
-                
-                <div class="interval-score-group">
-                    <h5>車外區間 (B)</h5>
-                    <div class="interval-score-list">
-                        <div class="interval-score-item">
-                            <span class="interval-label">B1</span>
-                            <span class="interval-value excellent">99分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">B2</span>
-                            <span class="interval-value excellent">98分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">B3</span>
-                            <span class="interval-value excellent">97分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">B4</span>
-                            <span class="interval-value excellent">96分</span>
-                        </div>
-                        <div class="interval-score-item">
-                            <span class="interval-label">B5</span>
-                            <span class="interval-value excellent">98分</span>
-                        </div>
-                    </div>
-                    <div class="interval-average">
-                        平均：<strong>82分</strong>
-                    </div>
-                </div>
-            </div>
+        </div>
+
+    <div class="d-card ai-card">
+        <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-lightbulb"></i> AI 行車建議</h3></div>
+        <div class="ai-suggestion-detail" id="ai-suggestion-detail">
+            <p>載入 AI 建議中...</p>
         </div>
     </div>
-
-    <!-- AI 建議 -->
-    <div class="d-card ai-card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fa-solid fa-lightbulb"></i>
-                AI 行車建議
-            </h3>
-        </div>
-        
-        <!-- 標籤式摘要 -->
-        <div class="ai-tags">
-            <span class="tag">#疲勞駕駛風險</span>
-            <span class="tag">#注意手機使用</span>
-            <span class="tag">#路口轉向規範</span>
-            <span class="tag">#保持安全距離</span>
-        </div>
-
-        <!-- 詳細建議 -->
-        <div class="ai-suggestion-detail">
-            <h4>個人化改善建議</h4>
-            <p>根據本次行程分析，您在長時間駕駛期間（特別是 07:45-08:00 及 13:00-13:15）出現了疲勞跡象，包括閉眼超過 3 秒及連續打哈欠。<strong>建議每 2 小時休息 15 分鐘</strong>，並在感到疲倦時立即停車休息，避免在疲勞狀態下繼續駕駛。</p>
-            
-            <p>此外，在 09:15-09:30 期間偵測到您在行車中使用手機，這是非常危險的行為。請避免在駕駛時使用手機，若需接聽電話建議使用<strong>藍牙耳機或車載系統</strong>。</p>
-            
-            <p>在路口轉彎及變換車道時（08:20、14:15），系統多次偵測到未打方向燈的情況。請記得<strong>提前 3 秒打方向燈</strong>，以確保其他用路人的安全，這也是交通法規的基本要求。</p>
-            
-            <p>最後，在 09:45-10:00 及 12:30-12:45 期間，系統偵測到您與前車距離過近且車速過快。建議遵守<strong>「兩秒原則」</strong>：與前車保持至少 2 秒的安全距離，並嚴格遵守速限規定，確保行車安全。</p>
-        </div>
-      </div>
 
 </div>
 
-<!-- 編輯標題的 Modal -->
 <div class="modal" id="editTitleModal" style="display: none;">
     <div class="modal-overlay" id="modalOverlay"></div>
     <div class="modal-content">
         <div class="modal-header">
             <h3>編輯行程名稱</h3>
-            <button class="btn-close" id="closeModalBtn">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <button class="btn-close" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body">
-            <input type="text" id="titleInput" class="title-input" value="2025/07/23 北大物流配送">
+            <input type="text" id="titleInput" class="title-input">
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" id="cancelBtn">取消</button>
