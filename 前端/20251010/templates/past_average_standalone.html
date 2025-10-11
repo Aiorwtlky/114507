@@ -161,16 +161,20 @@
     <h1 class="page-title"><i class="fa-solid fa-chart-line"></i> 行車數據分析</h1>
   </header>
   <div class="filter-bar">
-    <label class="filter-bar-label"><i class="fa-solid fa-calendar-days"></i> 趨勢圖日期範圍：</label>
-    <input type="text" id="date-range-picker" placeholder="功能開發中..." />
+    <label class="filter-bar-label"><i class="fa-solid fa-calendar-days"></i> 選擇日期範圍：</label>
+    <input type="text" id="date-range-picker" placeholder="點擊以選擇日期範圍" />
   </div>
   <div class="dashboard-grid">
     <div class="d-card chart-card">
       <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-arrow-trend-up"></i> 分數趨勢</h3></div>
-      <div class="card-body"><div class="chart-area"><canvas id="trendsChart"></canvas></div></div>
+      <div class="card-body">
+        <div class="chart-area">
+            <p>載入數據中...</p>
+        </div>
+      </div>
     </div>
     <div class="d-card gauge-card">
-      <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-gauge-high"></i> 最新月份平均</h3></div>
+      <div class="card-header"><h3 class="card-title" id="gauge-title"><i class="fa-solid fa-gauge-high"></i> 載入中...</h3></div>
       <div class="card-body">
         <div class="gauge-area">
           <div class="speedometer-gauge">

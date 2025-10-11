@@ -31,3 +31,5 @@ cryptography>=41.0.0
 dotenv
 
 django-rest-passwordreset
+
+Faker

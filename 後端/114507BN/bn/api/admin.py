@@ -91,14 +91,12 @@ class VideoRecordAdmin(admin.ModelAdmin):
     search_fields = ('video_number',)
     autocomplete_fields = ['trip']
 
-# --- ▼▼▼【新增】為尚未註冊的模型進行註冊 ▼▼▼ ---
-
 @admin.register(ActivationCode)
 class ActivationCodeAdmin(admin.ModelAdmin):
-    """Admin options for the ActivationCode model."""
-    list_display = ('code', 'is_used', 'used_by', 'expires_at', 'notes')
-    list_filter = ('is_used', 'expires_at')
-    search_fields = ('code', 'notes', 'used_by__username')
+    """Admin options for the new ActivationCode model."""
+    list_display = ('code', 'current_uses', 'max_uses', 'expires_at', 'notes')
+    list_filter = ('expires_at',)
+    search_fields = ('code', 'notes')
 
 @admin.register(InvitationCode)
 class InvitationCodeAdmin(admin.ModelAdmin):

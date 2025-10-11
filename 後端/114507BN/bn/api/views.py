@@ -13,6 +13,7 @@ from django.db.models import Avg, Q
 from django.db.models.functions import TruncMonth
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from datetime import datetime
 import logging
 
 # 專案內部模組匯入
@@ -424,19 +425,49 @@ class ChatbotAPIView(views.APIView):
         return Response({"reply": ai_reply}, status=status.HTTP_200_OK)
 
 class UserTrendsAPIView(views.APIView):
-    """(需登入) 使用者駕駛分數趨勢 API (月平均)。"""
+    """(需登入) 使用者駕駛分數趨勢 API (月平均)。支援日期範圍篩選。"""
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, *args, **kwargs):
         user = request.user
+        # 檢查是否為管理者在查詢特定使用者
         if target_user_id := request.query_params.get('user_id'):
             target_user = get_object_or_404(User, pk=target_user_id)
             if not is_leader_of(user, target_user):
                 raise PermissionDenied("您沒有權限查看此使用者的統計資料。")
         else:
             target_user = user
-        trends = Trip.objects.filter(personnel=target_user, score__isnull=False).annotate(month=TruncMonth('start_time')).values('month').annotate(average_score=Avg('score')).values('month', 'average_score').order_by('month')
-        formatted_trends = [{"month": item['month'].strftime('%Y-%m'), "average_score": round(item['average_score'], 1)} for item in trends]
+        
+        # 建立基本的查詢 QuerySet
+        queryset = Trip.objects.filter(personnel=target_user, score__isnull=False)
+
+        # ▼▼▼【核心升級】處理日期範圍篩選 ▼▼▼
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
+
+        if start_date_str and end_date_str:
+            try:
+                # 將字串轉換為 date 物件
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                # 使用 __date 來忽略時間，只比較日期
+                queryset = queryset.filter(start_time__date__gte=start_date, start_time__date__lte=end_date)
+            except ValueError:
+                # 如果日期格式錯誤，回傳 400 錯誤
+                return Response({"error": "日期格式錯誤，請使用 'YYYY-MM-DD' 格式。"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 執行資料庫彙總查詢
+        trends = queryset.annotate(
+            month=TruncMonth('start_time')
+        ).values('month').annotate(
+            average_score=Avg('score')
+        ).values('month', 'average_score').order_by('month')
+        
+        # 格式化回傳結果
+        formatted_trends = [
+            {"month": item['month'].strftime('%Y-%m'), "average_score": round(item['average_score'], 1)} 
+            for item in trends
+        ]
         return Response(formatted_trends)
 
 class TripSuggestionFeedbackAPIView(generics.CreateAPIView):
