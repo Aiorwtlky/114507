@@ -20,7 +20,8 @@ import logging
 # 專案內部模組匯入
 from .models import (
     Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile,
-    GroupAnnouncement, InvitationCode, GroupMember, TripSuggestionFeedback
+    GroupAnnouncement, InvitationCode, GroupMember, TripSuggestionFeedback,
+    ActivationCode, SystemAnnouncement
 )
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
@@ -29,7 +30,7 @@ from .serializers import (
     UserRegisterSerializer, GroupMemberSerializer,
     GroupAnnouncementSerializer, InvitationCodeSerializer,
     TripSuggestionFeedbackSerializer, VideoRegisterSerializer, VideoRecordSerializer,
-    InvitationCodeCreateSerializer
+    InvitationCodeCreateSerializer , SystemAnnouncementSerializer
 )
 from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPublisherOrAdmin
@@ -305,6 +306,50 @@ class InvitationCodeManageAPIView(generics.DestroyAPIView):
         if not (is_creator or is_group_owner or is_group_admin or user.is_staff):
             raise PermissionDenied("您沒有權限撤銷此邀請碼。")
         instance.delete()
+
+
+class CombinedAnnouncementListAPIView(APIView):
+    """
+    (需登入) 將有效的「系統公告」與特定「群組公告」合併後回傳。
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, group_pk, *args, **kwargs):
+        # 1. 獲取所有有效的系統公告
+        system_announcements = SystemAnnouncement.objects.filter(is_active=True)
+        
+        # 2. 獲取指定群組所有有效的公告
+        group_announcements = GroupAnnouncement.objects.filter(group__id=group_pk, is_active=True)
+
+        # 3. 分別將兩種公告序列化
+        system_data = SystemAnnouncementSerializer(system_announcements, many=True).data
+        group_data = GroupAnnouncementSerializer(group_announcements, many=True, context={'request': request}).data
+
+        # 4. 將兩種公告合併到一個列表中，並統一格式
+        combined_list = []
+        for ann in system_data:
+            combined_list.append({
+                'id': f"sys-{ann['id']}",
+                'type': 'SYSTEM',
+                'content': ann['content'],
+                'publish_date': ann['date'],
+                'publisher': '系統管理員' # 系統公告統一顯示來源
+            })
+        
+        for ann in group_data:
+            combined_list.append({
+                'id': f"grp-{ann['id']}",
+                'type': 'GROUP',
+                'content': ann['content'],
+                'publish_date': ann['publish_date'],
+                'publisher': ann.get('publisher', '群組管理員') # 從序列化器獲取發布者
+            })
+
+        # 5. 根據發布日期，由新到舊排序
+        combined_list.sort(key=lambda x: x['publish_date'], reverse=True)
+
+        return Response(combined_list)
+
 
 # =============================================================================
 # 4. 數據讀取與報表 API (Data & Report APIs)

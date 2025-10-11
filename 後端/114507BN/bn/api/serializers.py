@@ -9,7 +9,7 @@ from .models import (
     PersonnelProfile, Group, Trip, ScoringStandard,
     AiVisionLog, VideoRecord, VehicleDevice, GroupAnnouncement,
     InvitationCode, GroupMember, TripSuggestionFeedback,
-    ActivationCode
+    ActivationCode , SystemAnnouncement,
 )
 
 # =============================================================================
@@ -348,3 +348,9 @@ class TripSuggestionFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = TripSuggestionFeedback
         fields = ['trip', 'feedback_type', 'comment']
+
+class SystemAnnouncementSerializer(serializers.ModelSerializer):
+    """序列化系統公告。"""
+    class Meta:
+        model = SystemAnnouncement
+        fields = ['id', 'announcement_number', 'content', 'date', 'is_active']

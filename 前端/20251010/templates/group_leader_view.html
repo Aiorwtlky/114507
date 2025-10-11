@@ -5,6 +5,26 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_leader_view.css') }}" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+
+<style>
+  .announcement-row {
+    position: relative;
+    padding-left: 90px; /* 為標籤騰出空間 */
+  }
+  .announcement-badge {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.25em 0.6em;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 4px;
+    color: white;
+  }
+  .announcement-badge.system { background-color: #dc2626; } /* 系統公告 - 紅色 */
+  .announcement-badge.group { background-color: #1a2a5f; } /* 群組公告 - 藍色 */
+</style>
 {% endblock %}
 
 {% block content %}
