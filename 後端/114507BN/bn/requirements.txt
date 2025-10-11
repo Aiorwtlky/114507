@@ -33,3 +33,4 @@ dotenv
 django-rest-passwordreset
 
 Faker
+google-cloud-aiplatform
