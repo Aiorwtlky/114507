@@ -1,101 +1,154 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- 元素選取 ---
-    const videoCards = document.querySelectorAll('.video-card');
-    const modalOverlay = document.getElementById('videoModalOverlay');
-    const modalCloseBtn = document.getElementById('modalCloseBtn');
+// 檔案路徑: static/js/pages/member_videos.js
+
+(function() {
+    'use strict';
     
-    // 檢查核心元素是否存在，如果不存在就直接返回，避免後續報錯
-    if (!modalOverlay || !modalCloseBtn || videoCards.length === 0) {
-        console.error('Modal elements or video cards not found. Interaction will not work.');
-        return;
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    let memberId = null;
+    let currentMemberName = '成員';
+
+    async function fetchWithAuth(endpoint, options = {}) {
+        const token = localStorage.getItem('accessToken');
+        if (!token) { window.location.href = '/login'; throw new Error('Not Authenticated'); }
+        const headers = options.headers || new Headers();
+        headers.append('Authorization', `Bearer ${token}`);
+        headers.append('Content-Type', 'application/json');
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (response.status === 401) { localStorage.clear(); window.location.href = '/login'; throw new Error('Token Expired'); }
+        return response;
     }
 
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDownloadFull = document.getElementById('modalDownloadFull');
-    const modalSegmentList = document.getElementById('modalSegmentList');
+    function formatBytes(bytes, decimals = 2) {
+        if (!bytes || bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+    
+    function renderVideos(videos) {
+        const listContainer = document.getElementById('videos-list-container');
+        if(!listContainer) return;
+        listContainer.innerHTML = '';
 
-    // --- 函數定義 ---
-    const openModal = (card) => {
-        const startTimeStr = card.dataset.starttime;
-        const endTimeStr = card.dataset.endtime;
-        const size = card.dataset.size;
-        
-        if (!startTimeStr || !endTimeStr || !size) {
-            console.error('Card is missing data attributes.');
+        if (!videos || videos.length === 0) {
+            listContainer.innerHTML = '<p class="no-videos-message">此成員尚無行車影片記錄。</p>';
             return;
         }
 
-        modalTitle.textContent = `行程影片：${startTimeStr} - ${endTimeStr}`;
-        modalDownloadFull.innerHTML = `<i class="fa-solid fa-download"></i> 下載完整行程影片 (${size})`;
-        modalSegmentList.innerHTML = '';
+        const videosByDate = videos.reduce((acc, video) => {
+            const date = new Date(video.start_time).toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            if (!acc[date]) acc[date] = [];
+            acc[date].push(video);
+            return acc;
+        }, {});
 
-        const segments = generateTimeSegments(startTimeStr, endTimeStr);
-        if (segments.length > 0) {
-            segments.forEach(segment => {
-                const segmentEl = document.createElement('div');
-                segmentEl.className = 'segment-item';
-                // 暫時將按鈕的連結設為 #
-                segmentEl.innerHTML = `
-                    <span class="segment-time">${segment.start} - ${segment.end}</span>
-                    <div class="segment-actions">
-                        <button type="button" class="btn btn-secondary btn-sm">播放</button>
-                        <a href="#" class="btn btn-primary btn-sm">下載</a>
+        for (const date in videosByDate) {
+            const section = document.createElement('section');
+            section.className = 'daily-videos';
+            
+            section.innerHTML = `<h2 class="date-header">${date.replace(/\//g, ' / ')}</h2>`;
+
+            const gallery = document.createElement('div');
+            gallery.className = 'video-gallery';
+
+            videosByDate[date].forEach(video => {
+                const startTime = new Date(video.start_time);
+                const endTime = new Date(video.end_time);
+                const durationMs = endTime - startTime;
+                const hours = Math.floor(durationMs / 3600000);
+                const minutes = Math.round((durationMs % 3600000) / 60000);
+                const durationText = `${hours > 0 ? hours + ' 小時 ' : ''}${minutes} 分鐘`;
+
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.dataset.starttime = startTime.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+                card.dataset.endtime = endTime.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+                card.dataset.size = formatBytes(video.file_size || 0);
+                card.dataset.fullUrl = video.video_url || '#';
+
+                card.innerHTML = `
+                    <div class="video-thumbnail">
+                        <img src="https://via.placeholder.com/400x225.png/1a2a5f/ffffff?text=Video" alt="影片預覽">
+                        <div class="play-icon"><i class="fa-solid fa-play"></i></div>
+                    </div>
+                    <div class="video-card-content">
+                        <h3 class="video-time">${card.dataset.starttime} - ${card.dataset.endtime}</h3>
+                        <div class="video-meta">
+                            <span><i class="fa-solid fa-database"></i> ${card.dataset.size}</span>
+                            <span><i class="fa-solid fa-clock"></i> ${durationText}</span>
+                        </div>
                     </div>
                 `;
-                modalSegmentList.appendChild(segmentEl);
+                gallery.appendChild(card);
             });
-        } else {
-            modalSegmentList.innerHTML = '<p class="no-videos-message">無法生成影片區段。</p>';
+            section.appendChild(gallery);
+            listContainer.appendChild(section);
         }
+    }
 
+    const modalOverlay = document.getElementById('videoModalOverlay');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDownloadFull = document.getElementById('modalDownloadFull');
+
+    function openModal(card) {
+        if(!modalOverlay) return;
+        modalTitle.textContent = `行程影片：${card.dataset.starttime} - ${card.dataset.endtime}`;
+        modalDownloadFull.innerHTML = `<i class="fa-solid fa-download"></i> 下載完整影片 (${card.dataset.size})`;
+        modalDownloadFull.href = card.dataset.fullUrl;
         modalOverlay.style.display = 'flex';
     };
 
-    const closeModal = () => {
-        modalOverlay.style.display = 'none';
+    function closeModal() {
+        if(modalOverlay) modalOverlay.style.display = 'none';
     };
+    
+    async function initializePage() {
+        const pathParts = window.location.pathname.split('/');
+        memberId = pathParts[pathParts.length - 1];
 
-    // 輔助函數：生成時間區段
-    function generateTimeSegments(startTime, endTime) {
-        const segments = [];
-        // 加上 try-catch 以免時間格式錯誤導致整個腳本崩潰
+        if (!memberId) {
+            document.body.innerHTML = '<h1>錯誤：未指定成員 ID</h1>';
+            return;
+        }
+
         try {
-            let current = new Date(`1970-01-01T${startTime}:00`);
-            const end = new Date(`1970-01-01T${endTime}:00`);
+            const [videosRes, memberRes] = await Promise.all([
+                fetchWithAuth(`/api/videos/?user_id=${memberId}`),
+                fetchWithAuth(`/api/personnel/${memberId}/profile/`)
+            ]);
 
-            if (isNaN(current.getTime()) || isNaN(end.getTime())) {
-                throw new Error('Invalid time format');
+            if (!videosRes.ok) throw new Error('無法獲取影片列表');
+            const videoData = await videosRes.json();
+            
+            if (memberRes.ok) {
+                const memberData = await memberRes.json();
+                currentMemberName = memberData.first_name || memberData.username;
+            } else {
+                currentMemberName = `成員 #${memberId}`;
             }
 
-            while (current < end) {
-                const segmentStart = current;
-                const segmentEnd = new Date(current.getTime() + 15 * 60000);
+            document.getElementById('page-title-username').textContent = currentMemberName;
+            
+            renderVideos(videoData.results || videoData);
 
-                const startStr = segmentStart.toTimeString().substring(0, 5);
-                const endStr = segmentEnd > end ? endTime : segmentEnd.toTimeString().substring(0, 5);
-                
-                segments.push({ start: startStr, end: endStr });
-                
-                current = segmentEnd;
-            }
-        } catch (error) {
-            console.error("Error generating time segments:", error);
-            return []; // 返回空陣列
+        } catch(error) {
+            console.error("載入影片頁面失敗:", error);
+            document.getElementById('videos-list-container').innerHTML = '<p style="color: red;">載入資料失敗，您可能沒有權限查看此成員的影片。</p>';
         }
-        return segments;
     }
-
-    // --- 事件監聽 ---
-    videoCards.forEach(card => {
-        card.addEventListener('click', () => openModal(card));
+    
+    document.getElementById('videos-list-container')?.addEventListener('click', (event) => {
+        const card = event.target.closest('.video-card');
+        if (card) openModal(card);
     });
 
-    modalCloseBtn.addEventListener('click', closeModal);
-
-    modalOverlay.addEventListener('click', (e) => {
-        // 確保點擊的是灰色背景本身，而不是裡面的白色 content
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
+    modalCloseBtn?.addEventListener('click', closeModal);
+    modalOverlay?.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeModal();
     });
-});
+
+    initializePage();
+})();

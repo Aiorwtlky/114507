@@ -94,121 +94,13 @@
 {% block content %}
   <section class="all-reports-section">
     <h1 class="mega-title gradient-text">所有過往行程</h1>
-
     <div class="controls-container">
-      <form id="filter-form" class="filter-group">
-        <label for="start-date">日期範圍</label>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <input type="date" id="start-date" name="start_date">
-            <span>-</span>
-            <input type="date" id="end-date" name="end_date">
-        </div>
-      </form>
-      <div class="filter-group search-group">
-        <label for="trip-name-search">搜尋行程名稱</label>
-        <input type="search" id="trip-name-search" name="q" placeholder="例如：客戶拜訪、機場...">
       </div>
-      <button type="submit" form="filter-form" class="btn-filter"><i class="fa-solid fa-filter"></i><span>篩選</span></button>
+    <div class="reports-grid" id="reports-grid-container">
+      <p>載入中...</p>
     </div>
-
-    <div class="reports-grid">
-      <div class="report-card">
-        <div class="report-header">
-            <div class="report-meta">
-                <p class="report-id">行程編號: <span>TRIP-0723A</span></p>
-                <p class="report-date">2025-07-23</p>
-            </div>
-            <div class="report-score score-high">95</div>
-        </div>
-        <div class="report-body">
-            <div class="report-name-wrapper">
-                <h3 class="report-name">長途客戶急件</h3>
-                <i class="fa-solid fa-pencil edit-icon"></i>
-            </div>
-        </div>
-        <a href="#" class="btn btn-details">查看詳細</a>
-      </div>
-      
-      <div class="report-card">
-        <div class="report-header">
-            <div class="report-meta">
-                <p class="report-id">行程編號: <span>TRIP-0722D</span></p>
-                <p class="report-date">2025-07-22</p>
-            </div>
-            <div class="report-score score-medium">82</div>
-        </div>
-        <div class="report-body">
-            <div class="report-name-wrapper">
-                <h3 class="report-name placeholder">未命名的行程 (07-22)</h3>
-                <i class="fa-solid fa-pencil edit-icon"></i>
-            </div>
-        </div>
-        <a href="#" class="btn btn-details">查看詳細</a>
-      </div>
-      
-      <div class="report-card">
-        <div class="report-header">
-            <div class="report-meta">
-                <p class="report-id">行程編號: <span>TRIP-0722C</span></p>
-                <p class="report-date">2025-07-22</p>
-            </div>
-            <div class="report-score score-medium">88</div>
-        </div>
-        <div class="report-body">
-            <div class="report-name-wrapper">
-                <h3 class="report-name">機場急件運輸</h3>
-                <i class="fa-solid fa-pencil edit-icon"></i>
-            </div>
-        </div>
-        <a href="#" class="btn btn-details">查看詳細</a>
-      </div>
-
-      <div class="report-card">
-        <div class="report-header">
-            <div class="report-meta">
-                <p class="report-id">行程編號: <span>TRIP-0720B</span></p>
-                <p class="report-date">2025-07-20</p>
-            </div>
-            <div class="report-score score-low">65</div>
-        </div>
-        <div class="report-body">
-            <div class="report-name-wrapper">
-                <h3 class="report-name">內湖倉儲補貨</h3>
-                <i class="fa-solid fa-pencil edit-icon"></i>
-            </div>
-        </div>
-        <a href="#" class="btn btn-details">查看詳細</a>
-      </div>
-    </div>
-
-    <nav class="pagination-container" aria-label="過往行程分頁">
-      <ul class="pagination">
-        <li class="page-item disabled"><a class="page-link" href="#">« 上一頁</a></li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">下一頁 »</a></li>
-      </ul>
-    </nav>
-  </section>
+    </section>
 {% endblock %}
-
 {% block extra_js %}
-  <script>
-    // JavaScript 維持不變，用於前端演示表單提交
-    document.addEventListener('DOMContentLoaded', function() {
-      const filterForm = document.getElementById('filter-form');
-      if (filterForm) {
-        const handleSubmit = function(event) {
-          event.preventDefault(); 
-          const startDate = document.getElementById('start-date').value;
-          const endDate = document.getElementById('end-date').value;
-          const searchQuery = document.getElementById('trip-name-search').value;
-          console.log('篩選條件：', { startDate, endDate, searchQuery });
-          alert('篩選功能已觸發，請在開發者工具(F12)的 Console 中查看篩選條件！');
-        };
-        filterForm.addEventListener('submit', handleSubmit);
-      }
-    });
-  </script>
+  <script src="{{ url_for('static', filename='js/pages/all_reports.js') }}"></script>
 {% endblock %}

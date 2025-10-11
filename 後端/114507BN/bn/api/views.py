@@ -82,7 +82,6 @@ class UserRegisterAPIView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny] # 任何人都可註冊
 
-# ▼▼▼【核心修改】簡化 UserProfileAPIView ▼▼▼
 class UserProfileAPIView(generics.RetrieveUpdateAPIView):
     """
     (需登入) 讓使用者讀取與更新自己的個人資料。
@@ -94,9 +93,27 @@ class UserProfileAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
 
     def get_object(self):
-        # 此 API 的操作對象永遠是發出請求的當前使用者
         return self.request.user
-# ▲▲▲【核心修改】▲▲▲
+
+class UserProfileDetailAPIView(generics.RetrieveAPIView):
+    """
+    (需權限) 獲取特定使用者的唯讀個人資料。
+    僅供本人、管理者或網站管理員查詢。
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # 從 URL 中獲取目標使用者的 pk (主鍵)
+        target_user_pk = self.kwargs.get('pk')
+        target_user = get_object_or_404(User, pk=target_user_pk)
+        
+        # 權限檢查：如果請求者不是本人，也不是目標使用者的管理者，則拒絕存取
+        if self.request.user != target_user and not is_leader_of(self.request.user, target_user):
+            raise PermissionDenied("您沒有權限查看此使用者的資料。")
+            
+        return target_user
 
 # =============================================================================
 # 2. 群組與成員管理 API (Group & Member APIs)

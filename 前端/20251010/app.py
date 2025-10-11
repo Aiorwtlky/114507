@@ -91,11 +91,12 @@ def my_groups_standalone():
 
 @app.route('/past_average_standalone')
 def past_average_standalone():
-    return "這是「行程數據」的佔位頁面。"
+    return render_template("past_average_standalone.html")
+
 
 @app.route('/member_videos/<member_id>')
 def member_videos(member_id):
-    return f"這是成員 {member_id} 的「行車影像」佔位頁面。"
+    return render_template("member_videos.html", member_id=member_id)
 
 @app.route('/group_settings')
 def group_settings():

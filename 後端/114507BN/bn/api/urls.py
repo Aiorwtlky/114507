@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
 from .views import (
     ApiRootView,
     # 認證與使用者
-    UserRegisterAPIView, UserProfileAPIView, UserSelfBindNFCAPIView,
+    UserRegisterAPIView, UserProfileAPIView, UserSelfBindNFCAPIView, UserProfileDetailAPIView,
     # NFC 相關
     FindUserByNFCAPIView, BindNFCAPIView,
     # 群組與成員
@@ -63,8 +63,9 @@ urlpatterns = [
     path('trips/', TripListAPIView.as_view(), name='trip-list'),
     path('trips/<int:pk>/', TripDetailAPIView.as_view(), name='trip-detail'),
     path('trips/<int:trip_pk>/report/', generate_trip_report_pdf, name='trip-report-pdf'),
-    path('videos/', VideoListAPIView.as_view(), name='video-list'), # 這是讀取列表的 API
-    
+    path('videos/', VideoListAPIView.as_view(), name='video-list'), 
+    path('personnel/<int:pk>/profile/', UserProfileDetailAPIView.as_view(), name='user-profile-detail'),
+
     # 6. 車機上傳 API
     path('trips/start/', TripStartAPIView.as_view(), name='trip-start'),
     path('trips/<int:pk>/end/', TripEndAPIView.as_view(), name='trip-end'),
