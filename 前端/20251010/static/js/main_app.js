@@ -45,18 +45,15 @@
         }
     }
 
-    // ========== 【核心新增】共用 UI 更新功能 ==========
+    // ========== 【核心】共用 UI 更新功能 ==========
     /**
-     * 讀取 localStorage 中的使用者資料，並更新側邊欄 UI。
-     * 這是所有登入後頁面的共用函式。
+     * 讀取 localStorage 中的使用者資料，並更新所有共用的 UI 元素 (側邊欄)。
      */
     function updateSidebarUI() {
         const userProfileString = localStorage.getItem('userProfile');
         
         if (!userProfileString) {
             console.warn('userProfile not found in localStorage. Sidebar will not be updated.');
-            // 如果找不到使用者資料，可以考慮導向到登入頁
-            // window.location.href = '/login';
             return;
         }
 
@@ -66,13 +63,17 @@
             const sidebarAvatar = document.getElementById('sidebar-avatar');
             const sidebarUsername = document.getElementById('sidebar-username');
             const sidebarUserRole = document.getElementById('sidebar-user-role');
+            const myVideosLink = document.getElementById('sidebar-my-videos-link'); // <-- 找到我們的連結
 
+            // 更新頭像
             if (sidebarAvatar) {
                 sidebarAvatar.src = userProfile.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
             }
+            // 更新使用者名稱
             if (sidebarUsername) {
                 sidebarUsername.textContent = userProfile.first_name || userProfile.username;
             }
+            // 更新角色
             if (sidebarUserRole) {
                 let roleText = '一般成員';
                 if (userProfile.is_staff) {
@@ -82,6 +83,13 @@
                 }
                 sidebarUserRole.textContent = roleText;
             }
+
+            // ▼▼▼【核心新增】動態更新「我的行車影像」連結 ▼▼▼
+            if (myVideosLink && userProfile.id) {
+                // 將 href 從 '#' 更新為正確的 URL
+                myVideosLink.href = `/member_videos/${userProfile.id}`;
+            }
+
         } catch (error) {
             console.error('Failed to parse userProfile from localStorage or update sidebar:', error);
         }

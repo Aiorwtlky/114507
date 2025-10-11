@@ -96,7 +96,7 @@ def past_average_standalone():
 
 @app.route('/member_videos/<member_id>')
 def member_videos(member_id):
-    return render_template("member_videos.html", member_id=member_id)
+    return render_template("member_videos.html")
 
 @app.route('/group_settings')
 def group_settings():

@@ -187,10 +187,10 @@
                         <i class="fa-solid fa-chart-line"></i>
                         <span>行程數據</span>
                     </a>
-
-                    <a href="{{ url_for('member_videos', member_id='B0C01') }}" 
-                       class="nav-item {% if request.endpoint == 'member_videos' %}is-active{% endif %}"
-                       {% if request.endpoint == 'member_videos' %}aria-current="page"{% endif %}>
+                    
+                    <a id="sidebar-my-videos-link" href="#" 
+                    class="nav-item {% if request.endpoint == 'member_videos' %}is-active{% endif %}"
+                    {% if request.endpoint == 'member_videos' %}aria-current="page"{% endif %}>
                         <i class="fa-solid fa-video"></i>
                         <span>我的行車影像</span>
                     </a>
