@@ -108,7 +108,7 @@ def invite_member():
 
 @app.route('/member_dashboard/<member_id>')
 def member_dashboard(member_id):
-    return f"這是成員 {member_id} 的「儀表板」佔位頁面。"
+    return render_template('member_dashboard.html')
 
 @app.route('/create_announcement')
 def create_announcement():

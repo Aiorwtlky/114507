@@ -1,31 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}
-  成員儀表板 · My Driving God
-{% endblock %}
+{% block title %}成員儀表板 · My Driving God{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
   <style>
     /* 針對此頁面的一些微調 */
-    .dashboard-column-right .d-card {
-      flex-grow: 1; /* 讓右側卡片填滿整個欄位高度 */
-    }
-    
-    .profile-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 2px solid #1a2a5f;
-      flex-shrink: 0;
-      object-fit: cover;
-      object-position: center 25%;
-    }
+    .dashboard-column-right .d-card { flex-grow: 1; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #1a2a5f; flex-shrink: 0; object-fit: cover; object-position: center 25%; }
+    .trip-link { display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; padding: 0.5rem 0; }
   </style>
 {% endblock %}
 
 {% block content %}
-  <div class="dashboard-container">
+<div class="dashboard-container">
     <div class="dashboard-column-left">
       <div class="d-card personal-info-card">
         <div class="d-card-header">
@@ -33,11 +21,11 @@
         </div>
         <div class="d-card-body">
           <div class="profile-summary">
-            <img src="{{ url_for('static', filename='images/1.jpg') }}" alt="黃仁勳" class="profile-avatar" />
+            <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}" alt="成員頭像" class="profile-avatar" id="member-avatar" />
             <div class="profile-details">
-              <h4 class="profile-name">黃仁勳</h4>
-              <p class="profile-meta">北大物流 C 組</p>
-              <p class="profile-meta">組員</p>
+              <h4 class="profile-name" id="member-name">載入中...</h4>
+              <p class="profile-meta" id="member-group">--</p>
+              <p class="profile-meta" id="member-role">--</p>
             </div>
           </div>
         </div>
@@ -46,64 +34,15 @@
       <div class="d-card trends-card">
         <div class="d-card-header">
           <h3><i class="fa-solid fa-arrow-trend-up"></i> 過往趨勢</h3>
-          <a href="#" class="header-link">♡</a>
         </div>
         <div class="d-card-body">
-          <div class="chart-controls">
-            <div class="control-item">
-              <select name="period">
-                <option value="quarter" selected>季</option>
-                <option value="year">年</option>
-              </select>
-            </div>
-            <div class="control-item">
-              <select name="year">
-                <option value="2025" selected>2025年</option>
-              </select>
-            </div>
-          </div>
           <div class="chart-area">
             <canvas id="trendsChart"></canvas>
           </div>
         </div>
       </div>
-
-      <div class="d-card commute-avg-card">
-        <div class="d-card-header">
-          <h3><i class="fa-solid fa-gauge-high"></i> 通勤平均</h3>
-          <a href="#" class="header-link">♡</a>
-        </div>
-        <div class="d-card-body">
-          <div class="chart-controls">
-            <div class="control-item">
-              <select name="commute-period" aria-label="選擇時間區間">
-                <option value="year">年</option>
-                <option value="quarter" selected>季</option>
-                <option value="month">月</option>
-                <option value="day">日</option>
-              </select>
-            </div>
-            <div class="control-item">
-              <select name="commute-value" aria-label="選擇區間數值">
-                <option value="2025-Q1">2025年第1季</option>
-                <option value="2025-Q2" selected>2025年第2季</option>
-                <option value="2025-Q3">2025年第3季</option>
-                <option value="2025-Q4">2025年第4季</option>
-              </select>
-            </div>
-          </div>
-          <div class="gauge-area">
-            <div class="gauge-background"></div>
-            <div class="gauge-needle"></div>
-            <div class="gauge-center-circle"></div>
-            <div class="gauge-text">
-              平均分數 <strong>72</strong> 分
-            </div>
-          </div>
-          <p class="gauge-label">2025年第二季 (4-6月)</p>
-        </div>
+      
       </div>
-    </div>
 
     <div class="dashboard-column-right">
       <div class="d-card past-trips-card">
@@ -112,36 +51,16 @@
           <a href="#" class="btn-view-more">查看全部</a>
         </div>
         <div class="d-card-body">
-          <ul>
-            <li>
-              <div class="trip-info">
-                <span class="trip-date-group">2025/7/23 ‧ 北大物流 C 組</span>
-                <span class="trip-time-route">07:37 - 15:50 ‧ 長途客戶急件</span>
-              </div>
-              <div class="trip-score">87</div>
-            </li>
-            <li>
-              <div class="trip-info">
-                <span class="trip-date-group">2025/7/22 ‧ 北大物流 C 組</span>
-                <span class="trip-time-route">14:00 - 18:30 ‧ 跨區調度</span>
-              </div>
-              <div class="trip-score">83</div>
-            </li>
-            <li>
-              <div class="trip-info">
-                <span class="trip-date-group">2025/7/20 ‧ 北大物流 C 組</span>
-                <span class="trip-time-route">10:45 - 11:30 ‧ 例行配送</span>
-              </div>
-              <div class="trip-score">89</div>
-            </li>
+          <ul id="past-trips-list">
+            <li><p>載入中...</p></li>
           </ul>
         </div>
       </div>
     </div>
-  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="{{ url_for('static', filename='js/pages/dashboard.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/pages/member_dashboard.js') }}" defer></script>
 {% endblock %}
