@@ -1,6 +1,8 @@
 package com.example.mdgapp.data.remote
 
+import com.example.mdgapp.MyApplication
 import com.example.mdgapp.data.local.TokenManager
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -15,6 +17,21 @@ class AuthInterceptor : Interceptor {
             requestBuilder.addHeader("Authorization", "Bearer $it")
         }
 
-        return chain.proceed(requestBuilder.build())
+        val request = requestBuilder.build()
+        val response = chain.proceed(request)
+
+        // 檢查 HTTP 狀態碼是否為 401 (Unauthorized)
+        if (response.code == 401) {
+            // 如果是 401，表示 token 失效或未授權
+            // 使用 runBlocking 是因為 intercept 是同步函式，而我們的 triggerLogout 是 suspend 函式
+            runBlocking {
+                // 清除本地儲存的 token
+                TokenManager.clearToken()
+                // 觸發全域的登出事件
+                MyApplication.triggerLogout()
+            }
+        }
+
+        return response
     }
 }

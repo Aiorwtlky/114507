@@ -1,5 +1,3 @@
-// 檔案路徑: app/src/main/java/com/example/mdgapp/data/local/TokenManager.kt
-
 package com.example.mdgapp.data.local
 
 import android.content.Context
@@ -7,23 +5,37 @@ import android.content.SharedPreferences
 
 object TokenManager {
 
-    private const val PREFS_NAME = "MyAppPrefs"
-    private const val KEY_AUTH_TOKEN = "auth_token"
-    private lateinit var prefs: SharedPreferences
+    private const val PREFS_NAME = "app_prefs"
+    private const val USER_TOKEN_KEY = "user_token"
 
+    private lateinit var sharedPreferences: SharedPreferences
+
+    /**
+     * 這個方法必須在 MyApplication 的 onCreate 中被呼叫一次，
+     * 用來初始化 SharedPreferences。
+     */
     fun initialize(context: Context) {
-        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    /**
+     * 儲存 Token
+     */
     fun saveToken(token: String) {
-        prefs.edit().putString(KEY_AUTH_TOKEN, token).apply()
+        sharedPreferences.edit().putString(USER_TOKEN_KEY, token).apply()
     }
 
+    /**
+     * 讀取 Token
+     */
     fun getToken(): String? {
-        return prefs.getString(KEY_AUTH_TOKEN, null)
+        return sharedPreferences.getString(USER_TOKEN_KEY, null)
     }
 
+    /**
+     * 清除 Token
+     */
     fun clearToken() {
-        prefs.edit().remove(KEY_AUTH_TOKEN).apply()
+        sharedPreferences.edit().remove(USER_TOKEN_KEY).apply()
     }
 }

@@ -1,3 +1,5 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/screen/login.kt
+
 package com.example.mdgapp.ui.screen
 
 import android.widget.Toast
@@ -63,7 +65,7 @@ fun LoginScreen(
                 "吾駕仙",
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
-                color = iOsTextPrimary
+                color = iOsBlue // ✅ 標題顏色改為藍色
             )
             Text(
                 "駕駛員登入",
@@ -82,8 +84,10 @@ fun LoginScreen(
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = iOsComponentBackground,
                     unfocusedContainerColor = iOsComponentBackground,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
+                    // ✅ 讓邊框/底線在選中時變藍
+                    focusedIndicatorColor = iOsBlue,
+                    // ✅ 讓邊框/底線在未選中時也是藍色 (或可改為透明 Color.Transparent)
+                    unfocusedIndicatorColor = iOsBlue,
                     focusedTextColor = iOsTextPrimary,
                     unfocusedTextColor = iOsTextPrimary,
                     cursorColor = iOsBlue
@@ -103,8 +107,10 @@ fun LoginScreen(
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = iOsComponentBackground,
                     unfocusedContainerColor = iOsComponentBackground,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
+                    // ✅ 讓邊框/底線在選中時變藍
+                    focusedIndicatorColor = iOsBlue,
+                    // ✅ 讓邊框/底線在未選中時也是藍色
+                    unfocusedIndicatorColor = iOsBlue,
                     focusedTextColor = iOsTextPrimary,
                     unfocusedTextColor = iOsTextPrimary,
                     cursorColor = iOsBlue

@@ -1,7 +1,10 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/screen/ProfileScreen.kt
+
 package com.example.mdgapp.ui.screen
 
-import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,7 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter // ⭐ 新增 import
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -100,7 +103,6 @@ fun ProfileScreen(
                                     .clip(CircleShape)
                                     .background(iOsComponentBackground),
                                 contentScale = ContentScale.Crop,
-                                // ⭐ 修正重點：使用 rememberVectorPainter 將 ImageVector 轉為 Painter
                                 error = rememberVectorPainter(image = Icons.Default.Person),
                                 placeholder = rememberVectorPainter(image = Icons.Default.Person)
                             )
@@ -160,7 +162,9 @@ fun ProfileScreen(
                                 navController.navigate("launch") { popUpTo(0) }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = iOsComponentBackground),
-                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text("登出帳號", color = Color.Red, fontWeight = FontWeight.Bold)
@@ -174,10 +178,13 @@ fun ProfileScreen(
 
 @Composable
 fun ProfileSection(content: @Composable ColumnScope.() -> Unit) {
+    val shape = RoundedCornerShape(12.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            // ✅ 修改點：將邊框應用到 Modifier 上
+            .border(BorderStroke(2.dp, iOsBlue), shape = shape)
+            .clip(shape)
             .background(iOsComponentBackground)
     ) {
         content()
@@ -214,7 +221,7 @@ fun SettingsSwitchRow(label: String, isChecked: Boolean, onCheckedChange: (Boole
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Color.Green,
+                checkedTrackColor = iOsBlue, // <-- 也把 Switch 的顏色改為藍色以求一致
                 uncheckedThumbColor = Color.White,
                 uncheckedTrackColor = Color.Gray.copy(alpha = 0.5f),
                 uncheckedBorderColor = Color.Transparent

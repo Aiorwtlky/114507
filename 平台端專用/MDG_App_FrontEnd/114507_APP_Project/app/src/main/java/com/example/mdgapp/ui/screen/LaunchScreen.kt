@@ -21,8 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.mdgapp.R
-import com.example.mdgapp.data.local.TokenManager // 👈 【重點】1. 匯入 TokenManager
+import com.example.mdgapp.data.local.TokenManager
 import com.example.mdgapp.ui.theme.MyApplicationTheme
+import com.example.mdgapp.ui.theme.iOsBackground
+import com.example.mdgapp.ui.theme.iOsBlue // ✅ 匯入藍色
 import kotlinx.coroutines.delay
 
 @Composable
@@ -32,45 +34,28 @@ fun LaunchScreen(
 ) {
     var visible by remember { mutableStateOf(false) }
 
-    // 在非預覽模式下，才執行我們的檢查與導航邏輯
     if (!previewMode) {
-        // LaunchedEffect 會在畫面第一次顯示時執行一次
         LaunchedEffect(key1 = true) {
             visible = true
-            delay(2000) // 讓 Logo 動畫有時間播放
+            delay(2000)
 
-            // ▼▼▼▼▼ 【重點】2. 核心決策邏輯 ▼▼▼▼▼
-            // 從 TokenManager 檢查本機是否有 Token
             val token = TokenManager.getToken()
+            val destination = if (token.isNullOrBlank()) "login" else "home"
 
-            // 決定下一個畫面的路徑
-            val destination = if (token.isNullOrBlank()) {
-                // 如果沒有 Token，目標是登入頁
-                "login"
-            } else {
-                // 如果有 Token，目標是主頁
-                "home"
-            }
-
-            // 執行導航
             navController.navigate(destination) {
-                // 從返回堆疊中移除 launch 畫面，讓使用者按返回鍵時不會再回到這裡
                 popUpTo("launch") { inclusive = true }
             }
-            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
         }
     } else {
-        // 在預覽模式下，僅顯示動畫，不進行導航
         LaunchedEffect(Unit) {
             visible = true
         }
     }
 
-    // --- 以下的 UI 程式碼完全保持不變 ---
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(iOsBackground), // ✅ 背景顏色改為藍色
         contentAlignment = Alignment.Center
     ) {
         AnimatedVisibility(
@@ -95,10 +80,13 @@ fun LaunchScreen(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@Preview(showBackground = true)
 @Composable
 fun PreviewLaunchScreen() {
     MyApplicationTheme(darkTheme = true) {
-        LaunchScreen(navController = rememberNavController(), previewMode = true)
+        // ✅ 預覽也使用藍色背景
+        Box(Modifier.background(iOsBackground)) {
+            LaunchScreen(navController = rememberNavController(), previewMode = true)
+        }
     }
 }

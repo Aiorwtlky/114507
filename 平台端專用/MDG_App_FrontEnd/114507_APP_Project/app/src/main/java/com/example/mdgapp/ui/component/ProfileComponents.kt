@@ -1,5 +1,8 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/component/ProfileComponents.kt
+
 package com.example.mdgapp.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,8 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mdgapp.data.model.LinkedAccount
+import com.example.mdgapp.ui.theme.*
 
-// ✅ 修改後的 ProfileHeader - 使用與首頁相同的預設頭像
 @Composable
 fun ProfileHeader(name: String, employeeId: String) {
     Row(
@@ -28,25 +31,24 @@ fun ProfileHeader(name: String, employeeId: String) {
             .padding(vertical = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // ✅ 使用與首頁相同的預設頭像樣式
         Box(
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF2A2A2A)),
+                .background(iOsComponentBackground), // ✅ 背景改為主題白色
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "個人頭像",
-                tint = Color.White,
+                tint = iOsTextSecondary, // ✅ 圖示改為主題灰色
                 modifier = Modifier.size(48.dp)
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Text("員工編號: $employeeId", fontSize = 14.sp, color = Color.Gray)
+            Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = iOsTextPrimary)
+            Text("員工編號: $employeeId", fontSize = 14.sp, color = iOsTextSecondary)
         }
     }
 }
@@ -56,13 +58,14 @@ fun ProfileSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = title,
-            color = Color.Gray,
+            color = iOsTextSecondary, // ✅ 文字改為主題灰色
             fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
-            modifier = Modifier.fillMaxWidth()
+            colors = CardDefaults.cardColors(containerColor = iOsComponentBackground), // ✅ 背景改為主題白色
+            modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, iOsBlue) // ✅ 新增藍色邊框
         ) {
             Column(content = content)
         }
@@ -77,14 +80,15 @@ fun HistorySection(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = title,
-            color = Color.White,
+            color = iOsTextPrimary, // ✅ 文字改為主題黑色
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2E)),
-            modifier = Modifier.fillMaxWidth()
+            colors = CardDefaults.cardColors(containerColor = iOsComponentBackground), // ✅ 背景改為主題白色
+            modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, iOsBlue) // ✅ 新增藍色邊框
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -105,14 +109,14 @@ fun InfoRow(label: String, value: String, isClickable: Boolean = false, onClick:
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = Color.White)
+        Text(label, color = iOsTextPrimary) // ✅ 文字改為主題黑色
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(value, color = Color.Gray)
+            Text(value, color = iOsTextSecondary) // ✅ 文字改為主題灰色
             if (isClickable) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = Color.Gray,
+                    tint = iOsTextSecondary, // ✅ 圖示改為主題灰色
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -129,15 +133,15 @@ fun SettingsSwitchRow(label: String, isChecked: Boolean, onCheckedChange: (Boole
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = Color.White)
+        Text(label, color = iOsTextPrimary) // ✅ 文字改為主題黑色
         Switch(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Color.Green,
-                uncheckedThumbColor = Color.Gray,
-                uncheckedTrackColor = Color.DarkGray
+                checkedTrackColor = iOsBlue, // ✅ Switch 開啟顏色改為藍色
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color.Gray
             )
         )
     }
@@ -159,8 +163,8 @@ fun LinkedAccountRow(account: LinkedAccount) {
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(account.platform, color = Color.White)
-            Text(account.username, color = Color.Gray, fontSize = 12.sp)
+            Text(account.platform, color = iOsTextPrimary) // ✅ 文字改為主題黑色
+            Text(account.username, color = iOsTextSecondary, fontSize = 12.sp) // ✅ 文字改為主題灰色
         }
         TextButton(onClick = { /* TODO: 處理取消連結 */ }) {
             Text("取消連結", color = Color.Red)

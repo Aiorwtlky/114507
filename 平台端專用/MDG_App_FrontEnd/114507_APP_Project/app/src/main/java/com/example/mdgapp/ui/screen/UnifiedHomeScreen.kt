@@ -1,5 +1,6 @@
 package com.example.mdgapp.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,15 +11,13 @@ import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter // ⭐ 新增 import
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,10 +32,17 @@ import com.example.mdgapp.ui.theme.*
 @Composable
 fun UnifiedHomeScreen(
     navController: NavController,
-    viewModel: ProfileViewModel = viewModel()
+    profileViewModel: ProfileViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by profileViewModel.uiState.collectAsState()
     val userProfile = uiState.userProfile
+
+    // ✅ 修改重點：頁面載入時就取得使用者資料
+    LaunchedEffect(Unit) {
+        if (userProfile == null && !uiState.isLoading) {
+            profileViewModel.fetchUserProfile()
+        }
+    }
 
     Scaffold(
         containerColor = iOsBackground,
@@ -80,9 +86,28 @@ fun UnifiedHomeScreen(
             when {
                 uiState.isLoading -> {
                     CircularProgressIndicator(color = iOsBlue)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "正在載入個人資料...",
+                        fontSize = 16.sp,
+                        color = iOsTextSecondary
+                    )
                 }
                 uiState.errorMessage != null -> {
-                    Text(text = uiState.errorMessage ?: "發生錯誤", color = Color.Red)
+                    Text(
+                        text = "載入失敗: ${uiState.errorMessage}",
+                        color = Color.Red,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { profileViewModel.fetchUserProfile() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = iOsBlue
+                        )
+                    ) {
+                        Text("重試")
+                    }
                 }
                 userProfile != null -> {
                     val fullName = listOfNotNull(userProfile.lastName, userProfile.firstName).joinToString("")
@@ -95,7 +120,6 @@ fun UnifiedHomeScreen(
                             .clip(CircleShape)
                             .background(iOsComponentBackground),
                         contentScale = ContentScale.Crop,
-                        // ⭐ 修正重點：使用 rememberVectorPainter 將 ImageVector 轉為 Painter
                         error = rememberVectorPainter(image = Icons.Default.Person),
                         placeholder = rememberVectorPainter(image = Icons.Default.Person)
                     )
@@ -111,7 +135,7 @@ fun UnifiedHomeScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "員工編號：${userProfile.personnelprofile?.personnelNumber ?: "N/A"}",
+                        text = "人員編號：${userProfile.personnelprofile?.personnelNumber ?: "N/A"}",
                         fontSize = 16.sp,
                         color = iOsTextSecondary
                     )
@@ -126,18 +150,31 @@ fun UnifiedHomeScreen(
                 RegisterButton(
                     icon = Icons.Default.Nfc,
                     text = "手機 NFC 註冊",
-                    onClick = { navController.navigate("nfcCheckIn") }
+                    onClick = {
+                        if (userProfile != null) {
+                            navController.navigate("nfcCheckIn")
+                        }
+                    },
+                    enabled = userProfile != null && !uiState.isLoading
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 RegisterButton(
                     icon = Icons.Default.CreditCard,
                     text = "實體卡片註冊",
-                    onClick = { navController.navigate("cardCheckIn") }
+                    onClick = {
+                        if (userProfile != null) {
+                            navController.navigate("cardCheckIn")
+                        }
+                    },
+                    enabled = userProfile != null && !uiState.isLoading
                 )
             }
 
-            TextButton(onClick = { navController.navigate("profile") }) {
+            TextButton(
+                onClick = { navController.navigate("profile") },
+                enabled = userProfile != null
+            ) {
                 Text("查看完整個人資料", color = iOsBlue, fontSize = 14.sp)
             }
         }
@@ -148,17 +185,21 @@ fun UnifiedHomeScreen(
 private fun RegisterButton(
     icon: ImageVector,
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = iOsComponentBackground
+            containerColor = iOsComponentBackground,
+            disabledContainerColor = iOsComponentBackground.copy(alpha = 0.5f)
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(3.dp, if (enabled) iOsBlue else iOsTextSecondary.copy(alpha = 0.3f))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -167,7 +208,7 @@ private fun RegisterButton(
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                tint = iOsTextSecondary,
+                tint = if (enabled) iOsTextSecondary else iOsTextSecondary.copy(alpha = 0.5f),
                 modifier = Modifier.size(28.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -175,7 +216,7 @@ private fun RegisterButton(
                 text = text,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                color = iOsTextPrimary
+                color = if (enabled) iOsTextPrimary else iOsTextPrimary.copy(alpha = 0.5f)
             )
         }
     }

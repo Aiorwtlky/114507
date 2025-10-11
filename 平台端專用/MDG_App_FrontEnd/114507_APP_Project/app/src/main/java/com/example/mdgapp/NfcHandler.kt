@@ -1,198 +1,278 @@
 package com.example.mdgapp
 
-import android.content.Context
-import android.content.Intent
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
-import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.MifareClassic
 import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
 import android.util.Log
-import com.example.mdgapp.data.model.UserProfile
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.nio.charset.Charset
 
-class NfcHandler(private val context: Context) {
+class NfcHandler(private val activity: MainActivity) {
 
     private val TAG = "NfcHandler"
 
-    // ⭐ WriteSuccess 現在會回傳卡片序號，用於後續 API 綁定
     sealed class NfcResult {
-        data class ReadSuccess(val userProfile: UserProfile) : NfcResult()
-        data class WriteSuccess(val serialNumber: String, val writtenData: String) : NfcResult()
+        data class WriteSuccess(
+            val driverId: String,
+            val serialNumber: String,
+            val isNewCard: Boolean // 是否為新卡片
+        ) : NfcResult()
+
+        data class UpdateSuccess(
+            val oldDriverId: String,
+            val newDriverId: String,
+            val serialNumber: String
+        ) : NfcResult()
+
+        data class AlreadyRegistered(
+            val driverId: String,
+            val serialNumber: String
+        ) : NfcResult()
+
+        data class ReadSuccess(val serialNumber: String) : NfcResult()
         data class Error(val message: String) : NfcResult()
     }
 
-    // ⭐ 智慧型讀取：優先 NDEF，失敗則嘗試 Mifare Classic
-    fun readUserProfile(intent: Intent): NfcResult {
-        val tag: Tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG) ?: return NfcResult.Error("找不到 Tag")
+    /**
+     * 讀取卡片資料並判斷註冊狀態
+     * @param tag NFC 標籤
+     * @param currentDriverId 當前使用者的人員編號
+     * @return NfcResult 包含操作結果
+     */
+    fun handleCardRegistration(tag: Tag, currentDriverId: String): NfcResult {
+        val cardSerialNumber = tag.id.toHexString()
+        Log.d(TAG, "偵測到卡片實體編號: $cardSerialNumber")
+        Log.d(TAG, "當前使用者人員編號: $currentDriverId")
 
-        // 優先嘗試 NDEF 標準讀取
-        val ndef = Ndef.get(tag)
-        if (ndef != null) {
-            try {
-                ndef.connect()
-                val ndefMessage = ndef.cachedNdefMessage ?: ndef.ndefMessage
-                val jsonString = getTextFromNdefMessage(ndefMessage)
-                ndef.close()
-                if (jsonString.isNotEmpty()) {
-                    val userProfile = Json.decodeFromString<UserProfile>(jsonString)
-                    return NfcResult.ReadSuccess(userProfile)
+        return try {
+            // 嘗試讀取卡片上的資料
+            val storedDriverId = readDriverIdFromCard(tag)
+
+            when {
+                // 情境 1: 卡片未寫入任何資料（首次註冊）
+                storedDriverId == null -> {
+                    Log.i(TAG, "情境 1: 卡片未註冊，開始寫入人員編號")
+                    writeDriverIdToCard(tag, currentDriverId, cardSerialNumber, isNewCard = true)
                 }
-            } catch (e: Exception) {
-                Log.w(TAG, "NDEF 讀取失敗: ${e.message}, 降級嘗試 Mifare Classic 讀取...")
-                if (ndef.isConnected) ndef.close()
-            }
-        }
 
-        // NDEF 讀取失敗，降級嘗試 Mifare Classic 讀取
-        return readFromMifareClassic(tag)
-    }
+                // 情境 3: 卡片已註冊且人員編號相同（已註冊）
+                storedDriverId == currentDriverId -> {
+                    Log.i(TAG, "情境 3: 卡片已註冊給當前使用者")
+                    NfcResult.AlreadyRegistered(
+                        driverId = currentDriverId,
+                        serialNumber = cardSerialNumber
+                    )
+                }
 
-    // ⭐ 智慧型寫入：優先 NDEF，失敗則嘗試 Mifare Classic
-    fun writeUserProfile(tag: Tag, userProfile: UserProfile): NfcResult {
-        val serialNumber = tag.id.toHexString()
-        val jsonData = Json.encodeToString(userProfile)
+                // 情境 2: 卡片已註冊但人員編號不同（更新註冊）
+                else -> {
+                    Log.i(TAG, "情境 2: 卡片已註冊給其他使用者，開始更新")
+                    Log.i(TAG, "舊人員編號: $storedDriverId, 新人員編號: $currentDriverId")
 
-        // 優先嘗試 NDEF 標準寫入
-        try {
-            val message = createNdefMessage(jsonData)
-            val ndef = Ndef.get(tag)
-            if (ndef != null) {
-                ndef.connect()
-                if (!ndef.isWritable) return NfcResult.Error("卡片是唯讀的")
-                if (ndef.maxSize < message.toByteArray().size) return NfcResult.Error("資料太大，卡片容量不足")
-                ndef.writeNdefMessage(message)
-                ndef.close()
-                return NfcResult.WriteSuccess(serialNumber, jsonData)
-            }
+                    val writeResult = writeDriverIdToCard(
+                        tag,
+                        currentDriverId,
+                        cardSerialNumber,
+                        isNewCard = false
+                    )
 
-            val ndefFormatable = NdefFormatable.get(tag)
-            if (ndefFormatable != null) {
-                ndefFormatable.connect()
-                ndefFormatable.format(message)
-                ndefFormatable.close()
-                return NfcResult.WriteSuccess(serialNumber, "(格式化後首次寫入)")
+                    // 轉換為 UpdateSuccess
+                    if (writeResult is NfcResult.WriteSuccess) {
+                        NfcResult.UpdateSuccess(
+                            oldDriverId = storedDriverId,
+                            newDriverId = currentDriverId,
+                            serialNumber = cardSerialNumber
+                        )
+                    } else {
+                        writeResult
+                    }
+                }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "NDEF 寫入失敗: ${e.message}, 降級嘗試 Mifare Classic 寫入...")
+            Log.e(TAG, "處理卡片註冊時發生錯誤", e)
+            NfcResult.Error("讀取卡片失敗: ${e.message}")
         }
-
-        // NDEF 寫入失敗，降級嘗試 Mifare Classic 寫入
-        return writeToMifareClassic(tag, serialNumber, jsonData)
     }
 
+    /**
+     * 從卡片讀取人員編號
+     * @return 人員編號，如果卡片未寫入資料則返回 null
+     */
+    private fun readDriverIdFromCard(tag: Tag): String? {
+        var ndef: Ndef? = null
+
+        try {
+            ndef = Ndef.get(tag)
+
+            if (ndef == null) {
+                Log.d(TAG, "卡片不支援 NDEF 格式或尚未格式化")
+                return null
+            }
+
+            ndef.connect()
+            val ndefMessage = ndef.cachedNdefMessage
+
+            if (ndefMessage == null) {
+                Log.d(TAG, "卡片為空白，未寫入任何資料")
+                return null
+            }
+
+            val records = ndefMessage.records
+            if (records.isEmpty()) {
+                Log.d(TAG, "卡片無記錄")
+                return null
+            }
+
+            // 讀取第一筆記錄
+            val record = records[0]
+            val payload = record.payload
+
+            if (payload.isEmpty()) {
+                Log.d(TAG, "記錄為空")
+                return null
+            }
+
+            // 跳過語言碼（第一個位元組）
+            val textEncoding = if ((payload[0].toInt() and 128) == 0) "UTF-8" else "UTF-16"
+            val languageCodeLength = payload[0].toInt() and 63
+
+            val text = String(
+                payload,
+                languageCodeLength + 1,
+                payload.size - languageCodeLength - 1,
+                Charset.forName(textEncoding)
+            )
+
+            Log.d(TAG, "從卡片讀取到人員編號: $text")
+            return text
+
+        } catch (e: Exception) {
+            Log.e(TAG, "讀取卡片資料時發生錯誤", e)
+            return null
+        } finally {
+            try {
+                ndef?.close()
+            } catch (e: IOException) {
+                Log.e(TAG, "關閉 NDEF 連線時發生錯誤", e)
+            }
+        }
+    }
+
+    /**
+     * 將人員編號寫入卡片
+     */
+    private fun writeDriverIdToCard(
+        tag: Tag,
+        driverId: String,
+        cardSerialNumber: String,
+        isNewCard: Boolean
+    ): NfcResult {
+        var ndef: Ndef? = null
+        var ndefFormatable: NdefFormatable? = null
+
+        try {
+            // 建立 NDEF 訊息
+            val message = createNdefMessage(driverId)
+
+            // 嘗試使用 Ndef 技術
+            ndef = Ndef.get(tag)
+
+            if (ndef != null) {
+                ndef.connect()
+
+                if (!ndef.isWritable) {
+                    Log.e(TAG, "卡片不可寫入")
+                    return NfcResult.Error("卡片為唯讀，無法寫入")
+                }
+
+                val size = message.toByteArray().size
+                if (ndef.maxSize < size) {
+                    Log.e(TAG, "卡片容量不足")
+                    return NfcResult.Error("卡片容量不足，無法寫入")
+                }
+
+                ndef.writeNdefMessage(message)
+                Log.i(TAG, "成功寫入人員編號: $driverId")
+
+                return NfcResult.WriteSuccess(
+                    driverId = driverId,
+                    serialNumber = cardSerialNumber,
+                    isNewCard = isNewCard
+                )
+
+            } else {
+                // 卡片尚未格式化，嘗試格式化
+                ndefFormatable = NdefFormatable.get(tag)
+
+                if (ndefFormatable != null) {
+                    ndefFormatable.connect()
+                    ndefFormatable.format(message)
+                    Log.i(TAG, "卡片格式化並寫入人員編號: $driverId")
+
+                    return NfcResult.WriteSuccess(
+                        driverId = driverId,
+                        serialNumber = cardSerialNumber,
+                        isNewCard = true
+                    )
+                } else {
+                    Log.e(TAG, "卡片不支援 NDEF 格式")
+                    return NfcResult.Error("卡片不支援 NDEF 格式")
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "寫入卡片時發生錯誤", e)
+            return NfcResult.Error("寫入失敗: ${e.message}")
+        } finally {
+            try {
+                ndef?.close()
+                ndefFormatable?.close()
+            } catch (e: IOException) {
+                Log.e(TAG, "關閉連線時發生錯誤", e)
+            }
+        }
+    }
+
+    /**
+     * 建立 NDEF 訊息
+     */
     private fun createNdefMessage(text: String): NdefMessage {
-        val record = NdefRecord.createTextRecord("en", text)
+        val langBytes = "en".toByteArray(Charset.forName("US-ASCII"))
+        val textBytes = text.toByteArray(Charset.forName("UTF-8"))
+
+        val textLength = textBytes.size
+        val langLength = langBytes.size
+
+        val payload = ByteArray(1 + langLength + textLength)
+        payload[0] = langLength.toByte()
+
+        System.arraycopy(langBytes, 0, payload, 1, langLength)
+        System.arraycopy(textBytes, 0, payload, 1 + langLength, textLength)
+
+        val record = NdefRecord(
+            NdefRecord.TNF_WELL_KNOWN,
+            NdefRecord.RTD_TEXT,
+            ByteArray(0),
+            payload
+        )
+
         return NdefMessage(arrayOf(record))
     }
 
-    private fun getTextFromNdefMessage(message: NdefMessage?): String {
-        if (message == null) return ""
-        val builder = StringBuilder()
-        message.records.forEach { record ->
-            if (record.tnf == NdefRecord.TNF_WELL_KNOWN && record.type.contentEquals(NdefRecord.RTD_TEXT)) {
-                val payload = record.payload
-                val textEncoding = if ((payload[0].toInt() and 128) == 0) "UTF-8" else "UTF-16"
-                val languageCodeLength = payload[0].toInt() and 63
-                builder.append(
-                    String(
-                        payload,
-                        languageCodeLength + 1,
-                        payload.size - languageCodeLength - 1,
-                        Charset.forName(textEncoding)
-                    )
-                )
-            }
-        }
-        return builder.toString()
+    /**
+     * 僅讀取卡片實體編號（用於打卡功能）
+     */
+    fun readCardSerialNumber(tag: Tag): NfcResult {
+        val cardSerialNumber = tag.id.toHexString()
+        Log.i(TAG, "讀取到卡片實體編號: $cardSerialNumber")
+        return NfcResult.ReadSuccess(cardSerialNumber)
     }
 
-    // --- 以下為 Mifare Classic 專用方法 ---
-
-    private fun writeToMifareClassic(tag: Tag, serialNumber: String, jsonData: String): NfcResult {
-        val mifare = MifareClassic.get(tag) ?: return NfcResult.Error("卡片不支援 NDEF 也不是 Mifare Classic")
-        try {
-            mifare.connect()
-            // 寫入前先洗白
-            if (!wipeMifareCard(mifare)) return NfcResult.Error("洗白卡片失敗")
-
-            val jsonDataBytes = jsonData.toByteArray(Charset.forName("UTF-8"))
-            if (jsonDataBytes.size > mifare.size) return NfcResult.Error("資料太大(${jsonDataBytes.size} bytes)")
-
-            var bytesWritten = 0
-            for (sectorIndex in 1 until mifare.sectorCount) {
-                if (bytesWritten >= jsonDataBytes.size) break
-                if (mifare.authenticateSectorWithKeyA(sectorIndex, MifareClassic.KEY_DEFAULT)) {
-                    for (blockInSector in 0 until mifare.getBlockCountInSector(sectorIndex) - 1) {
-                        if (bytesWritten >= jsonDataBytes.size) break
-                        val blockIndex = mifare.sectorToBlock(sectorIndex) + blockInSector
-                        val chunk = jsonDataBytes.drop(bytesWritten).take(16).toByteArray()
-                        val blockData = ByteArray(16) { 0 }
-                        chunk.copyInto(blockData)
-                        mifare.writeBlock(blockIndex, blockData)
-                        bytesWritten += 16
-                    }
-                } else {
-                    return NfcResult.Error("寫入失敗: Sector $sectorIndex 認證失敗")
-                }
-            }
-            return NfcResult.WriteSuccess(serialNumber, jsonData)
-        } catch (e: IOException) {
-            return NfcResult.Error("寫入失敗: ${e.message}")
-        } finally {
-            if (mifare.isConnected) mifare.close()
-        }
-    }
-
-    private fun readFromMifareClassic(tag: Tag): NfcResult {
-        val mifare = MifareClassic.get(tag) ?: return NfcResult.Error("卡片不支援 NDEF 也不是 Mifare Classic")
-        return try {
-            mifare.connect()
-            val dataBytes = mutableListOf<Byte>()
-            for (sectorIndex in 1 until mifare.sectorCount) {
-                if (mifare.authenticateSectorWithKeyA(sectorIndex, MifareClassic.KEY_DEFAULT)) {
-                    for (blockInSector in 0 until mifare.getBlockCountInSector(sectorIndex) - 1) {
-                        val blockIndex = mifare.sectorToBlock(sectorIndex) + blockInSector
-                        val blockData = mifare.readBlock(blockIndex)
-                        val nullIndex = blockData.indexOf(0.toByte())
-                        if (nullIndex != -1) {
-                            dataBytes.addAll(blockData.take(nullIndex))
-                            val jsonString = String(dataBytes.toByteArray(), Charset.forName("UTF-8"))
-                            return NfcResult.ReadSuccess(Json.decodeFromString(jsonString))
-                        } else {
-                            dataBytes.addAll(blockData.toList())
-                        }
-                    }
-                }
-            }
-            return NfcResult.Error("在卡片中未找到有效資料")
-        } catch (e: Exception) {
-            NfcResult.Error("讀取失敗: ${e.message}")
-        } finally {
-            if (mifare.isConnected) mifare.close()
-        }
-    }
-
-    private fun wipeMifareCard(mifare: MifareClassic): Boolean {
-        try {
-            val emptyBlock = ByteArray(16) { 0 }
-            for (sectorIndex in 1 until mifare.sectorCount) {
-                if (mifare.authenticateSectorWithKeyA(sectorIndex, MifareClassic.KEY_DEFAULT)) {
-                    for (blockInSector in 0 until mifare.getBlockCountInSector(sectorIndex) - 1) {
-                        mifare.writeBlock(mifare.sectorToBlock(sectorIndex) + blockInSector, emptyBlock)
-                    }
-                }
-            }
-            return true
-        } catch (e: IOException) {
-            return false
-        }
-    }
-
-    private fun ByteArray.toHexString(): String = joinToString("") { "%02X".format(it) }
+    /**
+     * 將 ByteArray 轉換為十六進位字串
+     */
+    private fun ByteArray.toHexString(): String =
+        joinToString("") { "%02X".format(it) }
 }

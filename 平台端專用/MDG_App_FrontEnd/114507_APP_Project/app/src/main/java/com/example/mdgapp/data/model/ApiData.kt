@@ -23,7 +23,7 @@ data class UserProfileResponse(
     @SerialName("last_name") val lastName: String?,
     val email: String,
     @SerialName("is_staff") val isStaff: Boolean,
-    @SerialName("is_group_leader") val isGroupLeader: Boolean,
+    val isGroupLeader: Boolean? = null,
     @SerialName("administered_groups") val administeredGroups: List<Int>,
     val personnelprofile: PersonnelProfileResponse?
 )
