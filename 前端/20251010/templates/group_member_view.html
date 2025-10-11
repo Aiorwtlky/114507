@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}群組資訊 · My Driving God{% endblock %}
+{% block page_heading %}群組資訊{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_leader_view.css') }}" />
+<style>
+  /* (公告標籤的 CSS 維持不變) */
+  .announcement-row { position: relative; padding-left: 90px; }
+  .announcement-badge { position: absolute; left: 0; top: 50%; transform: translateY(-50%); padding: 0.25em 0.6em; font-size: 0.75rem; font-weight: bold; border-radius: 4px; color: white; }
+  .announcement-badge.system { background-color: #dc2626; }
+  .announcement-badge.group { background-color: #1a2a5f; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="group-leader-container">
+    <div class="d-card group-info-card">
+        <div class="group-header">
+            <div class="group-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="group-info">
+                <h2 class="group-name" id="group-name">載入中...</h2>
+                <p class="group-company"><i class="fa-solid fa-building"></i> <span id="group-description">--</span></p>
+            </div>
+            </div>
+        <div class="group-leaders">
+            <span class="leaders-label"><i class="fa-solid fa-crown"></i> 群組管理員</span>
+            <div class="leaders-list" id="group-leaders-list"><span class="leader-badge">載入中...</span></div>
+        </div>
+        <div class="my-identity">
+            <span class="identity-label"><i class="fa-solid fa-id-card"></i> 我的身分</span>
+            <div class="identity-content">
+                <img src="{{ url_for('static', filename='images/user-placeholder.svg') }}" alt="我的頭像" class="identity-avatar" id="my-identity-avatar">
+                <div class="identity-info">
+                    <span class="identity-name" id="my-identity-name">--</span>
+                    <span class="identity-role" id="my-identity-role"><i class="fa-solid fa-user-tie"></i> --</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-card members-card">
+        <div class="members-table-wrapper">
+            <table class="members-table">
+                <thead><tr><th class="avatar-col">頭像</th><th>編號</th><th>姓名</th><th>總平均分</th><th>加入日期</th></tr></thead>
+                <tbody id="members-table-body"><tr><td colspan="5" style="text-align: center; padding: 2rem;">載入中...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-card announcements-card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
+            </div>
+        <div class="announcements-list" id="announcements-list">
+            <div style="text-align: center; padding: 2rem;">載入中...</div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> 返回儀表板</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/group_member_view.js') }}"></script>
+{% endblock %}

@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/pages/my_groups_standalone.js (完整修正版)
+// 檔案路徑: static/js/pages/my_groups_standalone.js (最終修正版)
 
 (function() {
     'use strict';
@@ -26,27 +26,6 @@
         return response;
     }
 
-    // ▼▼▼【核心修改 1】新增一個專門用來更新側邊欄的函式 ▼▼▼
-    function updateSidebarUI(currentUser) {
-        if (!currentUser) return;
-        
-        const sidebarAvatar = document.getElementById('sidebar-avatar');
-        const sidebarUsername = document.getElementById('sidebar-username');
-        const sidebarUserRole = document.getElementById('sidebar-user-role');
-
-        if (sidebarAvatar) {
-            sidebarAvatar.src = currentUser.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
-        }
-        if (sidebarUsername) {
-            sidebarUsername.textContent = currentUser.first_name || currentUser.username;
-        }
-        if (sidebarUserRole) {
-            // 保持與 dashboard.js 一致的角色顯示邏輯
-            sidebarUserRole.textContent = currentUser.is_staff ? '系統管理員' : (currentUser.is_group_admin ? '群組管理員' : '一般成員');
-        }
-    }
-
-    // 渲染群組列表到畫面上
     function renderGroupList(groups, currentUser) {
         const groupListElement = document.getElementById('group-list-container');
         if (!groupListElement) return;
@@ -64,17 +43,18 @@
             const roleText = role === 'ADMIN' ? '管理員' : '一般成員';
             const roleClass = role === 'ADMIN' ? 'role-leader' : 'role-member';
             
+            // ▼▼▼【核心修改】根據權限決定連結目標 ▼▼▼
+            const targetUrl = (currentUser.is_staff || role === 'ADMIN') ? '/group_leader_view' : '/group_member_view';
+            
             const groupElement = document.createElement('li');
-            // 點擊群組後應前往該群組的總覽頁
             groupElement.innerHTML = `
-                <a href="/group_leader_view?group_id=${group.id}">${group.name}</a>
+                <a href="${targetUrl}?group_id=${group.id}">${group.name}</a>
                 <span class="group-role ${roleClass}">${roleText}</span>
             `;
             groupListElement.appendChild(groupElement);
         });
     }
 
-    // 頁面初始化函式
     async function initializePage() {
         try {
             const currentUser = JSON.parse(localStorage.getItem('userProfile'));
@@ -82,8 +62,7 @@
                  throw new Error('無法獲取使用者資訊');
             }
 
-            // ▼▼▼【核心修改 2】在頁面初始化時，立刻呼叫更新側邊欄的函式 ▼▼▼
-            updateSidebarUI(currentUser);
+            // 【移除】不再需要手動更新側邊欄，main_app.js 會自動處理
 
             const response = await fetchWithAuth('/api/me/groups/');
             if (!response.ok) {

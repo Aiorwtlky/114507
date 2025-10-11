@@ -172,8 +172,8 @@
             
             updateGroupInfoUI(groupData, membersData.results || membersData);
             updateMembersTableUI(membersData.results || membersData);
-            updateAnnouncementsListUI(announcementsData); // 使用新的渲染函式
-            setupManagementUI(currentGroupId);
+            updateAnnouncementsListUI(announcementsData);
+            setupManagementUI(currentGroupId); // 權限控制
 
             document.getElementById('invite-member-link').href = `/invite_member?group_id=${currentGroupId}`;
             document.getElementById('group-settings-link').href = `/group_settings?group_id=${currentGroupId}`;

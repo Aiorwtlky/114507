@@ -61,11 +61,16 @@
             document.getElementById('dashboard-last-login').textContent = `上次登入: ${new Date(userData.last_login).toLocaleString()}`;
         }
         
+        // --- 更新群組列表 ---
         const groupsList = document.getElementById('dashboard-groups-list');
         groupsList.innerHTML = '';
         if (groupData.results && groupData.results.length > 0) {
+            const canManage = userData.is_staff || userData.is_group_admin;
+            // ▼▼▼【核心修改】根據權限決定連結目標 ▼▼▼
+            const targetUrl = canManage ? '/group_leader_view' : '/group_member_view';
+            
             groupData.results.slice(0, 5).forEach(group => {
-                groupsList.innerHTML += `<li class="list-item"><a href="/group_leader_view?group_id=${group.id}" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
+                groupsList.innerHTML += `<li class="list-item"><a href="${targetUrl}?group_id=${group.id}" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
             });
         } else {
             groupsList.innerHTML = '<li class="list-item"><span>您尚未加入任何群組</span></li>';
@@ -117,7 +122,7 @@
         }
 
         initTrendsChart(trendsData);
-        initGauge(trendsData); // <-- 這裡會呼叫下面正確的 initGauge 函式
+        initGauge(trendsData);
     }
     
     async function initializeDashboard() {
@@ -154,28 +159,22 @@
         }
     }
     
-    // ▼▼▼【這是唯一且正確的 initGauge 函式】▼▼▼
     function initGauge(trendsData) {
         const gaugeNeedle = document.getElementById('trends-gauge-needle');
         const gaugeText = document.getElementById('trends-gauge-text')?.querySelector('strong');
         if (!gaugeNeedle || !gaugeText) return;
 
-        // 預設為 0 分
         let score = 0;
-        // 如果有趨勢資料，則計算本季 (或最新月份) 平均分
         if (trendsData && trendsData.length > 0) {
-            // 這裡簡單取最新一個月的分數作為代表
             score = Math.round(trendsData[trendsData.length - 1].average_score);
         }
 
         gaugeText.textContent = score;
-        
         const rotation = (score / 100) * 180 - 90;
 
-        // 使用 setTimeout 來確保動畫被觸發
         setTimeout(() => {
             gaugeNeedle.style.transform = `rotate(${rotation}deg)`;
-        }, 100); // 延遲 100 毫秒，讓瀏覽器有足夠時間渲染初始狀態
+        }, 100);
     }
 
     function initTrendsChart(trendsData) {
