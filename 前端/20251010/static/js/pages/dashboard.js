@@ -65,11 +65,11 @@
         const groupsList = document.getElementById('dashboard-groups-list');
         groupsList.innerHTML = '';
         if (groupData.results && groupData.results.length > 0) {
-            const canManage = userData.is_staff || userData.is_group_admin;
-            // ▼▼▼【核心修改】根據權限決定連結目標 ▼▼▼
-            const targetUrl = canManage ? '/group_leader_view' : '/group_member_view';
+            // ▼▼▼【核心修改】移除判斷邏輯，直接定義唯一的目標 URL ▼▼▼
+            const targetUrl = '/group_leader_view';
             
             groupData.results.slice(0, 5).forEach(group => {
+                // 直接使用統一的 URL
                 groupsList.innerHTML += `<li class="list-item"><a href="${targetUrl}?group_id=${group.id}" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
             });
         } else {

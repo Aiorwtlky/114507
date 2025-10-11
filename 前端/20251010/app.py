@@ -122,14 +122,6 @@ def announcement_detail(announcement_id):
 def edit_announcement(announcement_id):
     return render_template('edit_announcement.html')
 
-@app.route('/announcements')
-def announcements():
-    return "這是「所有公告列表」的佔位頁面。"
-    
-@app.route('/group_member_view')
-def group_member_view():
-    return render_template('group_member_view.html')
-
 @app.route("/reset-password")
 def reset_password():
     return render_template("reset_password.html")

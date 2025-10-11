@@ -114,29 +114,31 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     
 class GroupMemberSerializer(serializers.ModelSerializer):
-    """【已修正】序列化群組成員資料，新增 joined_at 欄位以滿足前端需求。"""
+    """【最終修正版】序列化群組成員資料，明確包含角色和加入日期。"""
     average_score = serializers.FloatField(read_only=True, default=0)
-    role = serializers.SerializerMethodField()
     personnelprofile = PersonnelProfileSerializer(read_only=True)
-    # ▼▼▼ 【核心修正】新增 joined_at 欄位 ▼▼▼
+    
+    role = serializers.SerializerMethodField()
     joined_at = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role', 'personnelprofile', 'joined_at'] # <-- 加入到 fields
+        fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role', 'personnelprofile', 'joined_at']
 
     def get_role(self, obj):
+        """從傳入的 context 中獲取群組 ID，並查詢該使用者在此群組的角色。"""
         group_id = self.context.get('group_id')
-        if not group_id: return 'MEMBER'
+        if not group_id:
+            first_membership = obj.groupmember_set.first()
+            return first_membership.role if first_membership else 'MEMBER'
         try:
             membership = GroupMember.objects.get(user=obj, group__id=group_id)
             return membership.role
         except GroupMember.DoesNotExist:
-            return 'MEMBER'
+            return 'UNKNOWN'
 
-    # ▼▼▼ 【核心修正】新增 get_joined_at 方法 ▼▼▼
     def get_joined_at(self, obj):
-        """從 GroupMember 中介表中，查詢這位使用者是在何時加入這個群組的。"""
+        """查詢這位使用者是在何時加入這個群組的。"""
         group_id = self.context.get('group_id')
         if not group_id:
             return None
@@ -145,6 +147,7 @@ class GroupMemberSerializer(serializers.ModelSerializer):
             return membership.joined_at
         except GroupMember.DoesNotExist:
             return None
+
 
 
 class GroupSerializer(serializers.ModelSerializer):

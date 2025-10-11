@@ -350,6 +350,52 @@ class CombinedAnnouncementListAPIView(APIView):
 
         return Response(combined_list)
 
+class AnnouncementDetailAPIView(APIView):
+    """
+    (需登入) 獲取單則公告的詳細內容。
+    能自動判斷是系統公告(sys-id)還是群組公告(grp-id)。
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, ann_id, *args, **kwargs):
+        ann_type, _, pk = ann_id.partition('-')
+        
+        try:
+            pk = int(pk)
+            if ann_type == 'sys':
+                announcement = get_object_or_404(SystemAnnouncement, pk=pk)
+                data = {
+                    'id': f"sys-{announcement.id}",
+                    'type': 'SYSTEM',
+                    'subject': f"系統公告: {announcement.content[:20]}...", # 系統公告通常沒有獨立標題
+                    'content': announcement.content,
+                    'publish_date': announcement.date,
+                    'publisher': '系統管理員',
+                    'group_name': '全系統'
+                }
+            elif ann_type == 'grp':
+                announcement = get_object_or_404(GroupAnnouncement, pk=pk)
+                # 權限檢查：使用者必須是該群組的成員才能查看
+                if not announcement.group.members.filter(id=request.user.id).exists() and not request.user.is_staff:
+                    raise PermissionDenied("您沒有權限查看此公告。")
+                
+                data = {
+                    'id': f"grp-{announcement.id}",
+                    'type': 'GROUP',
+                    'subject': f"群組公告: {announcement.content[:20]}...",
+                    'content': announcement.content,
+                    'publish_date': announcement.publish_date,
+                    'publisher': announcement.publisher.get_full_name() or announcement.publisher.username,
+                    'group_name': announcement.group.name
+                }
+            else:
+                return Response({"error": "無效的公告 ID 格式。"}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(data)
+
+        except (ValueError, SystemAnnouncement.DoesNotExist, GroupAnnouncement.DoesNotExist):
+            return Response({"error": "找不到指定的公告。"}, status=status.HTTP_404_NOT_FOUND)
+
 
 # =============================================================================
 # 4. 數據讀取與報表 API (Data & Report APIs)

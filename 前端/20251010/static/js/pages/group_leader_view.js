@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/pages/group_leader_view.js (最終整合版 - 包含所有功能)
+// 檔案路徑: static/js/pages/group_leader_view.js (最終統一版)
 
 (function() {
     'use strict';
@@ -8,9 +8,9 @@
     if (!userProfile) {
         alert('無法獲取使用者資訊，請重新登入。');
         window.location.href = '/login';
-        return; 
+        return;
     }
-    
+
     // --- 全域變數 ---
     const API_BASE_URL = 'http://127.0.0.1:8000';
     let currentGroupId = null;
@@ -20,12 +20,38 @@
     async function fetchWithAuth(endpoint, options = {}) {
         const token = localStorage.getItem('accessToken');
         if (!token) { window.location.href = '/login'; throw new Error('Not Authenticated'); }
-        const headers = options.headers || new Headers();
+        const headers = new Headers(options.headers || {});
         headers.append('Authorization', `Bearer ${token}`);
         if (!(options.body instanceof FormData)) { headers.append('Content-Type', 'application/json'); }
         const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
         if (response.status === 401) { localStorage.clear(); window.location.href = '/login'; throw new Error('Token Expired'); }
         return response;
+    }
+
+    // --- 【核心】根據權限，動態顯示/隱藏 UI 元素 ---
+    function setupUIByRole(canManage) {
+        // 管理員專用按鈕
+        const managementElements = [
+            document.getElementById('invite-member-link'),
+            document.getElementById('group-settings-link'),
+            document.getElementById('add-announcement-link'),
+        ];
+        // 管理員在成員列表看到的「操作」欄位標題
+        const memberActionsHeader = document.querySelector('.members-table th.actions-col');
+        const trendsCard = document.querySelector('.trends-card');
+
+        if (canManage) {
+            managementElements.forEach(el => { if (el) el.style.display = 'inline-flex'; });
+            if (document.getElementById('group-settings-link')) document.getElementById('group-settings-link').style.display = 'block';
+            if (memberActionsHeader) memberActionsHeader.style.display = 'table-cell';
+            if (trendsCard) trendsCard.style.display = 'block'; // 確保管理員看得到趨勢圖
+        } else {
+            // 如果是一般成員，隱藏所有管理功能
+            managementElements.forEach(el => { if (el) el.style.display = 'none'; });
+            if (memberActionsHeader) memberActionsHeader.style.display = 'none';
+            // 趨勢圖表對一般成員也隱藏
+            if (trendsCard) trendsCard.style.display = 'none';
+        }
     }
 
     // --- 趨勢分析圖表相關 ---
@@ -40,7 +66,7 @@
         try {
             const response = await fetchWithAuth(`/api/groups/${currentGroupId}/statistics/trends/?start_date=${startDate}&end_date=${endDate}`);
             if (!response.ok) throw new Error('無法獲取群組趨勢資料');
-            
+
             const trendsData = await response.json();
             updateTrendsUI(trendsData);
 
@@ -72,7 +98,7 @@
         const totalAverage = scores.reduce((sum, score) => sum + score, 0) / scores.length;
         const maxScore = Math.max(...trendsData.map(item => item.max_score));
         const minScore = Math.min(...trendsData.map(item => item.min_score));
-        
+
         let changeText = '--';
         if (scores.length >= 2) {
             const latest = scores[scores.length - 1];
@@ -83,7 +109,7 @@
                 changeText = `${change > 0 ? '▲' : '▼'} ${Math.abs(change).toFixed(1)}%`;
             }
         }
-        
+
         if (summaryValues.length >= 4) {
             summaryValues[0].textContent = `${totalAverage.toFixed(1)}分`;
             summaryValues[1].textContent = changeText;
@@ -92,21 +118,26 @@
         }
 
         if (chartWrapper) chartWrapper.innerHTML = '<canvas id="groupTrendsChart"></canvas>';
+        
+        // ▼▼▼【核心修正】這裡的 'd' 已更正為 '2d' ▼▼▼
         const ctx = document.getElementById('groupTrendsChart')?.getContext('2d');
-        if (!ctx) return;
-        
-        const labels = trendsData.map(item => item.month);
-        
-        if (groupTrendsChart) groupTrendsChart.destroy();
+        if (!ctx) return; // 如果無法獲取繪圖環境，則直接返回
+
+        if (groupTrendsChart) {
+            groupTrendsChart.destroy();
+        }
 
         groupTrendsChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: trendsData.map(item => item.month),
                 datasets: [{
-                    label: '群組每月平均分數', data: scores,
-                    borderColor: '#007bff', backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                    fill: true, tension: 0.4
+                    label: '群組每月平均分數',
+                    data: scores,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    fill: true,
+                    tension: 0.4
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false }
@@ -118,10 +149,10 @@
         const endDate = new Date();
         const startDate = new Date();
         startDate.setMonth(endDate.getMonth() - 5);
-        
+
         const defaultStartDateStr = formatDate(startDate);
         const defaultEndDateStr = formatDate(endDate);
-        
+
         flatpickr("#group-date-range-picker", {
             mode: "range",
             dateFormat: "Y-m-d",
@@ -134,7 +165,7 @@
                 }
             }
         });
-        
+
         fetchAndUpdateGroupTrends(defaultStartDateStr, defaultEndDateStr);
     }
 
@@ -155,58 +186,46 @@
                     return;
                 }
             }
-            
+
             currentGroupId = parseInt(groupId);
-            
+
             const [groupRes, membersRes, announcementsRes] = await Promise.all([
                 fetchWithAuth(`/api/groups/${currentGroupId}/`),
                 fetchWithAuth(`/api/groups/${currentGroupId}/members/`),
-                fetchWithAuth(`/api/groups/${currentGroupId}/all-announcements/`) // <-- 使用合併公告的 API
+                fetchWithAuth(`/api/groups/${currentGroupId}/all-announcements/`)
             ]);
 
             if (!groupRes.ok || !membersRes.ok || !announcementsRes.ok) throw new Error('無法獲取群組詳細資料');
-            
+
             const groupData = await groupRes.json();
             const membersData = await membersRes.json();
             const announcementsData = await announcementsRes.json();
-            
+
+            const membership = userProfile.group_memberships.find(m => m.group_id === currentGroupId);
+            const isGroupAdmin = membership && membership.role === 'ADMIN';
+            const canManage = userProfile.is_staff || isGroupAdmin;
+
+            setupUIByRole(canManage);
             updateGroupInfoUI(groupData, membersData.results || membersData);
-            updateMembersTableUI(membersData.results || membersData);
-            updateAnnouncementsListUI(announcementsData);
-            setupManagementUI(currentGroupId); // 權限控制
+            updateMembersTableUI(membersData.results || membersData, canManage);
+            updateAnnouncementsListUI(announcementsData, canManage); // 傳入權限
+
+            if (canManage) {
+                initFilterControls();
+            }
 
             document.getElementById('invite-member-link').href = `/invite_member?group_id=${currentGroupId}`;
             document.getElementById('group-settings-link').href = `/group_settings?group_id=${currentGroupId}`;
             document.getElementById('add-announcement-link').href = `/create_announcement?group_id=${currentGroupId}`;
-            
-            initFilterControls();
 
         } catch (error) {
             console.error("載入群組管理頁面失敗:", error.message);
             document.querySelector('.group-leader-container').innerHTML = `<h1>載入群組資料時發生錯誤</h1><p>${error.message}</p>`;
         }
     }
-    
-    // --- 所有輔助函式 (完整不省略) ---
-    
-    function setupManagementUI(groupId) {
-        const membership = userProfile.group_memberships.find(m => m.group_id === groupId);
-        const isGroupAdmin = membership && membership.role === 'ADMIN';
-        const canManage = userProfile.is_staff || isGroupAdmin;
-        const inviteLink = document.getElementById('invite-member-link');
-        const settingsLink = document.getElementById('group-settings-link');
-        const addAnnouncementLink = document.getElementById('add-announcement-link');
-        if (canManage) {
-            if(inviteLink) inviteLink.style.display = 'inline-flex';
-            if(settingsLink) settingsLink.style.display = 'block';
-            if(addAnnouncementLink) addAnnouncementLink.style.display = 'inline-flex';
-        } else {
-            if(inviteLink) inviteLink.style.display = 'none';
-            if(settingsLink) settingsLink.style.display = 'none';
-            if(addAnnouncementLink) addAnnouncementLink.style.display = 'none';
-        }
-    }
-    
+
+    // --- 所有輔助函式 ---
+
     function updateGroupInfoUI(group, members) {
         document.getElementById('group-name').textContent = group.name;
         document.getElementById('group-description').textContent = group.description || '暫無描述';
@@ -225,7 +244,7 @@
         document.getElementById('my-identity-role').innerHTML = `<i class="fa-solid fa-user-tie"></i> ${myRole}`;
     }
 
-    function updateMembersTableUI(members) {
+    function updateMembersTableUI(members, canManage) {
         const tableBody = document.getElementById('members-table-body');
         tableBody.innerHTML = '';
         if (members && members.length > 0) {
@@ -233,37 +252,44 @@
                 const score = Math.round(member.average_score || 0);
                 const joinDate = member.joined_at ? new Date(member.joined_at).toLocaleDateString() : 'N/A';
                 const scoreClass = score >= 80 ? 'excellent' : (score >= 60 ? 'warning' : 'danger');
-                tableBody.innerHTML += `<tr><td class="avatar-col"><img src="${member.personnelprofile?.avatar || '/static/images/user-placeholder.svg'}" alt="${member.first_name || member.username}" class="member-avatar-small"></td><td>${member.personnelprofile?.personnel_number || 'N/A'}</td><td class="name-col">${member.first_name || member.username}</td><td><span class="score-badge ${scoreClass}">${score}</span></td><td>${joinDate}</td><td class="actions-col"><a href="/member_dashboard/${member.id}" class="btn-action" title="查看成員"><i class="fa-solid fa-eye"></i></a><a href="/member_videos/${member.id}" class="btn-action" title="行車影片"><i class="fa-solid fa-video"></i></a></td></tr>`;
+                const actionsCell = canManage ?
+                    `<td class="actions-col"><a href="/member_dashboard/${member.id}" class="btn-action" title="查看成員"><i class="fa-solid fa-eye"></i></a><a href="/member_videos/${member.id}" class="btn-action" title="行車影片"><i class="fa-solid fa-video"></i></a></td>` :
+                    '';
+                tableBody.innerHTML += `<tr><td class="avatar-col"><img src="${member.personnelprofile?.avatar || '/static/images/user-placeholder.svg'}" alt="${member.first_name || member.username}" class="member-avatar-small"></td><td>${member.personnelprofile?.personnel_number || 'N/A'}</td><td class="name-col">${member.first_name || member.username}</td><td><span class="score-badge ${scoreClass}">${score}</span></td><td>${joinDate}</td>${actionsCell}</tr>`;
             });
         } else {
-            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">此群組尚無成員。</td></tr>';
+            tableBody.innerHTML = `<tr><td colspan="${canManage ? 6 : 5}" style="text-align: center; padding: 2rem;">此群組尚無成員。</td></tr>`;
         }
         initScoreBadges();
     }
 
-    function updateAnnouncementsListUI(announcements) {
+
+    function updateAnnouncementsListUI(announcements, canManage) {
         const announcementsList = document.getElementById('announcements-list');
         announcementsList.innerHTML = '';
-        const membership = userProfile.group_memberships.find(m => m.group_id === currentGroupId);
-        const isGroupAdmin = membership && membership.role === 'ADMIN';
-        const canManage = userProfile.is_staff || isGroupAdmin;
         if (announcements && announcements.length > 0) {
             announcements.forEach(ann => {
                 const publishDate = new Date(ann.publish_date).toLocaleDateString();
                 const shortContent = ann.content.length > 30 ? ann.content.substring(0, 30) + '...' : ann.content;
+                
                 let actionButtons = '';
                 if (ann.type === 'GROUP' && canManage) {
-                    const annId = ann.id.split('-')[1];
-                    actionButtons = `<div class="announcement-actions"><a href="/edit_announcement/${annId}" class="btn-action-icon" title="編輯"><i class="fa-solid fa-pencil"></i></a><button class="btn-action-icon danger" title="刪除" onclick="confirmDelete('${annId}', '${shortContent}')"><i class="fa-solid fa-trash"></i></button></div>`;
+                    // 從 'grp-5' 中提取純數字 '5' 給編輯和刪除功能使用
+                    const numericId = ann.id.split('-')[1]; 
+                    actionButtons = `<div class="announcement-actions"><a href="/edit_announcement/${numericId}" class="btn-action-icon" title="編輯"><i class="fa-solid fa-pencil"></i></a><button class="btn-action-icon danger" title="刪除" onclick="confirmDelete('${numericId}', '${shortContent}')"><i class="fa-solid fa-trash"></i></button></div>`;
                 }
+                
                 const typeBadge = ann.type === 'SYSTEM' ? '<span class="announcement-badge system">系統公告</span>' : '<span class="announcement-badge group">群組公告</span>';
-                announcementsList.innerHTML += `<div class="announcement-row">${typeBadge}<div class="announcement-info"><a href="#" class="announcement-title">${ann.content}</a><div class="announcement-meta"><span class="meta-item"><i class="fa-solid fa-user"></i> ${ann.publisher}</span><span class="meta-item"><i class="fa-solid fa-calendar"></i> ${publishDate}</span></div></div>${actionButtons}</div>`;
+                
+                // ▼▼▼【核心修改】這裡的 href 使用後端傳來的完整 ann.id (例如 "grp-5") ▼▼▼
+                announcementsList.innerHTML += `<div class="announcement-row">${typeBadge}<div class="announcement-info"><a href="/announcement_detail/${ann.id}" class="announcement-title">${ann.content}</a><div class="announcement-meta"><span class="meta-item"><i class="fa-solid fa-user"></i> ${ann.publisher}</span><span class="meta-item"><i class="fa-solid fa-calendar"></i> ${publishDate}</span></div></div>${actionButtons}</div>`;
             });
         } else {
             announcementsList.innerHTML = '<div style="text-align: center; padding: 2rem;">尚無任何公告。</div>';
         }
     }
-    
+
+
     function initScoreBadges() {
         const scoreBadges = document.querySelectorAll('.score-badge');
         scoreBadges.forEach(badge => {

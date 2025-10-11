@@ -43,12 +43,12 @@
             const roleText = role === 'ADMIN' ? '管理員' : '一般成員';
             const roleClass = role === 'ADMIN' ? 'role-leader' : 'role-member';
             
-            // ▼▼▼【核心修改】根據權限決定連結目標 ▼▼▼
-            const targetUrl = (currentUser.is_staff || role === 'ADMIN') ? '/group_leader_view' : '/group_member_view';
+            // ▼▼▼【核心修改】移除判斷邏輯，直接使用統一的 URL ▼▼▼
+            const targetUrl = `/group_leader_view?group_id=${group.id}`;
             
             const groupElement = document.createElement('li');
             groupElement.innerHTML = `
-                <a href="${targetUrl}?group_id=${group.id}">${group.name}</a>
+                <a href="${targetUrl}">${group.name}</a>
                 <span class="group-role ${roleClass}">${roleText}</span>
             `;
             groupListElement.appendChild(groupElement);
@@ -61,8 +61,6 @@
             if (!currentUser) {
                  throw new Error('無法獲取使用者資訊');
             }
-
-            // 【移除】不再需要手動更新側邊欄，main_app.js 會自動處理
 
             const response = await fetchWithAuth('/api/me/groups/');
             if (!response.ok) {
