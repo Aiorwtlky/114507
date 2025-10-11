@@ -36,10 +36,7 @@
 
             <div class="d-card groups-card">
                 <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fa-solid fa-users"></i>
-                        我的群組
-                    </h3>
+                    <h3 class="card-title"><i class="fa-solid fa-users"></i> 我的群組</h3>
                     <a href="{{ url_for('my_groups_standalone') }}" class="link-more">
                         查看全部 <i class="fa-solid fa-chevron-right"></i>
                     </a>
@@ -47,11 +44,15 @@
                 <ul class="list-group" id="dashboard-groups-list">
                     <li class="list-item"><span>載入中...</span></li>
                 </ul>
+                
+                <div class="card-footer" id="management-entry-point" style="display: none;">
+                    <a href="/group_leader_view" class="btn btn-primary btn-full">
+                        <i class="fa-solid fa-gear"></i> 進入群組管理
+                    </a>
+                </div>
             </div>
-        </div>
 
-        <div class="dashboard-col main-col">
-            <div class="d-card trip-report-card" id="latest-trip-report">
+        </div> <div class="dashboard-col main-col"> <div class="d-card trip-report-card" id="latest-trip-report">
                 <div class="card-header with-meta">
                     <div>
                         <h3 class="card-title">
@@ -64,9 +65,7 @@
                 <div style="text-align: center; padding: 2rem;">載入中...</div>
             </div>
         </div>
-    </div>
-
-    <div class="dashboard-row">
+        </div> <div class="dashboard-row">
         <div class="d-card bottom-unified-card">
             <div class="bottom-grid">
                 

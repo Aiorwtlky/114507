@@ -9,46 +9,46 @@ from .models import (
     PersonnelProfile,
     Group,
     GroupMember,
+    ActivationCode,         # <-- 已匯入
     SystemAnnouncement,
     GroupAnnouncement,
+    InvitationCode,         # <-- 已匯入
     VehicleDevice,
     Trip,
     RouteLog,
     ScoringStandard,
     AiVisionLog,
-    VideoRecord
+    VideoRecord,
+    TripSuggestionFeedback  # <-- 已匯入
 )
 
-# --- 為 User 模型整合 Profile (這是讓後台更強大的關鍵) ---
+# --- 為 User 模型整合 Profile (維持您原本優秀的設定) ---
 
-# 1. 定義一個 Inline Admin，讓 Profile 可以直接在 User 頁面中嵌入編輯
 class PersonnelProfileInline(admin.StackedInline):
     """
     Defines the inline admin representation for PersonnelProfile.
     This allows editing the profile directly within the User admin page.
     """
     model = PersonnelProfile
-    can_delete = False # 一般不希望誤刪 Profile
+    can_delete = False
     verbose_name_plural = '人員詳細資料 (Profile)'
 
-# 2. 重新定義 User Admin，將 Profile Inline 加入
 class UserAdmin(BaseUserAdmin):
     """
     Extends the base UserAdmin to include the PersonnelProfile inline.
     """
-    inlines = (PersonnelProfileInline,) # 注意這裡有一個逗號
+    inlines = (PersonnelProfileInline,)
 
-# 3. 先取消註冊 Django 預設的 User Admin，再註冊我們客製化的版本
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
 
-# --- 為其他核心模型客製化後台顯示 ---
+# --- 為其他核心模型客製化後台顯示 (維持原樣並新增) ---
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     """Admin options for the Group model."""
-    list_display = ('group_number', 'name', 'created_at')
+    list_display = ('group_number', 'name', 'created_by', 'created_at')
     search_fields = ('group_number', 'name')
 
 @admin.register(VehicleDevice)
@@ -82,7 +82,7 @@ class AiVisionLogAdmin(admin.ModelAdmin):
 
     def get_trip_name(self, obj):
         return obj.trip.name
-    get_trip_name.short_description = '行程名稱' # 設定欄位標題
+    get_trip_name.short_description = '行程名稱'
 
 @admin.register(VideoRecord)
 class VideoRecordAdmin(admin.ModelAdmin):
@@ -91,8 +91,31 @@ class VideoRecordAdmin(admin.ModelAdmin):
     search_fields = ('video_number',)
     autocomplete_fields = ['trip']
 
-# --- 簡單註冊其他模型 ---
-# 對於較不常異動或結構簡單的模型，可以直接註冊
+# --- ▼▼▼【新增】為尚未註冊的模型進行註冊 ▼▼▼ ---
+
+@admin.register(ActivationCode)
+class ActivationCodeAdmin(admin.ModelAdmin):
+    """Admin options for the ActivationCode model."""
+    list_display = ('code', 'is_used', 'used_by', 'expires_at', 'notes')
+    list_filter = ('is_used', 'expires_at')
+    search_fields = ('code', 'notes', 'used_by__username')
+
+@admin.register(InvitationCode)
+class InvitationCodeAdmin(admin.ModelAdmin):
+    """Admin options for the InvitationCode model."""
+    list_display = ('code', 'group', 'name', 'is_used', 'expires_at', 'created_by')
+    list_filter = ('is_used', 'group')
+    search_fields = ('code', 'name')
+    autocomplete_fields = ['group', 'created_by']
+
+@admin.register(TripSuggestionFeedback)
+class TripSuggestionFeedbackAdmin(admin.ModelAdmin):
+    """Admin options for the TripSuggestionFeedback model."""
+    list_display = ('trip', 'user', 'feedback_type', 'timestamp')
+    list_filter = ('feedback_type',)
+    autocomplete_fields = ['trip', 'user']
+
+# --- 簡單註冊其他模型 (維持您原本的設定) ---
 admin.site.register(GroupMember)
 admin.site.register(SystemAnnouncement)
 admin.site.register(GroupAnnouncement)

@@ -1,39 +1,65 @@
-// 檔案路徑: static/js/pages/group_leader_view.js (完整修正版)
+// 檔案路徑: static/js/pages/group_leader_view.js (完整重構版)
 
 (function() {
     'use strict';
 
+    const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+    if (!userProfile) {
+        alert('無法獲取使用者資訊，請重新登入。');
+        window.location.href = '/login';
+        return; 
+    }
+    
     const API_BASE_URL = 'http://127.0.0.1:8000';
+    let currentGroupId = null;
 
     async function fetchWithAuth(endpoint, options = {}) {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            alert('您尚未登入或登入已逾時，將跳轉至登入頁面。');
             window.location.href = '/login';
             throw new Error('Not Authenticated');
         }
         const headers = options.headers || new Headers();
         headers.append('Authorization', `Bearer ${token}`);
-        if (!(options.body instanceof FormData)) {
-            headers.append('Content-Type', 'application/json');
-        }
+        if (!(options.body instanceof FormData)) { headers.append('Content-Type', 'application/json'); }
         const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
         if (response.status === 401) {
-            alert('您的登入已過期，請重新登入。');
             localStorage.clear();
             window.location.href = '/login';
             throw new Error('Token Expired');
         }
         return response;
     }
-    function updateSidebarUI(currentUser) {
-        if (!currentUser) return;
-        document.getElementById('sidebar-avatar').src = currentUser.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
-        document.getElementById('sidebar-username').textContent = currentUser.first_name || currentUser.username;
-        document.getElementById('sidebar-user-role').textContent = currentUser.is_staff ? '管理員' : '一般成員';
+
+    /**
+     * 【新增】根據使用者權限，動態顯示或隱藏管理員專用的 UI 元素
+     */
+    function setupManagementUI(groupId) {
+        // 檢查使用者是否為系統管理員，或是這個特定群組的管理員
+        const membership = userProfile.group_memberships.find(m => m.group_id === parseInt(groupId));
+        const isGroupAdmin = membership && membership.role === 'ADMIN';
+        const canManage = userProfile.is_staff || isGroupAdmin;
+        
+        // 獲取所有需要權限控制的按鈕
+        const inviteLink = document.getElementById('invite-member-link');
+        const settingsLink = document.getElementById('group-settings-link');
+        const addAnnouncementLink = document.getElementById('add-announcement-link');
+        
+        if (canManage) {
+            // 如果有權限，則顯示這些按鈕
+            if(inviteLink) inviteLink.style.display = 'inline-flex';
+            if(settingsLink) settingsLink.style.display = 'block';
+            if(addAnnouncementLink) addAnnouncementLink.style.display = 'inline-flex';
+        } else {
+            // 如果沒有權限，則隱藏這些按鈕
+            if(inviteLink) inviteLink.style.display = 'none';
+            if(settingsLink) settingsLink.style.display = 'none';
+            if(addAnnouncementLink) addAnnouncementLink.style.display = 'none';
+        }
     }
 
-    function updateGroupInfoUI(group, members, currentUser) {
+
+    function updateGroupInfoUI(group, members) {
         document.getElementById('group-name').textContent = group.name;
         document.getElementById('group-description').textContent = group.description || '暫無描述';
 
@@ -48,14 +74,15 @@
             leadersList.innerHTML = '<span class="leader-badge">尚無管理員</span>';
         }
 
-        const myMembership = members.find(member => member.id === currentUser.id);
-        document.getElementById('my-identity-avatar').src = currentUser.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
-        document.getElementById('my-identity-name').textContent = currentUser.first_name || currentUser.username;
+        document.getElementById('my-identity-avatar').src = userProfile.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
+        document.getElementById('my-identity-name').textContent = userProfile.first_name || userProfile.username;
+        const myMembership = members.find(member => member.id === userProfile.id);
         const myRole = myMembership?.role === 'ADMIN' ? '群組管理員' : '一般成員';
         document.getElementById('my-identity-role').innerHTML = `<i class="fa-solid fa-user-tie"></i> ${myRole}`;
     }
 
     function updateMembersTableUI(members) {
+        // (此函式內容不變，可沿用您原本的版本)
         const tableBody = document.getElementById('members-table-body');
         tableBody.innerHTML = '';
         if (members && members.length > 0) {
@@ -63,14 +90,9 @@
                 const score = Math.round(member.average_score || 0);
                 const joinDate = member.joined_at ? new Date(member.joined_at).toLocaleDateString() : 'N/A';
                 const scoreClass = score >= 80 ? 'excellent' : (score >= 60 ? 'warning' : 'danger');
-
                 tableBody.innerHTML += `
                     <tr>
-                        <td class="avatar-col">
-                            <img src="${member.personnelprofile?.avatar || '/static/images/user-placeholder.svg'}" 
-                                 alt="${member.first_name || member.username}" 
-                                 class="member-avatar-small">
-                        </td>
+                        <td class="avatar-col"><img src="${member.personnelprofile?.avatar || '/static/images/user-placeholder.svg'}" alt="${member.first_name || member.username}" class="member-avatar-small"></td>
                         <td>${member.personnelprofile?.personnel_number || 'N/A'}</td>
                         <td class="name-col">${member.first_name || member.username}</td>
                         <td><span class="score-badge ${scoreClass}">${score}</span></td>
@@ -79,22 +101,35 @@
                             <a href="/member_dashboard/${member.id}" class="btn-action" title="查看成員"><i class="fa-solid fa-eye"></i></a>
                             <a href="/member_videos/${member.id}" class="btn-action" title="行車影片"><i class="fa-solid fa-video"></i></a>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         } else {
             tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">此群組尚無成員。</td></tr>';
         }
         initScoreBadges();
     }
-
+    
     function updateAnnouncementsListUI(announcements) {
+        // (此函式內容不變，可沿用您原本的版本，但刪除按鈕需要權限判斷)
         const announcementsList = document.getElementById('announcements-list');
         announcementsList.innerHTML = '';
-        if (announcements && announcements.results && announcements.results.length > 0) { // <-- 【修正】 讀取 announcements.results
+
+        const membership = userProfile.group_memberships.find(m => m.group_id === currentGroupId);
+        const isGroupAdmin = membership && membership.role === 'ADMIN';
+        const canManage = userProfile.is_staff || isGroupAdmin;
+
+        if (announcements && announcements.results && announcements.results.length > 0) {
             announcements.results.forEach(ann => {
                 const publishDate = new Date(ann.publish_date).toLocaleDateString();
                 const shortContent = ann.content.length > 30 ? ann.content.substring(0, 30) + '...' : ann.content;
+
+                // 只有管理員才看得到編輯和刪除按鈕
+                const actionButtons = canManage ? `
+                    <div class="announcement-actions">
+                        <a href="/edit_announcement/${ann.id}" class="btn-action-icon" title="編輯"><i class="fa-solid fa-pencil"></i></a>
+                        <button class="btn-action-icon danger" title="刪除" onclick="confirmDelete('${ann.id}', '${shortContent}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>` : '';
+
                 announcementsList.innerHTML += `
                     <div class="announcement-row">
                         <div class="announcement-info">
@@ -104,78 +139,69 @@
                                 <span class="meta-item"><i class="fa-solid fa-calendar"></i> ${publishDate}</span>
                             </div>
                         </div>
-                        <div class="announcement-actions">
-                            <a href="/edit_announcement/${ann.id}" class="btn-action-icon" title="編輯"><i class="fa-solid fa-pencil"></i></a>
-                            <button class="btn-action-icon danger" title="刪除" onclick="confirmDelete('${ann.id}', '${shortContent}')"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>
-                `;
+                        ${actionButtons}
+                    </div>`;
             });
         } else {
             announcementsList.innerHTML = '<div style="text-align: center; padding: 2rem;">尚無任何公告。</div>';
         }
     }
 
+
     async function initializeGroupViewPage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let groupId = urlParams.get('group_id');
+
         try {
-            const [groupsRes, currentUserRes] = await Promise.all([
-                fetchWithAuth('/api/me/groups/'),
-                fetchWithAuth('/api/auth/profile/')
-            ]);
-            if (!groupsRes.ok || !currentUserRes.ok) throw new Error('無法獲取群組或使用者資料');
-            
-            const groupsData = await groupsRes.json();
-            const currentUser = await currentUserRes.json();
-
-            updateSidebarUI(currentUser);
-
-            if (!groupsData.results || groupsData.results.length === 0) {
-                document.getElementById('group-name').textContent = '您尚未加入任何群組';
-                return;
+            // 如果 URL 沒有 group_id，就自動抓取使用者的第一個群組
+            if (!groupId) {
+                const myGroupsRes = await fetchWithAuth('/api/me/groups/');
+                if (!myGroupsRes.ok) throw new Error('無法獲取您的群組列表');
+                const myGroupsData = await myGroupsRes.json();
+                if (myGroupsData.results && myGroupsData.results.length > 0) {
+                    groupId = myGroupsData.results[0].id;
+                    // 更新 URL 讓頁面刷新時行為一致
+                    window.history.replaceState({}, '', `?group_id=${groupId}`);
+                } else {
+                    document.querySelector('.group-leader-container').innerHTML = '<h1>您尚未加入任何群組</h1>';
+                    return;
+                }
             }
             
-            const targetGroup = groupsData.results[0];
-            const groupId = targetGroup.id;
+            currentGroupId = parseInt(groupId);
 
-            const [membersRes, announcementsRes] = await Promise.all([
-                fetchWithAuth(`/api/groups/${groupId}/members/`),
-                fetchWithAuth(`/api/groups/${groupId}/announcements/`)
+            // 【權限控制】根據權限設定管理介面
+            setupManagementUI(currentGroupId);
+
+            const [groupRes, membersRes, announcementsRes] = await Promise.all([
+                fetchWithAuth(`/api/groups/${currentGroupId}/`),
+                fetchWithAuth(`/api/groups/${currentGroupId}/members/`),
+                fetchWithAuth(`/api/groups/${currentGroupId}/announcements/`)
             ]);
-            if (!membersRes.ok || !announcementsRes.ok) throw new Error('無法獲取群組成員或公告');
 
+            if (!groupRes.ok || !membersRes.ok || !announcementsRes.ok) throw new Error('無法獲取群組詳細資料');
+
+            const groupData = await groupRes.json();
             const membersData = await membersRes.json();
             const announcementsData = await announcementsRes.json();
             
-            const members = membersData.results || membersData; 
+            const members = membersData.results || membersData;
 
-            updateGroupInfoUI(targetGroup, members, currentUser);
+            updateGroupInfoUI(groupData, members);
             updateMembersTableUI(members);
             updateAnnouncementsListUI(announcementsData);
 
+            // 更新所有管理按鈕的連結，確保它們都帶上正確的 group_id
+            document.getElementById('invite-member-link').href = `/invite_member?group_id=${currentGroupId}`;
+            document.getElementById('group-settings-link').href = `/group_settings?group_id=${currentGroupId}`;
+            document.getElementById('add-announcement-link').href = `/create_announcement?group_id=${currentGroupId}`;
+
             initTrendsChart();
             initFilterControls();
-            document.querySelector('a[href*="create_announcement"]').href = `/create_announcement?group_id=${groupId}`;
 
-            // ▼▼▼【這裡就是新增的程式碼】▼▼▼
-            // 更新「新增成員」按鈕的連結
-            const inviteLink = document.getElementById('invite-member-link');
-            if (inviteLink) {
-                inviteLink.href = `/invite_member?group_id=${groupId}`;
-            }
-            
         } catch (error) {
             console.error("載入群組管理頁面失敗:", error.message);
-        }
-
-        const logoutButton = document.getElementById('logoutButton');
-        if (logoutButton) {
-            logoutButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (confirm('您確定要登出嗎？')) {
-                    localStorage.clear();
-                    window.location.href = '/logout';
-                }
-            });
+            document.querySelector('.group-leader-container').innerHTML = `<h1>載入群組資料時發生錯誤</h1><p>${error.message}</p>`;
         }
     }
     

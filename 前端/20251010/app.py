@@ -87,7 +87,7 @@ def trip_report():
 
 @app.route('/my_groups_standalone')
 def my_groups_standalone():
-    return redirect(url_for('group_leader_view'))
+    return render_template('my_groups_standalone.html')
 
 @app.route('/past_average_standalone')
 def past_average_standalone():
@@ -99,7 +99,7 @@ def member_videos(member_id):
 
 @app.route('/group_settings')
 def group_settings():
-    return "這是「群組設定」的佔位頁面。"
+    return render_template('group_settings.html')
 
 @app.route('/invite_member')
 def invite_member():
@@ -132,6 +132,7 @@ def print_report():
 @app.route("/reset-password")
 def reset_password():
     return render_template("reset_password.html")
+
 
 @app.errorhandler(404)
 def not_found(_):

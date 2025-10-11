@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}群組管理 · My Driving God{% endblock %}
-{% block page_heading %}群組管理{% endblock %}
+{% block title %}群組總覽 · My Driving God{% endblock %}
+{% block page_heading %}群組總覽{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_leader_view.css') }}" />
 {% endblock %}
+
 {% block content %}
 <div class="group-leader-container">
     <div class="d-card group-info-card">
@@ -13,7 +14,7 @@
                 <h2 class="group-name" id="group-name">載入中...</h2>
                 <p class="group-company"><i class="fa-solid fa-building"></i> <span id="group-description">--</span></p>
             </div>
-            <a href="{{ url_for('group_settings') }}" class="btn-settings" title="群組設定"><i class="fa-solid fa-cog"></i></a>
+            <a href="#" id="group-settings-link" class="btn-settings" title="群組設定" style="display: none;"><i class="fa-solid fa-cog"></i></a>
         </div>
         <div class="group-leaders">
             <span class="leaders-label"><i class="fa-solid fa-crown"></i> 群組管理員</span>
@@ -30,6 +31,7 @@
             </div>
         </div>
     </div>
+
     <div class="d-card trends-card">
         <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-chart-line"></i> 群組趨勢分析</h3></div>
         <div class="trends-filters">
@@ -43,17 +45,34 @@
             <div class="chart-wrapper"><canvas id="groupTrendsChart"></canvas></div>
         </div>
     </div>
-    <div class="d-card members-card">
-        <a href="{{ url_for('invite_member') }}" class="btn btn-primary">...</a>
 
-    <a id="invite-member-link" href="#" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> 新增成員</a>
-        <div class="members-table-wrapper"><table class="members-table"><thead><tr><th class="avatar-col">頭像</th><th>編號</th><th>姓名</th><th>總平均分</th><th>加入日期</th><th class="actions-col">操作</th></tr></thead><tbody id="members-table-body"><tr><td colspan="6" style="text-align: center; padding: 2rem;">載入中...</td></tr></tbody></table></div>
+    <div class="d-card members-card">
+        <a id="invite-member-link" href="#" class="btn btn-primary" style="display: none;">
+            <i class="fa-solid fa-user-plus"></i> 新增成員
+        </a>
+        <div class="members-table-wrapper">
+            <table class="members-table">
+                <thead><tr><th class="avatar-col">頭像</th><th>編號</th><th>姓名</th><th>總平均分</th><th>加入日期</th><th class="actions-col">操作</th></tr></thead>
+                <tbody id="members-table-body"><tr><td colspan="6" style="text-align: center; padding: 2rem;">載入中...</td></tr></tbody>
+            </table>
+        </div>
     </div>
+
     <div class="d-card announcements-card">
-        <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-bullhorn"></i> 群組公告管理</h3><div class="header-actions"><a href="{{ url_for('create_announcement') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> 新增公告</a></div></div>
-        <div class="announcements-list" id="announcements-list"><div style="text-align: center; padding: 2rem;">載入中...</div></div>
+        <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-bullhorn"></i> 群組公告</h3>
+            <div class="header-actions">
+                <a href="#" id="add-announcement-link" class="btn btn-primary" style="display: none;"><i class="fa-solid fa-plus"></i> 新增公告</a>
+            </div>
+        </div>
+        <div class="announcements-list" id="announcements-list">
+            <div style="text-align: center; padding: 2rem;">載入中...</div>
+        </div>
     </div>
-    <div class="action-buttons"><a href="{{ url_for('dashboard') }}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> 返回儀表板</a></div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> 返回儀表板</a>
+    </div>
 </div>
 {% endblock %}
 

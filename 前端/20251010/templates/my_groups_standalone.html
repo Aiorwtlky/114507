@@ -163,77 +163,21 @@
 {% endblock %}
 
 {% block content %}
-    <div class="page-container">
-    
-        <div class="page-header">
-            <h1><i class="fas fa-users"></i> 我的群組</h1>
-            <a href="{{ url_for('create_group') }}" class="btn-create-group">
-                <i class="fas fa-plus"></i> 創建新群組
-            </a>
-        </div>
-
-        <div class="search-container">
-            <form method="GET" action="{{ url_for('my_groups_standalone') }}">
-                <input type="search" name="q" placeholder="搜尋群組名稱..." value="{{ request.args.get('q', '') }}">
-                <button type="submit" aria-label="搜尋"><i class="fas fa-search"></i></button>
-            </form>
-        </div>
-        
-        <ul class="group-list">
-            {# 
-              現在迴圈遍歷的是後端傳來的 pagination 物件中的 items 
-              這裡的假資料減少為 8 筆，模擬一頁的內容
-            #}
-            <li>
-                <a href="#">北大物流 C 組</a>
-                <span class="group-role role-leader">組長</span>
-            </li>
-            <li>
-                <a href="#">2025雙十一宅配臨時</a>
-                <span class="group-role role-member">一般組員</span>
-            </li>
-            <li>
-                <a href="#">北大物流職訓23A</a>
-                <span class="group-role role-member">一般組員</span>
-            </li>
-            <li>
-                <a href="#">南區配送 B 隊</a>
-                <span class="group-role role-leader">組長</span>
-            </li>
-            <li>
-                <a href="#">企業客戶專送組</a>
-                <span class="group-role role-member">一般組員</span>
-            </li>
-            <li>
-                <a href="#">花花粉絲後援會</a>
-                <span class="group-role role-member">一般組員</span>
-            </li>
-            <li>
-                <a href="#">睿軒行物流 YI 組</a>
-                <span class="group-role role-member">一般組員</span>
-            </li>
-            <li>
-                <a href="#">總公司週五羽球社</a>
-                <span class="group-role role-member">一般組員</span>
-            </li>
-        </ul>
-
-        <div class="pagination-container">
-          <nav aria-label="群組列表分頁">
-            {# 
-              這裡是分頁的靜態範例，真實情況下需要用後端邏輯動態生成
-              例如，第 2 頁是當前頁面
-            #}
-            <ul class="pagination">
-              <li class="page-item"><a class="page-link" href="#">« 上一頁</a></li>
-              <li class="page-item"><a class="page-link" href="#">1</a></li>
-              <li class="page-item active"><span class="page-link">2</span></li>
-              <li class="page-item"><a class="page-link" href="#">3</a></li>
-              <li class="page-item disabled"><span class="page-link">...</span></li>
-              <li class="page-item"><a class="page-link" href="#">10</a></li>
-              <li class="page-item"><a class="page-link" href="#">下一頁 »</a></li>
-            </ul>
-          </nav>
-        </div>
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-users"></i> 我的群組</h1>
+        <a href="{{ url_for('create_group') }}" class="btn-create-group">
+            <i class="fas fa-plus"></i> 創建新群組
+        </a>
     </div>
+
+    <ul class="group-list" id="group-list-container">
+        <li>載入中...</li>
+    </ul>
+
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='js/pages/my_groups_standalone.js') }}"></script>
 {% endblock %}

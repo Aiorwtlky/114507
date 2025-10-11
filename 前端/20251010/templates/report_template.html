@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>行程報告 - {{ trip.trip_number }}</title>
+    <style>
+        /* CSS 樣式直接寫在這裡，WeasyPrint 會讀取並應用 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #007bff;
+        }
+        .trip-info {
+            margin-bottom: 20px;
+        }
+        .trip-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .trip-info th, .trip-info td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .trip-info th {
+            background-color: #f2f2f2;
+            width: 25%;
+        }
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #444;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .events-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .events-table th, .events-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .events-table th {
+            background-color: #f8f9fa;
+        }
+        .footer {
+            position: fixed;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>MDG Pro 行程安全報告</h1>
+        <p>報告生成時間：{% now "Y-m-d H:i" %}</p>
+    </div>
+
+    <div class="trip-info">
+        <div class="section-title">行程基本資訊</div>
+        <table>
+            <tr>
+                <th>行程編號</th>
+                <td>{{ trip.trip_number }}</td>
+            </tr>
+            <tr>
+                <th>駕駛員</th>
+                <td>{{ trip.personnel.first_name }} {{ trip.personnel.last_name }} ({{ trip.personnel.username }})</td>
+            </tr>
+            <tr>
+                <th>所屬群組</th>
+                <td>{{ trip.group.name }}</td>
+            </tr>
+            <tr>
+                <th>行程開始時間</th>
+                <td>{{ trip.start_time|date:"Y-m-d H:i" }}</td>
+            </tr>
+            <tr>
+                <th>行程結束時間</th>
+                <td>{{ trip.end_time|date:"Y-m-d H:i" }}</td>
+            </tr>
+            <tr>
+                <th>總里程數</th>
+                <td>{{ trip.total_mileage|default_if_none:"--" }} km</td>
+            </tr>
+            <tr>
+                <th>最終駕駛分數</th>
+                <td><strong>{{ trip.score|default_if_none:"未評分" }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="events-table">
+        <div class="section-title">AI 視覺偵測事件紀錄</div>
+        {% if trip.aivisionlog_set.all %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>事件時間</th>
+                        <th>事件類型</th>
+                        <th>詳細資訊</th>
+                        <th>扣分</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in trip.aivisionlog_set.all %}
+                    <tr>
+                        <td>{{ log.timestamp|date:"H:i:s" }}</td>
+                        <td>{{ log.event.description }}</td>
+                        <td>{{ log.event_details }}</td>
+                        <td>-{{ log.event.deduction_points }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>本次行程無任何 AI 視覺偵測事件。</p>
+        {% endif %}
+    </div>
+
+    <div class="ai-suggestion">
+        <div class="section-title">AI 行程建議</div>
+        <p>{{ trip.ai_suggestion|default_if_none:"本次行程無 AI 建議。"|linebreaksbr }}</p>
+    </div>
+
+    <div class="footer">
+        My Driving God Pro - 自動化駕駛安全管理平台
+    </div>
+
+</body>
+</html>

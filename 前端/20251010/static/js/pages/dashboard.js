@@ -33,16 +33,13 @@
         return response;
     }
 
-    /**
-     * 更新側邊欄和儀表板的 UI 元素
-     */
     function updateUI(userData, groupData, tripsData, trendsData) {
         const profile = userData.personnelprofile || {};
 
         // --- 更新側邊欄 (base.html) ---
         document.getElementById('sidebar-avatar').src = profile.avatar || '/static/images/user-placeholder.svg';
         document.getElementById('sidebar-username').textContent = userData.first_name || userData.username;
-        document.getElementById('sidebar-user-role').textContent = userData.is_staff ? '管理員' : '一般成員';
+        document.getElementById('sidebar-user-role').textContent = userData.is_staff ? '系統管理員' : (userData.is_group_admin ? '群組管理員' : '一般成員');
 
         // --- 更新儀表板個人資訊卡片 ---
         document.getElementById('dashboard-avatar').src = profile.avatar || '/static/images/user-placeholder.svg';
@@ -57,13 +54,20 @@
         groupsList.innerHTML = '';
         if (groupData && groupData.length > 0) {
             groupData.slice(0, 5).forEach(group => {
-                groupsList.innerHTML += `<li class="list-item"><a href="/group_leader_view" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
+                // ▼▼▼【核心修改】連結應指向 group_leader_view 並帶上 group_id ▼▼▼
+                groupsList.innerHTML += `<li class="list-item"><a href="/group_leader_view?group_id=${group.id}" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
             });
         } else {
             groupsList.innerHTML = '<li class="list-item"><span>您尚未加入任何群組</span></li>';
         }
 
-        // --- 更新過往行程列表 ---
+        // ▼▼▼【新增】根據權限顯示管理入口 ▼▼▼
+        const managementEntryPoint = document.getElementById('management-entry-point');
+        if (userData.is_staff || userData.is_group_admin) {
+            managementEntryPoint.style.display = 'block';
+        }
+
+        // --- 更新過往行程列表 (維持原樣) ---
         const tripsList = document.getElementById('dashboard-trips-list');
         tripsList.innerHTML = '';
         if (tripsData.results && tripsData.results.length > 0) {
@@ -76,14 +80,14 @@
                             <span class="trip-date">${new Date(trip.start_time).toLocaleDateString()}</span>
                             <span class="trip-group">${trip.group}</span>
                         </div>
-                        <span class="trip-score ${scoreClass}">${score}分</span>
+                        <a href="/trip_report?trip_id=${trip.id}" class="trip-score ${scoreClass}">${score}分</a>
                     </li>`;
             });
         } else {
             tripsList.innerHTML = '<li class="trip-item"><span>尚無行程記錄</span></li>';
         }
 
-        // --- 更新前次行程報告 ---
+        // --- 更新前次行程報告 (維持原樣，但修正連結) ---
         const latestTrip = tripsData.results && tripsData.results[0];
         const latestTripReport = document.getElementById('latest-trip-report');
         if (latestTrip) {
@@ -107,15 +111,15 @@
                     <div class="score-box"><div class="score-value">${hours}h ${minutes}m</div><div class="score-label">總耗時</div></div>
                 </div>
                 <div class="card-actions">
-                    <a href="/print_report" class="btn btn-outline"><i class="fa-solid fa-print"></i> 列印報表</a>
-                    <a href="/trip_report" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass-chart"></i> 查看詳細報告</a>
+                    <a href="/api/trips/${latestTrip.id}/report/" target="_blank" class="btn btn-outline"><i class="fa-solid fa-print"></i> 列印報表</a>
+                    <a href="/trip_report?trip_id=${latestTrip.id}" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass-chart"></i> 查看詳細報告</a>
                 </div>
             `;
         } else {
             latestTripReport.innerHTML = '<div class="card-header"><div><h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3></div></div><p style="text-align: center; padding: 2rem;">尚無任何行程記錄可供顯示。</p>';
         }
 
-        // --- 更新儀表盤和圖表 ---
+        // --- 更新儀表盤和圖表 (維持原樣) ---
         initTrendsChart(trendsData);
         initGauge(trendsData);
     }

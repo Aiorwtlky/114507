@@ -32,21 +32,22 @@ class PersonnelProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """
+    【最新修正版】
     序列化使用者核心資料，並正確處理巢狀 Profile 的讀取與更新，
-    同時支援密碼變更。
+    同時提供前端需要的權限相關欄位。
     """
     # 讀取時，使用 PersonnelProfileSerializer 來巢狀顯示詳細資料 (唯讀)
     personnelprofile = PersonnelProfileSerializer(read_only=True)
     
-    # 為了計算和顯示，增加的唯讀欄位
-    is_group_leader = serializers.SerializerMethodField()
+    # ▼▼▼【核心修正】新增以下三個欄位，用來告訴前端使用者的權限 ▼▼▼
+    is_group_admin = serializers.SerializerMethodField()
     administered_groups = serializers.SerializerMethodField()
+    group_memberships = serializers.SerializerMethodField() # <-- 問題的關鍵！
     
-    # 【新增】一個 write_only 的 password 欄位，專門用於接收變更密碼時的新密碼
+    # 專門用於接收變更密碼時的新密碼
     password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
 
-    # 為了讓更新 (PATCH) 時能接收扁平化的 FormData，我們在 Meta 外面用 write_only 定義它們
-    # source='personnelprofile.XXX' 告訴 DRF 這些欄位要對應到 personnelprofile 模型
+    # 為了讓更新 (PATCH) 時能接收扁平化的 FormData
     personnel_number = serializers.CharField(source='personnelprofile.personnel_number', write_only=True, required=False, allow_blank=True)
     gender = serializers.CharField(source='personnelprofile.gender', write_only=True, required=False)
     license_number = serializers.CharField(source='personnelprofile.license_number', write_only=True, required=False, allow_blank=True)
@@ -60,45 +61,52 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             # 讀取用的欄位
             'id', 'username', 'last_login', 'first_name', 'last_name', 'email', 
-            'is_staff', 'is_group_leader', 'administered_groups', 'personnelprofile',
+            'is_staff', 
+            'is_group_admin', 'administered_groups', 'group_memberships', # <-- 加入到 fields
+            'personnelprofile',
             # 寫入用的欄位
             'password', 'personnel_number', 'gender', 'license_number', 'avatar', 'phone', 
             'license_type', 'driving_experience'
         ]
-        read_only_fields = ['id', 'username', 'last_login', 'is_staff', 'is_group_leader', 'administered_groups', 'personnelprofile']
+        read_only_fields = [
+            'id', 'username', 'last_login', 'is_staff', 
+            'is_group_admin', 'administered_groups', 'group_memberships', # <-- 加入到 read_only_fields
+            'personnelprofile'
+        ]
 
-    def get_is_group_leader(self, obj):
-        """檢查使用者是否為任何群組的建立者。"""
-        return Group.objects.filter(created_by=obj).exists()
+    def get_is_group_admin(self, obj):
+        """檢查使用者是否為任何群組的管理員。"""
+        return GroupMember.objects.filter(user=obj, role='ADMIN').exists()
     
     def get_administered_groups(self, obj):
         """獲取使用者被指派為管理員的所有群組 ID 列表。"""
         admin_memberships = GroupMember.objects.filter(user=obj, role='ADMIN')
         return [membership.group.id for membership in admin_memberships]
 
+    # ▼▼▼【核心修正】新增 get_group_memberships 方法 ▼▼▼
+    def get_group_memberships(self, obj):
+        """獲取使用者所有的群組成員身份 (群組ID 和 角色)。"""
+        memberships = GroupMember.objects.filter(user=obj)
+        # 回傳一個包含字典的列表，例如: [{'group_id': 1, 'role': 'ADMIN'}, {'group_id': 2, 'role': 'MEMBER'}]
+        return [{'group_id': m.group.id, 'role': m.role} for m in memberships]
+
     @transaction.atomic
     def update(self, instance, validated_data):
         """
         覆寫 update 方法，以支援密碼、個人資料、Profile 的巢狀更新。
         """
-        # --- 【核心修改】處理密碼更新 ---
-        # 如果 validated_data 中有 'password'，表示使用者正在更改密碼
+        # --- 處理密碼更新 ---
         if 'password' in validated_data:
             password = validated_data.pop('password')
-            # 使用 set_password() 方法，Django 會自動處理加密(hashing)
             instance.set_password(password)
-            # 必須呼叫 save() 來將變更寫入資料庫
             instance.save()
 
         # --- 處理 Profile 更新 ---
-        # 因為我們使用了 source='personnelprofile.XXX'，DRF 會自動將相關資料
-        # 打包成一個 'personnelprofile' 的字典放在 validated_data 中。
         profile_data = validated_data.pop('personnelprofile', {})
         
-        # --- 處理 User 其他欄位更新 (例如 first_name, email) ---
+        # --- 處理 User 其他欄位更新 ---
         instance = super().update(instance, validated_data)
 
-        # 如果有任何 profile 資料需要更新，則更新 Profile 物件
         if profile_data:
             profile = instance.personnelprofile
             for attr, value in profile_data.items():
