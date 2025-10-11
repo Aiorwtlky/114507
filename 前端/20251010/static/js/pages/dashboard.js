@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/pages/dashboard.js
+// 檔案路徑: static/js/pages/dashboard.js (完整最終版)
 
 (function() {
     'use strict';
@@ -14,7 +14,8 @@
         }
         const headers = options.headers || new Headers();
         headers.append('Authorization', `Bearer ${token}`);
-        if (!(options.body instanceof FormData)) {
+        // 對於 blob 請求 (如下載PDF)，我們不需要設定 Content-Type
+        if (!(options.body instanceof FormData) && options.responseType !== 'blob') {
             headers.append('Content-Type', 'application/json');
         }
         const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
@@ -25,6 +26,47 @@
             throw new Error('Token Expired');
         }
         return response;
+    }
+
+    /**
+     * 【核心新增】處理 PDF 預覽的共用函式
+     * @param {string} tripId - 要預覽報表的行程 ID
+     */
+    async function handlePdfPreview(tripId) {
+        if (!tripId) return;
+        // 尋找對應的按鈕並顯示載入中狀態
+        const printButton = document.querySelector(`button[data-trip-id="${tripId}"]`);
+        if (printButton) {
+            printButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 報表生成中...`;
+            printButton.disabled = true;
+        }
+
+        try {
+            const response = await fetchWithAuth(`/api/trips/${tripId}/report/`, {
+                responseType: 'blob' // 告訴 fetch 我們期待的是二進位資料
+            });
+
+            if (!response.ok) {
+                throw new Error(`無法生成報表 (狀態碼: ${response.status})`);
+            }
+
+            // 將回傳的二進位資料轉換成 Blob 物件
+            const pdfBlob = await response.blob();
+            // 為這個 Blob 物件建立一個暫時的 URL
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            // 在新分頁中開啟這個 URL 進行預覽
+            window.open(pdfUrl, '_blank');
+
+        } catch (error) {
+            console.error('預覽 PDF 失敗:', error);
+            alert('無法載入 PDF 報表，請確認後端伺服器運作正常。');
+        } finally {
+            // 無論成功或失敗，都恢復按鈕的原始狀態
+            if (printButton) {
+                printButton.innerHTML = `<i class="fa-solid fa-print"></i> 列印報表`;
+                printButton.disabled = false;
+            }
+        }
     }
 
     function updateUI(userData, groupData, tripsData, trendsData) {
@@ -99,7 +141,7 @@
                     <div class="score-box"><div class="score-value">${hours}h ${minutes}m</div><div class="score-label">總耗時</div></div>
                 </div>
                 <div class="card-actions">
-                    <a href="/api/trips/${latestTrip.id}/report/" target="_blank" class="btn btn-outline"><i class="fa-solid fa-print"></i> 列印報表</a>
+                    <button data-trip-id="${latestTrip.id}" class="btn btn-outline btn-print-dynamic"><i class="fa-solid fa-print"></i> 列印報表</button>
                     <a href="/trip_report?trip_id=${latestTrip.id}" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass-chart"></i> 查看詳細報告</a>
                 </div>
             `;
@@ -125,10 +167,12 @@
                 throw new Error('一個或多個 API 請求失敗');
             }
 
-            const userData = await profileRes.json();
-            const groupData = await groupsRes.json();
-            const tripData = await tripsRes.json();
-            const trendsData = await trendsRes.json();
+            const [userData, groupData, tripData, trendsData] = await Promise.all([
+                profileRes.json(),
+                groupsRes.json(),
+                tripsRes.json(),
+                trendsRes.json()
+            ]);
             
             updateUI(userData, groupData, tripData, trendsData);
 
@@ -190,6 +234,17 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', initializeDashboard);
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeDashboard();
+
+        // 使用事件委派來監聽所有動態生成的列印按鈕的點擊事件
+        document.body.addEventListener('click', function(event) {
+            const printButton = event.target.closest('.btn-print-dynamic');
+            if (printButton) {
+                const tripId = printButton.dataset.tripId;
+                handlePdfPreview(tripId);
+            }
+        });
+    });
 
 })();

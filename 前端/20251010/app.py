@@ -126,10 +126,6 @@ def edit_announcement(announcement_id):
 def announcements():
     return "這是「所有公告列表」的佔位頁面。"
     
-@app.route('/print_report')
-def print_report():
-    return "這是「列印報表」的佔位頁面。"
-
 @app.route("/reset-password")
 def reset_password():
     return render_template("reset_password.html")
