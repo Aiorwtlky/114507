@@ -31,7 +31,6 @@
         <div class="detail-item"><i class="fa-solid fa-phone"></i> <span>{{ profile['personnelprofile']['phone'] if profile['personnelprofile'] else '未提供' }}</span></div>
         <div class="detail-item"><i class="fa-solid fa-id-card"></i> <span>駕照: {{ profile['personnelprofile']['license_type'] if profile['personnelprofile'] else '未提供' }}</span></div>
         <div class="detail-item"><i class="fa-solid fa-calendar-days"></i> <span>年資: {{ (profile['personnelprofile']['driving_experience'] ~ ' 年') if profile['personnelprofile'] and profile['personnelprofile']['driving_experience'] is not none else '未提供' }}</span></div>
-        {# --- ▲▲▲ 修正結束 ▲▲▲ --- #}
       </div>
     </div>
   </div>

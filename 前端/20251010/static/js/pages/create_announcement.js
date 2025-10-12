@@ -109,7 +109,6 @@
             document.getElementById('publisher-name').textContent = '錯誤';
             return; 
         }
-        // --- ▲▲▲ 修正結束 ▲▲▲ ---
 
         try {
             const [currentUserRes, groupRes] = await Promise.all([

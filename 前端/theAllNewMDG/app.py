@@ -104,7 +104,6 @@ def login():
                 else:
                     flash('登入成功！', 'success')
                     return redirect(url_for('dashboard'))
-                # --- ▲▲▲ 修改結束 ▲▲▲ ---
 
             else:
                 flash('帳號或密碼錯誤。', 'error')
@@ -431,7 +430,6 @@ def delete_announcement(announcement_id):
     
     return redirect(url_for('group_leader_view', group_id=group_id))
 
-# --- ▲▲▲ 公告路由結束 ▲▲▲ ---
 
 
 @app.route("/create_group", methods=['GET', 'POST'])
