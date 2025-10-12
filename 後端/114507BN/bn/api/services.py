@@ -5,6 +5,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 from django.contrib.auth.models import User
 from .models import Trip, AiVisionLog
+import math
 
 # 匯入 Hugging Face 相關套件
 from huggingface_hub import InferenceClient
@@ -39,45 +40,96 @@ except (ValueError, Exception) as e:
 
 
 # =============================================================================
-# 1. 行程分數計算 (Trip Scoring) - 此函式無需修改
+# 1. 行程分數計算 (Trip Scoring) - 完整修正版
 # =============================================================================
 def calculate_trip_score(trip_id: int):
-    # (此函式內容與之前完全相同，無需修改，為了簡潔已省略)
+    """
+    【完整修正版】
+    計算指定行程的車內、車外及總分，並觸發 AI 建議生成與儲存。
+    1. 修正了區間切分邏輯，使其更精確。
+    2. 修正了類別計分規則，將 '< 60' 改為 '<= 60'。
+    """
     try:
         trip = Trip.objects.get(id=trip_id)
-        if not trip.start_time or not trip.end_time: return None
-    except Trip.DoesNotExist: return None
+        if not trip.start_time or not trip.end_time: 
+            return None
+    except Trip.DoesNotExist: 
+        return None
+
     events = AiVisionLog.objects.filter(trip=trip).select_related('event')
+
+    # 如果沒有任何違規事件，直接給滿分並儲存
     if not events.exists():
         trip.in_car_score, trip.out_car_score, trip.score = 100, 100, 100
         trip.ai_suggestion = "本次行程表現良好，未偵測到任何危險駕駛行為。請繼續保持！"
         trip.save(update_fields=['in_car_score', 'out_car_score', 'score', 'ai_suggestion'])
         return { "final_score": 100, "in_car_score": 100, "out_car_score": 100 }
-    intervals, current_time = [], trip.start_time
-    while current_time < trip.end_time:
-        interval_end = current_time + timedelta(minutes=15)
-        intervals.append({'start': current_time, 'end': interval_end, 'in_car_deductions': 0, 'out_car_deductions': 0})
-        current_time = interval_end
+
+    intervals = []
+    duration_seconds = (trip.end_time - trip.start_time).total_seconds()
+    # 使用 math.ceil 確保即使多1秒也要算一個完整的區間 (15 * 60 = 900 秒)
+    num_intervals = math.ceil(duration_seconds / 900) if duration_seconds > 0 else 0
+
+    for i in range(num_intervals):
+        interval_start = trip.start_time + timedelta(minutes=15 * i)
+        interval_end = interval_start + timedelta(minutes=15)
+        intervals.append({
+            'start': interval_start, 
+            'end': interval_end, 
+            'in_car_deductions': 0, 
+            'out_car_deductions': 0
+        })
+
+    # 將每個事件的扣分分配到對應的時間區間內
     for event in events:
         for interval in intervals:
             if interval['start'] <= event.timestamp < interval['end']:
-                category, deduction = event.event.event_number[0].upper(), event.event.deduction_points or 0
-                if category == 'A': interval['in_car_deductions'] += deduction
-                elif category == 'B': interval['out_car_deductions'] += deduction
+                category = event.event.event_number[0].upper()
+                deduction = event.event.deduction_points or 0
+                if category == 'A': 
+                    interval['in_car_deductions'] += deduction
+                elif category == 'B': 
+                    interval['out_car_deductions'] += deduction
                 break
+
+    # 計算每個有扣分的區間的獨立分數
     in_car_interval_scores = [max(0, 100 - i['in_car_deductions']) for i in intervals if i['in_car_deductions'] > 0]
     out_car_interval_scores = [max(0, 100 - i['out_car_deductions']) for i in intervals if i['out_car_deductions'] > 0]
-    def _get_final_category_score(scores: list):
-        if not scores: return 100.0
-        if any(s < 60 for s in scores): return float(min(scores))
-        else: return sum(scores) / len(scores)
-    final_in_car_score, final_out_car_score = _get_final_category_score(in_car_interval_scores), _get_final_category_score(out_car_interval_scores)
-    final_score = (final_in_car_score + final_out_car_score) / 2
-    ai_suggestion_text = generate_ai_suggestion(trip_id)
-    trip.in_car_score, trip.out_car_score, trip.score, trip.ai_suggestion = final_in_car_score, final_out_car_score, final_score, ai_suggestion_text
-    trip.save(update_fields=['in_car_score', 'out_car_score', 'score', 'ai_suggestion'])
-    return {"final_score": final_score, "in_car_score": final_in_car_score, "out_car_score": final_out_car_score, "ai_suggestion": ai_suggestion_text}
 
+    # 巢狀輔助函式，用來計算最終的類別分數
+    def _get_final_category_score(scores: list):
+        if not scores: 
+            return 100.0
+        # 將 '< 60' 改為 '<= 60'，使其符合「低於或等於」的規則
+        if any(s <= 60 for s in scores): 
+            return float(min(scores))
+        else: 
+            return sum(scores) / len(scores)
+
+    # 計算最終的車內與車外分數
+    final_in_car_score = _get_final_category_score(in_car_interval_scores)
+    final_out_car_score = _get_final_category_score(out_car_interval_scores)
+    
+    # 計算行程總分
+    final_score = (final_in_car_score + final_out_car_score) / 2
+
+    # 呼叫 AI 服務生成建議
+    ai_suggestion_text = generate_ai_suggestion(trip_id)
+
+    # 將所有計算結果一次性儲存到資料庫
+    trip.in_car_score = final_in_car_score
+    trip.out_car_score = final_out_car_score
+    trip.score = final_score
+    trip.ai_suggestion = ai_suggestion_text
+    trip.save(update_fields=['in_car_score', 'out_car_score', 'score', 'ai_suggestion'])
+
+    # 回傳計算結果
+    return {
+        "final_score": final_score, 
+        "in_car_score": final_in_car_score, 
+        "out_car_score": final_out_car_score, 
+        "ai_suggestion": ai_suggestion_text
+    }
 # =============================================================================
 # 2. AI 建議生成 (Llama-3 版本)
 # =============================================================================
