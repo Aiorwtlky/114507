@@ -164,8 +164,8 @@ class Trip(models.Model):
     """核心的行程紀錄模型。"""
     id = models.BigAutoField(primary_key=True)
     trip_number = models.CharField(max_length=50, unique=True)
-    name = models.CharField(max_length=200)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200, blank=True, null=True)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)
     device = models.ForeignKey(VehicleDevice, on_delete=models.CASCADE)
     personnel = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)

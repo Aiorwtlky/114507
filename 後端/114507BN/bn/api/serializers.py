@@ -320,10 +320,14 @@ class TripStartSerializer(serializers.ModelSerializer):
     """(車機用) 建立一趟新行程的序列化器。"""
     device = serializers.PrimaryKeyRelatedField(queryset=VehicleDevice.objects.all())
     personnel = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), required=False, allow_null=True)
+    name = serializers.CharField(max_length=200, required=False, allow_null=True)
+
     class Meta:
         model = Trip
+        # --- 將修改後的 name 欄位加回 fields 中 ---
         fields = ['id', 'trip_number', 'name', 'group', 'device', 'personnel', 'start_time']
+
 
 class TripEndSerializer(serializers.ModelSerializer):
     """(車機用) 結束一趟行程的序列化器。"""
