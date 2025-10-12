@@ -1,4 +1,4 @@
-# api/models.py
+# 檔案路徑: api/models.py (移除 RouteLog 版)
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -28,7 +28,7 @@ class PersonnelProfile(models.Model):
     class Meta:
         db_table = 'personnel_profile' 
         verbose_name = "人員詳細資料"
-        verbose_name_plural = "1. 人員詳細資料" # Admin 後台顯示名稱
+        verbose_name_plural = "1. 人員詳細資料"
     def __str__(self): return self.user.username
 
 class Group(models.Model):
@@ -182,17 +182,8 @@ class Trip(models.Model):
         verbose_name = "行程"
         verbose_name_plural = "7. 行程管理"
 
-class RouteLog(models.Model):
-    """儲存行程中的地理軌跡資料。"""
-    id = models.BigAutoField(primary_key=True)
-    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='route_logs')
-    timestamp = models.DateTimeField()
-    location = models.CharField(max_length=100)
-    speed = models.FloatField(blank=True, null=True)
-    class Meta:
-        db_table = 'route_log'
-        verbose_name = "路程紀錄"
-        verbose_name_plural = "8. 路程紀錄"
+# ▼▼▼【核心修改】RouteLog 模型已被移除 ▼▼▼
+# class RouteLog(models.Model): ...
 
 class ScoringStandard(models.Model):
     """定義危險駕駛事件的評分標準與扣分。"""
