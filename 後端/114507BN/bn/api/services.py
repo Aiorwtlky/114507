@@ -16,7 +16,7 @@ from huggingface_hub.utils import HfHubHTTPError
 # =============================================================================
 load_dotenv()
 
-# ▼▼▼【修改 1】更新為高速、高效的 Llama-3 8B 模型 ▼▼▼
+# 更新為高速、高效的 Llama-3 8B 模型 
 MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
 hf_client = None
 
@@ -40,14 +40,13 @@ except (ValueError, Exception) as e:
 
 
 # =============================================================================
-# 1. 行程分數計算 (Trip Scoring) - 完整修正版
+# 1. 行程分數計算 (Trip Scoring) - 最終精確版
 # =============================================================================
 def calculate_trip_score(trip_id: int):
     """
-    【完整修正版】
+    【最終精確版】
     計算指定行程的車內、車外及總分，並觸發 AI 建議生成與儲存。
-    1. 修正了區間切分邏輯，使其更精確。
-    2. 修正了類別計分規則，將 '< 60' 改為 '<= 60'。
+    - 修正了類別分數計算邏輯，確保將所有區間（包含無扣分的區間）都納入平均值計算。
     """
     try:
         trip = Trip.objects.get(id=trip_id)
@@ -65,42 +64,38 @@ def calculate_trip_score(trip_id: int):
         trip.save(update_fields=['in_car_score', 'out_car_score', 'score', 'ai_suggestion'])
         return { "final_score": 100, "in_car_score": 100, "out_car_score": 100 }
 
+    # 精確切分行程區間
     intervals = []
     duration_seconds = (trip.end_time - trip.start_time).total_seconds()
-    # 使用 math.ceil 確保即使多1秒也要算一個完整的區間 (15 * 60 = 900 秒)
     num_intervals = math.ceil(duration_seconds / 900) if duration_seconds > 0 else 0
 
     for i in range(num_intervals):
         interval_start = trip.start_time + timedelta(minutes=15 * i)
-        interval_end = interval_start + timedelta(minutes=15)
         intervals.append({
             'start': interval_start, 
-            'end': interval_end, 
+            'end': interval_start + timedelta(minutes=15), 
             'in_car_deductions': 0, 
             'out_car_deductions': 0
         })
-
-    # 將每個事件的扣分分配到對應的時間區間內
+    
+    # 將事件扣分分配到對應的時間區間
     for event in events:
         for interval in intervals:
             if interval['start'] <= event.timestamp < interval['end']:
                 category = event.event.event_number[0].upper()
                 deduction = event.event.deduction_points or 0
-                if category == 'A': 
-                    interval['in_car_deductions'] += deduction
-                elif category == 'B': 
-                    interval['out_car_deductions'] += deduction
+                if category == 'A': interval['in_car_deductions'] += deduction
+                elif category == 'B': interval['out_car_deductions'] += deduction
                 break
 
-    # 計算每個有扣分的區間的獨立分數
-    in_car_interval_scores = [max(0, 100 - i['in_car_deductions']) for i in intervals if i['in_car_deductions'] > 0]
-    out_car_interval_scores = [max(0, 100 - i['out_car_deductions']) for i in intervals if i['out_car_deductions'] > 0]
+    # 計算所有區間的分數，而不僅僅是有扣分的區間 ▼▼▼
+    in_car_interval_scores = [max(0, 100 - i['in_car_deductions']) for i in intervals]
+    out_car_interval_scores = [max(0, 100 - i['out_car_deductions']) for i in intervals]
 
-    # 巢狀輔助函式，用來計算最終的類別分數
+    # 巢狀輔助函式，用來計算最終的類別分數 (此函式邏輯已正確，無需修改)
     def _get_final_category_score(scores: list):
         if not scores: 
             return 100.0
-        # 將 '< 60' 改為 '<= 60'，使其符合「低於或等於」的規則
         if any(s <= 60 for s in scores): 
             return float(min(scores))
         else: 
@@ -110,8 +105,8 @@ def calculate_trip_score(trip_id: int):
     final_in_car_score = _get_final_category_score(in_car_interval_scores)
     final_out_car_score = _get_final_category_score(out_car_interval_scores)
     
-    # 計算行程總分
-    final_score = (final_in_car_score + final_out_car_score) / 2
+    # 計算行程總分，使用 0.5 的權重
+    final_score = (final_in_car_score * 0.5) + (final_out_car_score * 0.5)
 
     # 呼叫 AI 服務生成建議
     ai_suggestion_text = generate_ai_suggestion(trip_id)
@@ -130,6 +125,7 @@ def calculate_trip_score(trip_id: int):
         "out_car_score": final_out_car_score, 
         "ai_suggestion": ai_suggestion_text
     }
+
 # =============================================================================
 # 2. AI 建議生成 (Llama-3 版本)
 # =============================================================================
@@ -146,7 +142,7 @@ def generate_ai_suggestion(trip_id: int) -> str:
     
     event_summary = "\n".join([f"- {log.timestamp.strftime('%H:%M:%S')} | {log.event.description} (細節: {log.event_details})" for log in events])
 
-    # ▼▼▼【修改 2】建立符合 Llama-3 模型的 Prompt 格式 ▼▼▼
+    # 建立符合 Llama-3 模型的 Prompt 格式
     system_prompt = "你是一位頂尖的智慧駕駛安全分析師「吾仙」。"
     user_prompt = f"""
 <input_data>
@@ -199,7 +195,7 @@ def get_chatbot_response(chat_history: list) -> str:
     if not hf_client: 
         return "抱歉，助理系統目前無法連線，請稍後再試。"
     
-    # ▼▼▼【修改 3】建立符合 Llama-3 模型的對話歷史 Prompt ▼▼▼
+    # 建立符合 Llama-3 模型的對話歷史 Prompt ▼▼▼
     system_prompt = """<persona>
 你是「吾仙」，一個專為「吾駕仙」(My Driving God) 智慧交通系統服務的頂尖 AI 助理。
 </persona>

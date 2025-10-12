@@ -1,40 +1,84 @@
-// 檔案路徑: static/js/pages/trip_report.js (最終整合版)
+// 檔案路徑: static/js/pages/trip_report.js (最終完整、未省略版)
 
 (function() {
     'use strict';
 
+    // 您的後端 API 基礎網址
     const API_BASE_URL = 'http://127.0.0.1:8000';
+    // 用於儲存當前頁面的行程 ID
     let tripId = null;
 
-    // --- 核心 API 呼叫函式 ---
+    /**
+     * 帶有認證 Token 的通用 API 請求函式
+     * @param {string} endpoint - API 的端點路徑
+     * @param {object} options - fetch 的設定選項
+     * @returns {Promise<Response>}
+     */
     async function fetchWithAuth(endpoint, options = {}) {
         const token = localStorage.getItem('accessToken');
-        if (!token) { window.location.href = '/login'; throw new Error('Not Authenticated'); }
+        if (!token) {
+            alert('您尚未登入或登入已逾時，將跳轉至登入頁面。');
+            window.location.href = '/login';
+            throw new Error('Not Authenticated');
+        }
         const headers = options.headers || new Headers();
         headers.append('Authorization', `Bearer ${token}`);
-        if (!(options.body instanceof FormData)) { headers.append('Content-Type', 'application/json'); }
+        if (!(options.body instanceof FormData)) {
+            headers.append('Content-Type', 'application/json');
+        }
         const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (response.status === 401) { localStorage.clear(); window.location.href = '/login'; throw new Error('Token Expired'); }
+        if (response.status === 401) {
+            alert('您的登入已過期，請重新登入。');
+            localStorage.clear();
+            window.location.href = '/login';
+            throw new Error('Token Expired');
+        }
         return response;
     }
 
-    // --- 動態更新頁面 UI 的函式 ---
+    /**
+     * 安全地格式化數值（分數、里程），如果無效則回傳佔位符
+     * @param {number|null} value - 原始數值
+     * @param {number} decimals - 要保留的小數點位數
+     * @returns {string} 格式化後的字串或 '--'
+     */
+    function formatValue(value, decimals = 2) {
+        const numericValue = parseFloat(value);
+        if (typeof numericValue === 'number' && !isNaN(numericValue)) {
+            return numericValue.toFixed(decimals);
+        }
+        return '--'; // 如果分數是 null 或無效，回傳佔位符
+    }
+
+    /**
+     * 根據從 API 獲取的行程資料，更新整個頁面的 UI
+     * @param {object} tripData - 包含行程所有詳情的物件
+     */
     function updateUI(tripData) {
+        // 更新頁面主標題和時間資訊
         document.getElementById('tripTitle').textContent = tripData.name || `行程報告 #${tripData.trip_number}`;
         
         const startTime = new Date(tripData.start_time);
-        const endTime = new Date(tripData.end_time);
-        const durationMs = endTime - startTime;
-        const hours = Math.floor(durationMs / 3600000);
-        const minutes = Math.round((durationMs % 3600000) / 60000);
-        document.getElementById('tripTimeInfo').textContent = 
-            `${startTime.toLocaleString()} - ${endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} · 總耗時 ${hours}h ${minutes}m`;
+        const endTime = tripData.end_time ? new Date(tripData.end_time) : null;
+        let durationDisplay = '進行中';
 
-        document.getElementById('score-total').textContent = Math.round(tripData.score || 0);
-        document.getElementById('score-in-car').textContent = Math.round(tripData.in_car_score || 0);
-        document.getElementById('score-out-car').textContent = Math.round(tripData.out_car_score || 0);
-        document.getElementById('score-mileage').textContent = `${tripData.total_mileage || 0} km`;
+        if (endTime) {
+            const durationMs = endTime - startTime;
+            const hours = Math.floor(durationMs / 3600000);
+            const minutes = Math.round((durationMs % 3600000) / 60000);
+            durationDisplay = `總耗時 ${hours}h ${minutes}m`;
+        }
 
+        document.getElementById('tripTimeInfo').innerHTML = 
+            `<i class="fa-solid fa-calendar"></i> ${startTime.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} - ${endTime ? endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''} · ${durationDisplay}`;
+
+        // 使用安全的格式化函式更新分數總覽區塊
+        document.getElementById('score-total').textContent = formatValue(tripData.score, 2);
+        document.getElementById('score-in-car').textContent = formatValue(tripData.in_car_score, 2);
+        document.getElementById('score-out-car').textContent = formatValue(tripData.out_car_score, 2);
+        document.getElementById('score-mileage').textContent = `${formatValue(tripData.total_mileage, 1)} km`; // 里程保留一位小數
+
+        // 動態生成違規項目列表
         const inCarList = document.getElementById('in-car-violations-list');
         const outCarList = document.getElementById('out-car-violations-list');
         inCarList.innerHTML = '';
@@ -47,7 +91,7 @@
                 item.className = 'violation-item';
                 item.innerHTML = `
                     <div class="violation-header">
-                        <div class="violation-time">${new Date(log.timestamp).toLocaleTimeString()}</div>
+                        <div class="violation-time">${new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                         <div class="violation-score">-${log.event.deduction_points}</div>
                     </div>
                     <div class="violation-desc">${log.event.description} (${log.event_details})</div>
@@ -63,17 +107,19 @@
         if (inCarList.innerHTML === '') inCarList.innerHTML = '<p class="no-violations">無車內違規項目</p>';
         if (outCarList.innerHTML === '') outCarList.innerHTML = '<p class="no-violations">無車外違規項目</p>';
 
+        // 更新 AI 建議
         document.getElementById('ai-suggestion-detail').innerHTML = `<p>${(tripData.ai_suggestion || '本次行程無 AI 建議。').replace(/\n/g, '<br>')}</p>`;
 
+        // 為列印按鈕設定 data-trip-id 屬性，方便後續的事件監聽
         const printButton = document.querySelector('.btn-print-report');
         if (printButton) {
-            printButton.href = `/api/trips/${tripData.id}/report/`;
-            printButton.target = '_blank';
-            printButton.onclick = null;
+            printButton.setAttribute('data-trip-id', tripData.id);
         }
     }
 
-    // --- 編輯標題 Modal 的邏輯 (整合您的版本) ---
+    /**
+     * 設定編輯行程標題的 Modal 彈窗及其所有事件監聽
+     */
     function setupTitleEditor() {
         const modal = document.getElementById('editTitleModal');
         const modalOverlay = document.getElementById('modalOverlay');
@@ -97,7 +143,6 @@
                 saveTitleBtn.textContent = '儲存中...';
                 saveTitleBtn.disabled = true;
                 try {
-                    // ▼▼▼【核心整合】執行真實的 API 請求來儲存標題 ▼▼▼
                     const response = await fetchWithAuth(`/api/trips/${tripId}/`, {
                         method: 'PATCH',
                         body: JSON.stringify({ name: newTitle })
@@ -132,13 +177,15 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.style.display === 'block') closeModal(); });
     }
 
-    // --- 頁面初始化 ---
+    /**
+     * 頁面初始化主函式：獲取行程 ID 並發起 API 請求
+     */
     async function initializePage() {
         const urlParams = new URLSearchParams(window.location.search);
         tripId = urlParams.get('trip_id');
 
         if (!tripId) {
-            document.querySelector('.trip-report-container').innerHTML = '<h1>錯誤：未指定行程 ID</h1>';
+            document.querySelector('.trip-report-container').innerHTML = '<h1>錯誤：未指定行程 ID</h1><p>請確認網址是否正確。</p>';
             return;
         }
 
@@ -147,7 +194,7 @@
             if (!response.ok) {
                 if (response.status === 404) throw new Error('找不到指定的行程。');
                 if (response.status === 403) throw new Error('您沒有權限查看此行程報告。');
-                throw new Error('無法載入行程資料。');
+                throw new Error('無法載入行程資料，請稍後再試。');
             }
             const tripData = await response.json();
             
@@ -160,24 +207,67 @@
         }
     }
 
-    // --- 通知功能的輔助函式 (來自您的版本) ---
+    /**
+     * 顯示一個短暫的通知訊息
+     * @param {string} message - 要顯示的訊息
+     * @param {string} type - 通知類型 ('success' 或 'error')
+     */
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i><span>${message}</span>`;
-        notification.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${type === 'success' ? '#22c55e' : '#ef4444'}; color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 0.75rem; font-weight: 600; z-index: 10000; animation: slideInRight 0.3s ease-out;`;
         document.body.appendChild(notification);
         setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease-out';
+            notification.style.animation = 'slideOutRight 0.3s ease-out forwards';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
+
+    // 將通知動畫的 CSS 動態注入到 <head> 中，避免需要修改 CSS 檔案
     const style = document.createElement('style');
-    style.textContent = `@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }`;
+    style.textContent = `
+        .notification {
+            position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; 
+            background: #22c55e; color: white; border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; 
+            align-items: center; gap: 0.75rem; font-weight: 600; 
+            z-index: 10000; animation: slideInRight 0.3s ease-out forwards;
+        }
+        .notification-error { background: #ef4444; }
+        @keyframes slideInRight { from { transform: translateX(110%); } to { transform: translateX(0); } }
+        @keyframes slideOutRight { from { transform: translateX(0); } to { transform: translateX(110%); } }
+    `;
     document.head.appendChild(style);
 
 
-    // 啟動頁面
-    document.addEventListener('DOMContentLoaded', initializePage);
+    // 當 DOM 載入完成後，啟動頁面初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        initializePage();
+
+        // 使用事件代理來處理「列印報表」按鈕的點擊事件
+        document.body.addEventListener('click', async function(event) {
+            const printButton = event.target.closest('.btn-print-report');
+            if (printButton) {
+                const currentTripId = printButton.getAttribute('data-trip-id');
+                if (currentTripId) {
+                    printButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>處理中...</span>`;
+                    printButton.disabled = true;
+                    try {
+                        const response = await fetchWithAuth(`/api/trips/${currentTripId}/report/`, { responseType: 'blob' });
+                        if (!response.ok) { throw new Error('PDF 生成失敗'); }
+                        const pdfBlob = await response.blob();
+                        const pdfUrl = URL.createObjectURL(pdfBlob);
+                        window.open(pdfUrl, '_blank');
+                    } catch (error) {
+                        console.error('列印報表失敗:', error);
+                        showNotification('無法生成報表', 'error');
+                    } finally {
+                        printButton.innerHTML = `<i class="fa-solid fa-print"></i> <span>列印報表</span>`;
+                        printButton.disabled = false;
+                    }
+                }
+            }
+        });
+    });
 
 })();
