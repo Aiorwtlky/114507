@@ -126,6 +126,7 @@
         color: white; border-radius: 8px; font-size: 1.25rem; cursor: pointer; transition: background-color var(--transition-speed);
       }
       .composer-area button:hover { background: var(--primary-hover); }
+      .composer-area button:disabled { background-color: #ccc; cursor: not-allowed; } /* 新增禁用樣式 */
 
       @media (max-width: 480px) {
         .chat-widget-container { right: 1rem; bottom: 6rem; width: calc(100% - 2rem); }
@@ -253,11 +254,7 @@
                 <button class="close-btn" id="chatCloseBtn" title="關閉">&times;</button>
             </header>
             <main class="messages-area" id="messagesArea">
-                <div class="msg-bubble is-admin">
-                    <div class="author-name">吾駕仙 AI</div>
-                    <div class="text">您好！我是吾駕仙 AI 客服，請問有什麼可以為您服務的嗎？</div>
-                </div>
-            </main>
+                </main>
             <footer class="composer-area">
                 <textarea id="messageInput" placeholder="請在此輸入您的問題..." rows="1"></textarea>
                 <button id="sendBtn" title="傳送"><i class="fa-solid fa-paper-plane"></i></button>
@@ -278,8 +275,111 @@
         const chatFab = document.getElementById('chatFab');
         const chatWidget = document.getElementById('chatWidgetContainer');
         const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const messagesArea = document.getElementById('messagesArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
         
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const API_URL = `${API_BASE_URL}/api/chatbot/`;
+
+        // 儲存對話歷史
+        let chatHistory = [
+            { role: 'model', content: '您好！我是吾駕仙 AI 客服，請問有什麼可以為您服務的嗎？' }
+        ];
+
+        // 函式：執行帶有認證的 fetch 請求
+        async function fetchWithAuth(endpoint, options = {}) {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                alert('您尚未登入或登入已逾時，無法使用此功能。');
+                window.location.href = '/login';
+                throw new Error('Not Authenticated');
+            }
+            const headers = options.headers || new Headers();
+            headers.append('Authorization', `Bearer ${token}`);
+            if (!(options.body instanceof FormData)) {
+                headers.append('Content-Type', 'application/json');
+            }
+            const response = await fetch(endpoint, { ...options, headers });
+            if (response.status === 401) {
+                alert('您的登入已過期，請重新登入。');
+                localStorage.clear();
+                window.location.href = '/login';
+                throw new Error('Token Expired');
+            }
+            return response;
+        }
+
+        // 函式：將訊息泡泡加到畫面
+        function appendMessage(text, type, author = '吾駕仙 AI') {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('msg-bubble', type);
+
+            if (type === 'is-admin') {
+                const authorDiv = document.createElement('div');
+                authorDiv.classList.add('author-name');
+                authorDiv.textContent = author;
+                messageDiv.appendChild(authorDiv);
+            }
+
+            const textDiv = document.createElement('div');
+            textDiv.classList.add('text');
+            textDiv.textContent = text;
+
+            messageDiv.appendChild(textDiv);
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+        
+        // 函式：初始化聊天室，顯示歡迎訊息
+        function initializeChat() {
+            messagesArea.innerHTML = ''; // 清空
+            appendMessage(chatHistory[0].content, 'is-admin');
+        }
+
+        // 核心函式：傳送訊息給後端 AI API
+        async function sendMessage() {
+            const userText = messageInput.value.trim();
+            if (userText === '') return;
+
+            appendMessage(userText, 'is-user');
+            messageInput.value = '';
+            messageInput.style.height = 'auto'; // 重設高度
+            chatHistory.push({ role: 'user', content: userText });
+
+            try {
+                sendBtn.disabled = true; 
+                
+                const response = await fetchWithAuth(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ messages: chatHistory })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ reply: '伺服器發生未知錯誤。' }));
+                    throw new Error(errorData.reply || `API 錯誤: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const aiReply = data.reply;
+
+                appendMessage(aiReply, 'is-admin');
+                chatHistory.push({ role: 'model', content: aiReply });
+
+            } catch (error) {
+                console.error("Chat API Error:", error);
+                // 如果 API 呼叫失敗，將剛剛加入的使用者訊息從歷史中移除
+                chatHistory.pop(); 
+                appendMessage(`抱歉，連線時發生錯誤：${error.message || '無法取得 AI 回覆。'}`, 'is-admin');
+            } finally {
+                sendBtn.disabled = false;
+                messageInput.focus(); // 讓使用者可以繼續輸入
+            }
+        }
+
+        // --- 事件監聽 ---
         if (chatFab && chatWidget && chatCloseBtn) {
+            // 控制聊天視窗的開關
             chatFab.addEventListener('click', () => chatWidget.classList.toggle('is-open'));
             chatCloseBtn.addEventListener('click', () => chatWidget.classList.remove('is-open'));
             document.addEventListener('keydown', (e) => {
@@ -288,46 +388,23 @@
                 }
             });
 
-            const messagesArea = document.getElementById('messagesArea');
-            const messageInput = document.getElementById('messageInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const scrollToBottom = () => messagesArea.scrollTop = messagesArea.scrollHeight;
-            const addMessage = (text, type, author = '吾駕仙 AI') => {
-                const bubble = document.createElement('div');
-                bubble.classList.add('msg-bubble', type);
-                const textDiv = document.createElement('div');
-                textDiv.classList.add('text');
-                textDiv.textContent = text;
-                if (type === 'is-admin') {
-                  const authorDiv = document.createElement('div');
-                  authorDiv.classList.add('author-name');
-                  authorDiv.textContent = author;
-                  bubble.appendChild(authorDiv);
-                }
-                bubble.appendChild(textDiv);
-                messagesArea.appendChild(bubble);
-                scrollToBottom();
-            };
-            const simulateAiReply = () => {
-                setTimeout(() => {
-                    addMessage('感謝您的提問，我們的真人客服將在稍後與您聯繫。', 'is-admin');
-                }, 1000);
-            };
-            const handleSendMessage = () => {
-                const messageText = messageInput.value.trim();
-                if (messageText) {
-                    addMessage(messageText, 'is-user');
-                    messageInput.value = '';
-                    simulateAiReply();
-                }
-            };
-            sendBtn.addEventListener('click', handleSendMessage);
+            // 處理訊息發送
+            sendBtn.addEventListener('click', sendMessage);
             messageInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    handleSendMessage();
+                    sendMessage();
                 }
             });
+
+            // 讓輸入框自動增高
+            messageInput.addEventListener('input', () => {
+                messageInput.style.height = 'auto';
+                messageInput.style.height = `${messageInput.scrollHeight}px`;
+            });
+            
+            // 初始化聊天室
+            initializeChat();
         }
       });
     </script>

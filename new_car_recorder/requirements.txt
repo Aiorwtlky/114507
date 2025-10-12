@@ -1,0 +1,10 @@
+PySide6
+opencv-python
+numpy
+mediapipe
+ultralytics
+pynput
+scipy
+scikit-learn
+google-cloud-storage 
+pyserial 

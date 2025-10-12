@@ -18,9 +18,9 @@ from .views import (
     # 公告與邀請碼
     GroupAnnouncementListCreateAPIView, GroupAnnouncementDetailAPIView,
     InvitationCodeCreateAPIView, InvitationCodeListAPIView, InvitationCodeManageAPIView,
-    RecentAnnouncementsAPIView,
+    RecentAnnouncementsAPIView, CombinedAnnouncementListAPIView, AnnouncementDetailAPIView,
     # 數據讀取與報表
-    TripListAPIView, TripDetailAPIView, VideoListAPIView, generate_trip_report_pdf,
+    TripListAPIView, TripDetailAPIView, VideoListAPIView, generate_trip_report_pdf, GroupTrendsAPIView,
     # 車機上傳
     TripStartAPIView, TripEndAPIView, AiVisionLogCreateAPIView, VideoRegisterAPIView,
     # AI、統計與系統
@@ -53,11 +53,11 @@ urlpatterns = [
     
     # 4. 公告與邀請碼 API
     path('groups/<int:group_pk>/announcements/', GroupAnnouncementListCreateAPIView.as_view(), name='group-announcement-list-create'),
-    path('announcements/<int:pk>/', GroupAnnouncementDetailAPIView.as_view(), name='announcement-detail'),
-    path('announcements/recent/', RecentAnnouncementsAPIView.as_view(), name='recent-announcements'),
+    path('groups/<int:group_pk>/all-announcements/', CombinedAnnouncementListAPIView.as_view(), name='combined-announcement-list'),
     path('groups/<int:group_pk>/invitations/create/', InvitationCodeCreateAPIView.as_view(), name='invitation-code-create'),
     path('groups/<int:group_pk>/invitations/', InvitationCodeListAPIView.as_view(), name='invitation-code-list'),
     path('invitations/<int:pk>/', InvitationCodeManageAPIView.as_view(), name='invitation-code-manage'),
+    path('announcements/detail/<str:ann_id>/', AnnouncementDetailAPIView.as_view(), name='announcement-detail-view'),
     
     # 5. 數據讀取與報表 API
     path('trips/', TripListAPIView.as_view(), name='trip-list'),
@@ -76,6 +76,7 @@ urlpatterns = [
     path('chatbot/', ChatbotAPIView.as_view(), name='chatbot'),
     path('statistics/trends/', UserTrendsAPIView.as_view(), name='user-trends'),
     path('trips/feedback/', TripSuggestionFeedbackAPIView.as_view(), name='trip-suggestion-feedback'),
+    path('groups/<int:group_pk>/statistics/trends/', GroupTrendsAPIView.as_view(), name='group-trends'),
 
     # 8. 系統狀態 API
     path('health/', health_check, name='health-check'),

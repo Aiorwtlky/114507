@@ -1,8 +1,30 @@
 {% extends 'base.html' %}
 {% block title %}群組總覽 · My Driving God{% endblock %}
 {% block page_heading %}群組總覽{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/group_leader_view.css') }}" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+
+<style>
+  .announcement-row {
+    position: relative;
+    padding-left: 90px; /* 為標籤騰出空間 */
+  }
+  .announcement-badge {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.25em 0.6em;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 4px;
+    color: white;
+  }
+  .announcement-badge.system { background-color: #dc2626; } /* 系統公告 - 紅色 */
+  .announcement-badge.group { background-color: #1a2a5f; } /* 群組公告 - 藍色 */
+</style>
 {% endblock %}
 
 {% block content %}
@@ -34,14 +56,21 @@
 
     <div class="d-card trends-card">
         <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-chart-line"></i> 群組趨勢分析</h3></div>
+        
         <div class="trends-filters">
-            <div class="filter-group"><label for="periodType"><i class="fa-solid fa-calendar"></i> 時間範圍</label><select id="periodType" class="filter-select"><option value="month">月</option><option value="quarter">季</option><option value="year">年</option></select></div>
-            <div class="filter-group" id="yearFilter"><label for="yearSelect">選擇年份</label><select id="yearSelect" class="filter-select"><option value="2025" selected>2025年</option><option value="2024">2024年</option><option value="2023">2023年</option></select></div>
-            <div class="filter-group" id="quarterFilter" style="display: none;"><label for="quarterSelect">選擇季度</label><select id="quarterSelect" class="filter-select"><option value="Q1">第1季</option><option value="Q2">第2季</option><option value="Q3">第3季</option><option value="Q4" selected>第4季</option></select></div>
-            <div class="filter-group" id="monthFilter" style="display: none;"><label for="monthSelect">選擇月份</label><select id="monthSelect" class="filter-select"><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9" selected>9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select></div>
+            <div class="filter-group" style="flex-grow: 1;">
+                <label for="group-date-range-picker"><i class="fa-solid fa-calendar-days"></i> 選擇日期範圍</label>
+                <input type="text" id="group-date-range-picker" class="filter-select" placeholder="點擊以選擇日期範圍">
+            </div>
         </div>
+
         <div class="trends-content">
-            <div class="trends-summary"><div class="summary-item"><span class="summary-label">群組平均分數</span><span class="summary-value primary">--</span></div><div class="summary-item"><span class="summary-label">較上期</span><span class="summary-value success">--</span></div><div class="summary-item"><span class="summary-label">最高分</span><span class="summary-value">--</span></div><div class="summary-item"><span class="summary-label">最低分</span><span class="summary-value">--</span></div></div>
+            <div class="trends-summary">
+                <div class="summary-item"><span class="summary-label">群組平均分數</span><span class="summary-value primary">--</span></div>
+                <div class="summary-item"><span class="summary-label">較上期</span><span class="summary-value success">--</span></div>
+                <div class="summary-item"><span class="summary-label">最高分</span><span class="summary-value">--</span></div>
+                <div class="summary-item"><span class="summary-label">最低分</span><span class="summary-value">--</span></div>
+            </div>
             <div class="chart-wrapper"><canvas id="groupTrendsChart"></canvas></div>
         </div>
     </div>
@@ -78,5 +107,6 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{{ url_for('static', filename='js/pages/group_leader_view.js') }}"></script>
 {% endblock %}

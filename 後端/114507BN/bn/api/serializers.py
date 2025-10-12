@@ -9,7 +9,7 @@ from .models import (
     PersonnelProfile, Group, Trip, ScoringStandard,
     AiVisionLog, VideoRecord, VehicleDevice, GroupAnnouncement,
     InvitationCode, GroupMember, TripSuggestionFeedback,
-    ActivationCode
+    ActivationCode , SystemAnnouncement,
 )
 
 # =============================================================================
@@ -83,11 +83,9 @@ class UserSerializer(serializers.ModelSerializer):
         admin_memberships = GroupMember.objects.filter(user=obj, role='ADMIN')
         return [membership.group.id for membership in admin_memberships]
 
-    # ▼▼▼【核心修正】新增 get_group_memberships 方法 ▼▼▼
     def get_group_memberships(self, obj):
         """獲取使用者所有的群組成員身份 (群組ID 和 角色)。"""
         memberships = GroupMember.objects.filter(user=obj)
-        # 回傳一個包含字典的列表，例如: [{'group_id': 1, 'role': 'ADMIN'}, {'group_id': 2, 'role': 'MEMBER'}]
         return [{'group_id': m.group.id, 'role': m.role} for m in memberships]
 
     @transaction.atomic
@@ -116,29 +114,31 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     
 class GroupMemberSerializer(serializers.ModelSerializer):
-    """【已修正】序列化群組成員資料，新增 joined_at 欄位以滿足前端需求。"""
+    """【最終修正版】序列化群組成員資料，明確包含角色和加入日期。"""
     average_score = serializers.FloatField(read_only=True, default=0)
-    role = serializers.SerializerMethodField()
     personnelprofile = PersonnelProfileSerializer(read_only=True)
-    # ▼▼▼ 【核心修正】新增 joined_at 欄位 ▼▼▼
+    
+    role = serializers.SerializerMethodField()
     joined_at = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role', 'personnelprofile', 'joined_at'] # <-- 加入到 fields
+        fields = ['id', 'username', 'first_name', 'last_name', 'average_score', 'role', 'personnelprofile', 'joined_at']
 
     def get_role(self, obj):
+        """從傳入的 context 中獲取群組 ID，並查詢該使用者在此群組的角色。"""
         group_id = self.context.get('group_id')
-        if not group_id: return 'MEMBER'
+        if not group_id:
+            first_membership = obj.groupmember_set.first()
+            return first_membership.role if first_membership else 'MEMBER'
         try:
             membership = GroupMember.objects.get(user=obj, group__id=group_id)
             return membership.role
         except GroupMember.DoesNotExist:
-            return 'MEMBER'
+            return 'UNKNOWN'
 
-    # ▼▼▼ 【核心修正】新增 get_joined_at 方法 ▼▼▼
     def get_joined_at(self, obj):
-        """從 GroupMember 中介表中，查詢這位使用者是在何時加入這個群組的。"""
+        """查詢這位使用者是在何時加入這個群組的。"""
         group_id = self.context.get('group_id')
         if not group_id:
             return None
@@ -147,6 +147,7 @@ class GroupMemberSerializer(serializers.ModelSerializer):
             return membership.joined_at
         except GroupMember.DoesNotExist:
             return None
+
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -238,9 +239,8 @@ class VehicleDeviceSerializer(serializers.ModelSerializer):
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     """
-    【僅限建立】處理使用者註冊請求，支援扁平化的 Profile 欄位、頭像上傳、邀請碼與啟用碼。
+    【最新版】處理使用者註冊，支援可多次使用的啟用碼。
     """
-    # write_only=True 確保這些欄位只在接收請求時有效，不會在回應中洩漏
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     personnel_number = serializers.CharField(write_only=True)
     phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -262,28 +262,25 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def validate_activation_code(self, value):
         """
-        自訂驗證邏輯：在儲存前檢查啟用碼的有效性。
+        【最新版】自訂驗證邏輯：
         1. 檢查 code 是否存在
-        2. 檢查 code 是否已被使用 (is_used=False)
+        2. 檢查 code 是否已達到使用次數上限
         3. 檢查 code 是否已過期
         """
         try:
-            code = ActivationCode.objects.get(code=value, is_used=False)
+            code = ActivationCode.objects.get(code=value)
+            if code.current_uses >= code.max_uses:
+                raise serializers.ValidationError("此啟用碼已達到使用次數上限。")
             if code.expires_at and code.expires_at < timezone.now():
                 raise serializers.ValidationError("此啟用碼已過期。")
             return value
         except ActivationCode.DoesNotExist:
-            raise serializers.ValidationError("無效的啟用碼或已被使用。")
+            raise serializers.ValidationError("無效的啟用碼。")
 
     @transaction.atomic
     def create(self, validated_data):
         """
-        覆寫 create 方法，以在同一個資料庫事務中完成以下操作：
-        1. 從驗證資料中分離出 User 和 Profile 的欄位。
-        2. 建立 User 實例。
-        3. 建立與之關聯的 PersonnelProfile 實例。
-        4. 將使用的 ActivationCode 標記為已使用。
-        5. (可選) 處理群組邀請碼。
+        【最新版】覆寫 create 方法，將 ActivationCode 的使用次數 +1。
         """
         activation_code_str = validated_data.pop('activation_code')
         profile_data = {
@@ -300,18 +297,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         PersonnelProfile.objects.create(user=user, **profile_data)
         
-        # 標記啟用碼為已使用
+        # 將啟用碼的使用次數 +1
         try:
             activation_code_obj = ActivationCode.objects.get(code=activation_code_str)
-            activation_code_obj.is_used = True
-            activation_code_obj.used_by = user
-            activation_code_obj.used_at = timezone.now()
+            activation_code_obj.current_uses += 1
             activation_code_obj.save()
         except ActivationCode.DoesNotExist:
-            # 此處應不會觸發，因為 validate 方法已先檢查過。作為防呆。
             pass
 
-        # 處理群組邀請碼
+        # 處理群組邀請碼 (邏輯不變)
         if invitation_code:
             try:
                 invite = InvitationCode.objects.get(code=invitation_code.upper(), is_used=False, expires_at__gt=timezone.now())
@@ -319,7 +313,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 invite.is_used = True
                 invite.save()
             except InvitationCode.DoesNotExist:
-                # 若邀請碼無效，靜默失敗，不影響主註冊流程
                 pass 
         return user
 
@@ -358,3 +351,9 @@ class TripSuggestionFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = TripSuggestionFeedback
         fields = ['trip', 'feedback_type', 'comment']
+
+class SystemAnnouncementSerializer(serializers.ModelSerializer):
+    """序列化系統公告。"""
+    class Meta:
+        model = SystemAnnouncement
+        fields = ['id', 'announcement_number', 'content', 'date', 'is_active']

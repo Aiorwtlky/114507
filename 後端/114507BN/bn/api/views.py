@@ -9,17 +9,19 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.db.models import Avg, Q
+from django.db.models import Avg, Max, Min, Q
 from django.db.models.functions import TruncMonth
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from django.utils import timezone
 from datetime import datetime
 import logging
 
 # 專案內部模組匯入
 from .models import (
     Group, Trip, VehicleDevice, AiVisionLog, VideoRecord, PersonnelProfile,
-    GroupAnnouncement, InvitationCode, GroupMember, TripSuggestionFeedback
+    GroupAnnouncement, InvitationCode, GroupMember, TripSuggestionFeedback,
+    ActivationCode, SystemAnnouncement
 )
 from .serializers import (
     UserSerializer, GroupSerializer, TripListSerializer,
@@ -28,7 +30,7 @@ from .serializers import (
     UserRegisterSerializer, GroupMemberSerializer,
     GroupAnnouncementSerializer, InvitationCodeSerializer,
     TripSuggestionFeedbackSerializer, VideoRegisterSerializer, VideoRecordSerializer,
-    InvitationCodeCreateSerializer
+    InvitationCodeCreateSerializer , SystemAnnouncementSerializer
 )
 from .services import calculate_trip_score, is_driver_on_active_trip, get_chatbot_response
 from .permissions import IsOwnerOrAdmin, IsGroupOwnerOrAdmin, IsAnnouncementPublisherOrAdmin
@@ -305,6 +307,96 @@ class InvitationCodeManageAPIView(generics.DestroyAPIView):
             raise PermissionDenied("您沒有權限撤銷此邀請碼。")
         instance.delete()
 
+
+class CombinedAnnouncementListAPIView(APIView):
+    """
+    (需登入) 將有效的「系統公告」與特定「群組公告」合併後回傳。
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, group_pk, *args, **kwargs):
+        # 1. 獲取所有有效的系統公告
+        system_announcements = SystemAnnouncement.objects.filter(is_active=True)
+        
+        # 2. 獲取指定群組所有有效的公告
+        group_announcements = GroupAnnouncement.objects.filter(group__id=group_pk, is_active=True)
+
+        # 3. 分別將兩種公告序列化
+        system_data = SystemAnnouncementSerializer(system_announcements, many=True).data
+        group_data = GroupAnnouncementSerializer(group_announcements, many=True, context={'request': request}).data
+
+        # 4. 將兩種公告合併到一個列表中，並統一格式
+        combined_list = []
+        for ann in system_data:
+            combined_list.append({
+                'id': f"sys-{ann['id']}",
+                'type': 'SYSTEM',
+                'content': ann['content'],
+                'publish_date': ann['date'],
+                'publisher': '系統管理員' # 系統公告統一顯示來源
+            })
+        
+        for ann in group_data:
+            combined_list.append({
+                'id': f"grp-{ann['id']}",
+                'type': 'GROUP',
+                'content': ann['content'],
+                'publish_date': ann['publish_date'],
+                'publisher': ann.get('publisher', '群組管理員') # 從序列化器獲取發布者
+            })
+
+        # 5. 根據發布日期，由新到舊排序
+        combined_list.sort(key=lambda x: x['publish_date'], reverse=True)
+
+        return Response(combined_list)
+
+class AnnouncementDetailAPIView(APIView):
+    """
+    (需登入) 獲取單則公告的詳細內容。
+    能自動判斷是系統公告(sys-id)還是群組公告(grp-id)。
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, ann_id, *args, **kwargs):
+        ann_type, _, pk = ann_id.partition('-')
+        
+        try:
+            pk = int(pk)
+            if ann_type == 'sys':
+                announcement = get_object_or_404(SystemAnnouncement, pk=pk)
+                data = {
+                    'id': f"sys-{announcement.id}",
+                    'type': 'SYSTEM',
+                    'subject': f"系統公告: {announcement.content[:20]}...", # 系統公告通常沒有獨立標題
+                    'content': announcement.content,
+                    'publish_date': announcement.date,
+                    'publisher': '系統管理員',
+                    'group_name': '全系統'
+                }
+            elif ann_type == 'grp':
+                announcement = get_object_or_404(GroupAnnouncement, pk=pk)
+                # 權限檢查：使用者必須是該群組的成員才能查看
+                if not announcement.group.members.filter(id=request.user.id).exists() and not request.user.is_staff:
+                    raise PermissionDenied("您沒有權限查看此公告。")
+                
+                data = {
+                    'id': f"grp-{announcement.id}",
+                    'type': 'GROUP',
+                    'subject': f"群組公告: {announcement.content[:20]}...",
+                    'content': announcement.content,
+                    'publish_date': announcement.publish_date,
+                    'publisher': announcement.publisher.get_full_name() or announcement.publisher.username,
+                    'group_name': announcement.group.name
+                }
+            else:
+                return Response({"error": "無效的公告 ID 格式。"}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(data)
+
+        except (ValueError, SystemAnnouncement.DoesNotExist, GroupAnnouncement.DoesNotExist):
+            return Response({"error": "找不到指定的公告。"}, status=status.HTTP_404_NOT_FOUND)
+
+
 # =============================================================================
 # 4. 數據讀取與報表 API (Data & Report APIs)
 # =============================================================================
@@ -466,6 +558,53 @@ class UserTrendsAPIView(views.APIView):
         # 格式化回傳結果
         formatted_trends = [
             {"month": item['month'].strftime('%Y-%m'), "average_score": round(item['average_score'], 1)} 
+            for item in trends
+        ]
+        return Response(formatted_trends)
+    
+
+class GroupTrendsAPIView(views.APIView):
+    """
+    (需權限) 特定群組的駕駛分數趨勢 API (月平均)。
+    支援 start_date 和 end_date 篩選。
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, group_pk, *args, **kwargs):
+        group = get_object_or_404(Group, pk=group_pk)
+
+        # 權限檢查：使用者必須是該群組的成員
+        if not group.members.filter(id=request.user.id).exists() and not request.user.is_staff:
+            raise PermissionDenied("您沒有權限查看此群組的統計資料。")
+
+        queryset = Trip.objects.filter(group=group, score__isnull=False)
+
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
+
+        if start_date_str and end_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                queryset = queryset.filter(start_time__date__gte=start_date, start_time__date__lte=end_date)
+            except ValueError:
+                return Response({"error": "日期格式錯誤，請使用 'YYYY-MM-DD'。"}, status=status.HTTP_400_BAD_REQUEST)
+
+        trends = queryset.annotate(
+            month=TruncMonth('start_time')
+        ).values('month').annotate(
+            average_score=Avg('score'),
+            max_score=Max('score'),
+            min_score=Min('score')
+        ).values('month', 'average_score', 'max_score', 'min_score').order_by('month')
+        
+        formatted_trends = [
+            {
+                "month": item['month'].strftime('%Y-%m'), 
+                "average_score": round(item['average_score'], 1) if item['average_score'] else 0,
+                "max_score": item['max_score'],
+                "min_score": item['min_score']
+            } 
             for item in trends
         ]
         return Response(formatted_trends)

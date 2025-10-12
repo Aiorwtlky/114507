@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/pages/dashboard.js (完整最終版)
+// 檔案路徑: static/js/pages/dashboard.js (最終修正版)
 
 (function() {
     'use strict';
@@ -14,7 +14,6 @@
         }
         const headers = options.headers || new Headers();
         headers.append('Authorization', `Bearer ${token}`);
-        // 對於 blob 請求 (如下載PDF)，我們不需要設定 Content-Type
         if (!(options.body instanceof FormData) && options.responseType !== 'blob') {
             headers.append('Content-Type', 'application/json');
         }
@@ -28,40 +27,23 @@
         return response;
     }
 
-    /**
-     * 【核心新增】處理 PDF 預覽的共用函式
-     * @param {string} tripId - 要預覽報表的行程 ID
-     */
     async function handlePdfPreview(tripId) {
         if (!tripId) return;
-        // 尋找對應的按鈕並顯示載入中狀態
         const printButton = document.querySelector(`button[data-trip-id="${tripId}"]`);
         if (printButton) {
             printButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 報表生成中...`;
             printButton.disabled = true;
         }
-
         try {
-            const response = await fetchWithAuth(`/api/trips/${tripId}/report/`, {
-                responseType: 'blob' // 告訴 fetch 我們期待的是二進位資料
-            });
-
-            if (!response.ok) {
-                throw new Error(`無法生成報表 (狀態碼: ${response.status})`);
-            }
-
-            // 將回傳的二進位資料轉換成 Blob 物件
+            const response = await fetchWithAuth(`/api/trips/${tripId}/report/`, { responseType: 'blob' });
+            if (!response.ok) { throw new Error(`無法生成報表 (狀態碼: ${response.status})`); }
             const pdfBlob = await response.blob();
-            // 為這個 Blob 物件建立一個暫時的 URL
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            // 在新分頁中開啟這個 URL 進行預覽
             window.open(pdfUrl, '_blank');
-
         } catch (error) {
             console.error('預覽 PDF 失敗:', error);
             alert('無法載入 PDF 報表，請確認後端伺服器運作正常。');
         } finally {
-            // 無論成功或失敗，都恢復按鈕的原始狀態
             if (printButton) {
                 printButton.innerHTML = `<i class="fa-solid fa-print"></i> 列印報表`;
                 printButton.disabled = false;
@@ -72,7 +54,6 @@
     function updateUI(userData, groupData, tripsData, trendsData) {
         const profile = userData.personnelprofile || {};
 
-        // --- 更新儀表板個人資訊卡片 ---
         document.getElementById('dashboard-avatar').src = profile.avatar || '/static/images/user-placeholder.svg';
         document.getElementById('dashboard-username').textContent = userData.first_name || userData.username;
         document.getElementById('dashboard-email').textContent = userData.email;
@@ -84,40 +65,34 @@
         const groupsList = document.getElementById('dashboard-groups-list');
         groupsList.innerHTML = '';
         if (groupData.results && groupData.results.length > 0) {
+            // ▼▼▼【核心修改】移除判斷邏輯，直接定義唯一的目標 URL ▼▼▼
+            const targetUrl = '/group_leader_view';
+            
             groupData.results.slice(0, 5).forEach(group => {
-                groupsList.innerHTML += `<li class="list-item"><a href="/group_leader_view?group_id=${group.id}" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
+                // 直接使用統一的 URL
+                groupsList.innerHTML += `<li class="list-item"><a href="${targetUrl}?group_id=${group.id}" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
             });
         } else {
             groupsList.innerHTML = '<li class="list-item"><span>您尚未加入任何群組</span></li>';
         }
 
-        // --- 根據權限顯示管理入口 ---
         const managementEntryPoint = document.getElementById('management-entry-point');
         if (managementEntryPoint && (userData.is_staff || userData.is_group_admin)) {
             managementEntryPoint.style.display = 'block';
         }
 
-        // --- 更新過往行程列表 ---
         const tripsList = document.getElementById('dashboard-trips-list');
         tripsList.innerHTML = '';
         if (tripsData.results && tripsData.results.length > 0) {
-            tripsData.results.forEach(trip => {
+            tripsData.results.slice(0, 5).forEach(trip => {
                 const score = Math.round(trip.score);
                 const scoreClass = score >= 80 ? 'excellent' : (score >= 60 ? 'warning' : 'danger');
-                tripsList.innerHTML += `
-                    <li class="trip-item">
-                        <div class="trip-info">
-                            <span class="trip-date">${new Date(trip.start_time).toLocaleDateString()}</span>
-                            <span class="trip-group">${trip.group}</span>
-                        </div>
-                        <a href="/trip_report?trip_id=${trip.id}" class="trip-score ${scoreClass}">${score}分</a>
-                    </li>`;
+                tripsList.innerHTML += `<li class="trip-item"><div class="trip-info"><span class="trip-date">${new Date(trip.start_time).toLocaleDateString()}</span><span class="trip-group">${trip.group}</span></div><a href="/trip_report?trip_id=${trip.id}" class="trip-score ${scoreClass}">${score}分</a></li>`;
             });
         } else {
             tripsList.innerHTML = '<li class="trip-item"><span>尚無行程記錄</span></li>';
         }
 
-        // --- 更新前次行程報告 ---
         const latestTrip = tripsData.results && tripsData.results[0];
         const latestTripReport = document.getElementById('latest-trip-report');
         if (latestTripReport && latestTrip) {
@@ -129,10 +104,7 @@
 
             latestTripReport.innerHTML = `
                 <div class="card-header with-meta">
-                    <div>
-                        <h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3>
-                        <p class="card-meta">${startTime.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} - ${endTime.toLocaleTimeString([], { timeStyle: 'short' })}</p>
-                    </div>
+                    <div><h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3><p class="card-meta">${startTime.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} - ${endTime.toLocaleTimeString([], { timeStyle: 'short' })}</p></div>
                 </div>
                 <div class="scores-grid">
                     <div class="score-box primary"><div class="score-value">${Math.round(latestTrip.score)}</div><div class="score-label">安全總分</div></div>
@@ -149,7 +121,6 @@
             latestTripReport.innerHTML = '<div class="card-header"><div><h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3></div></div><p style="text-align: center; padding: 2rem;">尚無任何行程記錄可供顯示。</p>';
         }
 
-        // --- 更新儀表盤和圖表 ---
         initTrendsChart(trendsData);
         initGauge(trendsData);
     }
@@ -162,20 +133,16 @@
                 fetchWithAuth('/api/trips/?ordering=-start_time&limit=5'),
                 fetchWithAuth('/api/statistics/trends/')
             ]);
-
             if (!profileRes.ok || !groupsRes.ok || !tripsRes.ok || !trendsRes.ok) {
                 throw new Error('一個或多個 API 請求失敗');
             }
-
             const [userData, groupData, tripData, trendsData] = await Promise.all([
                 profileRes.json(),
                 groupsRes.json(),
                 tripsRes.json(),
                 trendsRes.json()
             ]);
-            
             updateUI(userData, groupData, tripData, trendsData);
-
         } catch (error) {
             console.error("載入儀表板資料失敗:", error.message);
         }
@@ -197,22 +164,25 @@
         const gaugeText = document.getElementById('trends-gauge-text')?.querySelector('strong');
         if (!gaugeNeedle || !gaugeText) return;
 
-        const latestAverage = trendsData.length > 0 ? trendsData[trendsData.length-1].average_score : 0;
-        const score = Math.round(latestAverage);
+        let score = 0;
+        if (trendsData && trendsData.length > 0) {
+            score = Math.round(trendsData[trendsData.length - 1].average_score);
+        }
 
         gaugeText.textContent = score;
-        
+        const rotation = (score / 100) * 180 - 90;
+
         setTimeout(() => {
-            gaugeNeedle.style.setProperty('--gauge-value', score);
-        }, 300);
+            gaugeNeedle.style.transform = `rotate(${rotation}deg)`;
+        }, 100);
     }
 
     function initTrendsChart(trendsData) {
         const canvas = document.getElementById('trendsChart');
         if (!canvas) return;
         
-        const labels = trendsData.map(item => item.month);
-        const scores = trendsData.map(item => item.average_score);
+        const labels = trendsData ? trendsData.map(item => item.month) : [];
+        const scores = trendsData ? trendsData.map(item => item.average_score) : [];
 
         new Chart(canvas, { 
             type: 'line', 
@@ -237,7 +207,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         initializeDashboard();
 
-        // 使用事件委派來監聽所有動態生成的列印按鈕的點擊事件
         document.body.addEventListener('click', function(event) {
             const printButton = event.target.closest('.btn-print-dynamic');
             if (printButton) {
