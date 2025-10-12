@@ -55,23 +55,32 @@
     .gauge-area { display: flex; flex-direction: column; justify-content: center; align-items: center; flex-grow: 1; padding: var(--spacing-md) 0; }
     .speedometer-gauge { width: 300px; height: 150px; position: relative; overflow: hidden; }
     
-    /*【核心修改 1】更新儀表板顏色區間的百分比 */
     .gauge-body {
         width: 300px; height: 300px; border-radius: 50%;
         position: absolute; top: 0; left: 0;
         background: conic-gradient(
             from -90deg,
-            #dc3545 0deg 144deg,     /* 紅色區間 (0-80分) */
-            #ffc107 144deg 162deg,   /* 黃色區間 (81-90分) */
-            #28a745 162deg 180deg    /* 綠色區間 (91-100分) */
+            #dc3545 0deg 144deg,
+            #ffc107 144deg 162deg,
+            #28a745 162deg 180deg
         );
         clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%);
     }
     .gauge-mask { width: 260px; height: 260px; background: var(--white-bg); border-radius: 50%; position: absolute; top: 20px; left: 20px; z-index: 1; }
-    .gauge-needle { width: 4px; height: 120px; background: var(--text-dark); border-radius: 2px; position: absolute; bottom: -90px; left: calc(50% - 2px); transform-origin: bottom center; transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55), background 0.3s ease; z-index: 2; }
+    
+    /* ▼▼▼【核心修正】將指針的底部位置修正回 0 ▼▼▼ */
+    .gauge-needle { 
+        width: 4px; height: 120px; background: var(--text-dark); border-radius: 2px; 
+        position: absolute; 
+        bottom: 0; /* <--- 從 -90px 改回 0，讓它回到容器內 */
+        left: calc(50% - 2px); 
+        transform-origin: bottom center; 
+        transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55), background 0.3s ease; 
+        z-index: 2; 
+    }
+
     .gauge-center-circle { width: 20px; height: 20px; background: var(--text-dark); border: 4px solid var(--white-bg); border-radius: 50%; position: absolute; top: 130px; left: calc(50% - 10px); z-index: 3; transition: background 0.3s ease; }
     
-    /*【核心修改 2】為指針和中心圓點新增顏色樣式 */
     .gauge-needle.danger, .gauge-center-circle.danger { background: var(--danger-color); }
     .gauge-needle.warning, .gauge-center-circle.warning { background: var(--warning-color); }
     .gauge-needle.excellent, .gauge-center-circle.excellent { background: var(--success-color); }
@@ -80,7 +89,6 @@
     .gauge-score { font-size: 2.5rem; font-weight: 700; color: var(--text-dark); }
     .gauge-score-label { font-size: 1rem; color: var(--text-muted); }
 
-    /*【核心修改 3】新增狀態與評語的樣式 */
     .gauge-status { margin-top: 1.25rem; font-size: 1.25rem; font-weight: 700; text-align: center; transition: color 0.3s ease; min-height: 1.2em; }
     .gauge-status.danger { color: var(--danger-color); }
     .gauge-status.warning { color: var(--warning-color); }
@@ -138,6 +146,7 @@
   <a href="{{ url_for('dashboard') }}" class="btn-return">返回儀表板</a>
 </div>
 {% endblock %}
+
 {% block extra_js %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
