@@ -1,157 +1,185 @@
-/* 引用儀表板的所有基礎樣式 */
-@import url('dashboard.css');
+/* 檔案路徑: static/css/pages/member_dashboard.css (新檔案) */
 
-/* --- 【全新】成員資訊卡片樣式 --- */
-.member-info-card .profile-name {
-    margin-left: 0;
-    /* 移除多餘的左邊距 */
+/* --- 1. 基礎變數與容器 --- */
+:root {
+    --card-radius: 12px;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --transition: all 0.3s ease;
 }
 
-/* --- 【修改】讓右欄的「過往行程」卡片填滿整個高度 --- */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+}
+
+@media (min-width: 992px) {
+    .dashboard-container {
+        grid-template-columns: 350px 1fr; /* 左側欄固定寬度 */
+    }
+}
+
+.dashboard-column-left,
 .dashboard-column-right {
-    height: 100%;
-}
-
-.past-trips-card-large {
-    flex-grow: 1;
-    /* 讓卡片填滿父層高度 */
     display: flex;
     flex-direction: column;
+    gap: var(--spacing-lg);
 }
 
-.past-trips-card-large .d-card-body {
-    flex-grow: 1;
-    /* 讓卡片內容區填滿 */
-    overflow-y: auto;
-    /* 內容過多時滾動 */
-}
-
-.past-trips-card-large ul {
-    height: 100%;
-}
-
-/* --- 【新增】放大「過往行程」卡片內的字體 --- */
-
-/* 增加每行的上下間距 */
-.past-trips-card-large .trip-list li {
-    padding: 20px 0;
-    /* 讓行高更寬敞 */
-}
-
-/* 放大日期/群組文字 */
-.past-trips-card-large .trip-date-group {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 4px;
-    /* 增加與下方路線的間距 */
-}
-
-/* 放大時間/路線文字 */
-.past-trips-card-large .trip-time-route {
-    font-size: 1rem;
-}
-
-/* 大幅放大分數 */
-.past-trips-card-large .trip-score {
-    font-size: 2.5rem;
-    font-weight: bold;
-}
-
-/* --- 【全新】過往行程列表三欄式佈局 --- */
-
-.past-trips-card-large .trip-item {
+/* --- 2. 卡片樣式 --- */
+.d-card {
+    background: var(--white-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--card-radius);
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     display: flex;
-    /* 啟用 Flexbox 佈局 */
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.d-card-header {
+    display: flex;
     justify-content: space-between;
-    /* 讓元素靠兩側對齊 */
     align-items: center;
-    /* 垂直置中 */
-    padding: 20px 10px;
-    /* 增加上下間距 */
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: var(--spacing-md);
 }
 
-/* 左欄：日期和時間 */
-.trip-col-datetime {
+.d-card-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
     display: flex;
-    flex-direction: column;
-    /* 讓日期和時間垂直排列 */
-    flex-shrink: 0;
-    /* 不壓縮此欄位寬度 */
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-dark);
 }
 
-/* 中欄：群組和路線 */
-.trip-col-route {
-    display: flex;
-    flex-direction: column;
+.d-card-header h3 i {
+    color: var(--primary-color);
+}
+
+.d-card-body {
     flex-grow: 1;
-    /* 佔滿中間所有剩餘空間 */
-    margin: 0 24px;
-    /* 與左右兩欄的間距 */
 }
 
-/* 右欄：分數 */
-.trip-col-score {
+/* --- 3. 個人資訊卡片 --- */
+.profile-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--border-light);
     flex-shrink: 0;
-    /* 不壓縮此欄位寬度 */
+    object-fit: cover;
 }
 
-/* --- 字體樣式 --- */
-
-.trip-date,
-.trip-group {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 4px;
+.profile-details {
+    min-width: 0;
 }
 
-.trip-time,
-.trip-location {
-    font-size: 1rem;
-    color: #777;
+.profile-name {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.profile-meta {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* --- 4. 趨勢圖卡片 --- */
+.trends-card .d-card-body {
+    min-height: 250px;
+}
+.chart-area {
+    width: 100%;
+    height: 100%;
+}
+
+/* --- 5. 過往行程列表 --- */
+.past-trips-card .d-card-body {
+    padding-top: 0;
+}
+#past-trips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#past-trips-list li {
+    border-bottom: 1px solid var(--border-light);
+}
+#past-trips-list li:last-child {
+    border-bottom: none;
+}
+
+.trip-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    padding: var(--spacing-md) 0.5rem;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.trip-link:hover {
+    background-color: var(--light-bg);
+    transform: translateX(4px);
+}
+
+.trip-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.trip-date-group {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+.trip-time-route {
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
 
 .trip-score {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #1a2a5f;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    flex-shrink: 0;
 }
 
-.custom-btn.primary-btn {
-    display: block;
-    margin: 40px auto 60px auto;
-    /* 自動置中 */
-    font-size: 24px;
-    padding: 6px 12px;
-    border-radius: 6px;
+/* 分數顏色 */
+.trip-score.excellent { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.trip-score.warning { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+.trip-score.danger { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+.btn-view-more {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-color);
     text-decoration: none;
-    text-align: center;
-    width: fit-content;
-    /* 寬度剛好包文字 */
-
-    /* 為了讓按鈕在白色和深色背景下都好看，我們明確指定顏色 */
-    background-color: #1a2a5f;
-    color: white;
-    border: 1px solid #1a2a5f;
-    transition: background-color 0.2s, color 0.2s;
+    transition: var(--transition);
 }
 
-.member-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;           /* 關鍵：讓圖片填滿容器 */
-  object-position: center top; /* 關鍵修改：優先顯示圖片頂部 */
-  /* 其他您已有的樣式，例如 border */
-}
-
-/* 適用於組員列表表格中的小頭像 */
-.table-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;           /* 關鍵：讓圖片填滿容器 */
-  object-position: center 25%; /* 關鍵修改：將對焦點從頂部(0%)往下移到 25% 的位置 */
-  /* 其他您已有的樣式 */
+.btn-view-more:hover {
+    color: var(--primary-hover);
 }

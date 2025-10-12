@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let chatHistory = [];
 
-    const initialGreeting = "您好！我是吾駕仙 AI 客服，請問有什麼可以為您服務的嗎？";
+    const initialGreeting = "您好！我是吾仙，是MDG的AI客服，請問有什麼可以為您服務的嗎？";
     appendMessage(initialGreeting, 'is-admin');
     chatHistory.push({ role: 'assistant', content: initialGreeting });
 

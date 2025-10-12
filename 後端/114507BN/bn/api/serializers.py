@@ -39,7 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
     # 讀取時，使用 PersonnelProfileSerializer 來巢狀顯示詳細資料 (唯讀)
     personnelprofile = PersonnelProfileSerializer(read_only=True)
     
-    # 【核心修正】新增以下三個欄位，用來告訴前端使用者的權限 
+    # 新增以下三個欄位，用來告訴前端使用者的權限 
     is_group_admin = serializers.SerializerMethodField()
     administered_groups = serializers.SerializerMethodField()
     group_memberships = serializers.SerializerMethodField() # <-- 問題的關鍵！

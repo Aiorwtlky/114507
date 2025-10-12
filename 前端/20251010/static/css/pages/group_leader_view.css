@@ -78,12 +78,10 @@
 }
 
 /* --- 4. 群組資訊卡片 --- */
-/*【核心修正 2】移除這裡的 position: relative */
 .group-header {
     display: flex;
     align-items: center;
     gap: var(--spacing-lg);
-    /* position: relative;  <--- 從這裡移除 */
 }
 
 .group-icon {
@@ -121,7 +119,6 @@
     gap: var(--spacing-xs);
 }
 
-/*【核心修正 3】用這個完整、美化過的版本取代舊的按鈕樣式 */
 .btn-settings {
     position: absolute;
     top: 1.5rem; /* 給予舒適的上邊距 */

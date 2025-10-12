@@ -284,7 +284,7 @@
 
         // 儲存對話歷史
         let chatHistory = [
-            { role: 'model', content: '您好！我是吾駕仙 AI 客服，請問有什麼可以為您服務的嗎？' }
+            { role: 'model', content: '您好！我是吾仙，MDG的AI客服，請問有什麼可以為您服務的嗎？' }
         ];
 
         // 函式：執行帶有認證的 fetch 請求
@@ -311,7 +311,7 @@
         }
 
         // 函式：將訊息泡泡加到畫面
-        function appendMessage(text, type, author = '吾駕仙 AI') {
+        function appendMessage(text, type, author = '吾仙') {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('msg-bubble', type);
 

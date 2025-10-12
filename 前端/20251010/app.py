@@ -106,8 +106,8 @@ def group_settings():
 def invite_member():
     return render_template('invite_member.html')
 
-@app.route('/member_dashboard/<member_id>')
-def member_dashboard(member_id):
+@app.route('/member_dashboard')
+def member_dashboard():
     return render_template('member_dashboard.html')
 
 @app.route('/create_announcement')

@@ -3,13 +3,7 @@
 
 {% block extra_css %}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
-  <style>
-    /* 針對此頁面的一些微調 */
-    .dashboard-column-right .d-card { flex-grow: 1; }
-    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #1a2a5f; flex-shrink: 0; object-fit: cover; object-position: center 25%; }
-    .trip-link { display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; padding: 0.5rem 0; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/member_dashboard.css') }}" />
 {% endblock %}
 
 {% block content %}
@@ -41,14 +35,13 @@
           </div>
         </div>
       </div>
-      
-      </div>
+    </div>
 
     <div class="dashboard-column-right">
       <div class="d-card past-trips-card">
         <div class="d-card-header">
-          <h3><i class="fa-solid fa-newspaper"></i> 過往行程</h3>
-          <a href="#" class="btn-view-more">查看全部</a>
+          <h3><i class="fa-solid fa-route"></i> 過往行程</h3>
+          <a href="#" class="btn-view-more" id="view-all-trips-link">查看全部</a>
         </div>
         <div class="d-card-body">
           <ul id="past-trips-list">
