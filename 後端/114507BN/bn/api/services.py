@@ -92,8 +92,8 @@ def generate_ai_suggestion(trip_id: int) -> str:
         print(f"[AI Service - Suggestion] 查詢行程事件錯誤: {e}")
         return "系統錯誤：查詢行程事件時發生錯誤。"
     
-    event_summary = "\n".join([f"- {log.timestamp.strftime('%H:%M:%S')} | {log.event.description} (細節: {log.event.details})" for log in events])
-    
+    event_summary = "\n".join([f"- {log.timestamp.strftime('%H:%M:%S')} | {log.event.description} (細節: {log.event_details})" for log in events])
+
     # ▼▼▼【修改 2】建立符合 Llama-3 模型的 Prompt 格式 ▼▼▼
     system_prompt = "你是一位頂尖的智慧駕駛安全分析師「吾仙」。"
     user_prompt = f"""
