@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/pages/group_leader_view.js (最終表格修正版)
+// 檔案路徑: static/js/pages/group_leader_view.js (最終分數規則修正版)
 
 (function() {
     'use strict';
@@ -210,12 +210,20 @@
         tableBody.innerHTML = '';
         if (members && members.length > 0) {
             members.forEach(member => {
-                const score = parseFloat(member.average_score || 0); // 改為 float
-                const scoreDisplay = isNaN(score) ? 'N/A' : score.toFixed(1); // 顯示一位小數
+                const score = parseFloat(member.average_score || 0);
+                const scoreDisplay = isNaN(score) ? 'N/A' : score.toFixed(1);
                 const joinDate = member.joined_at ? new Date(member.joined_at).toLocaleDateString() : 'N/A';
-                const scoreClass = score >= 90 ? 'excellent' : (score >= 81 ? 'warning' : 'danger');
                 
-                // 修正連結格式
+                // ▼▼▼【核心修改】更新分數顏色的判斷邏輯 ▼▼▼
+                let scoreClass = '';
+                if (score < 80) { // 79.9 (含) 以下
+                    scoreClass = 'danger';
+                } else if (score < 90) { // 80 - 89.9
+                    scoreClass = 'warning';
+                } else { // 90 (含) 以上
+                    scoreClass = 'excellent';
+                }
+                
                 const actionsCell = canManage ?
                     `<td class="actions-col">
                         <a href="/member_dashboard?member_id=${member.id}&group_id=${currentGroupId}" class="btn-action" title="查看成員儀表板">
@@ -238,7 +246,6 @@
         } else {
             tableBody.innerHTML = `<tr><td colspan="${canManage ? 5 : 4}" style="text-align: center; padding: 2rem;">此群組尚無成員。</td></tr>`;
         }
-        // initScoreBadges 函式不再需要，因為 class 已在上面動態產生
     }
 
     function updateAnnouncementsListUI(announcements, canManage) {
@@ -259,11 +266,6 @@
             announcementsList.innerHTML = '<div style="text-align: center; padding: 2rem;">尚無任何公告。</div>';
         }
     }
-
-    // 這個函式不再需要，因為我們在產生表格時就直接設定好 class 了
-    /*
-    function initScoreBadges() { ... }
-    */
 
     window.confirmDelete = async function(id, title) {
         if (confirm(`確定要刪除公告「${title}」嗎？此操作無法復原。`)) {
