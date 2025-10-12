@@ -15,18 +15,6 @@ data class LoginResponse(
     val refresh: String
 )
 
-@Serializable
-data class UserProfileResponse(
-    val id: Int,
-    val username: String,
-    @SerialName("first_name") val firstName: String?,
-    @SerialName("last_name") val lastName: String?,
-    val email: String,
-    @SerialName("is_staff") val isStaff: Boolean,
-    val isGroupLeader: Boolean? = null,
-    @SerialName("administered_groups") val administeredGroups: List<Int>,
-    val personnelprofile: PersonnelProfileResponse?
-)
 
 @Serializable
 data class PersonnelProfileResponse(

@@ -18,6 +18,7 @@ kotlinxCoroutines = "1.7.3"
 kotlinxSerializationJson = "1.6.0"
 retrofit = "2.9.0"
 kotlinxSerializationConverter = "1.0.0"
+gson = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +49,7 @@ accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-
 desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version = "2.0.4" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version = "1.6.8" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 # --- Retrofit & Gson (用於網路請求和 JSON 解析) ---
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 # --- Kotlin Coroutines (用於非同步任務) ---

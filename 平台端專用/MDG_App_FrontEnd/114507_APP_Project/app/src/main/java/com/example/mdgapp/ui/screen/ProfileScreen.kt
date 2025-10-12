@@ -108,7 +108,7 @@ fun ProfileScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = if(fullName.isBlank()) userProfile.username else fullName,
+                                text = (if (fullName.isBlank()) userProfile.username else fullName) ?: "讀取中...",
                                 color = iOsTextPrimary,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold
@@ -131,7 +131,7 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         ProfileSection {
-                            InfoRow(label = "電子郵件", value = userProfile.email)
+                            InfoRow(label = "電子郵件", value = userProfile.email ?: "未提供")
                             ListDivider()
                             InfoRow(label = "聯絡電話", value = userProfile.personnelprofile?.phone ?: "N/A")
                             ListDivider()

@@ -127,7 +127,7 @@ fun UnifiedHomeScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = if(fullName.isBlank()) userProfile.username else fullName,
+                        text = (if (fullName.isBlank()) userProfile.username else fullName) ?: "讀取中...",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = iOsTextPrimary

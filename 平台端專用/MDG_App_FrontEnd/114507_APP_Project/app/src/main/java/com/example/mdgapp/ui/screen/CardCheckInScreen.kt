@@ -19,6 +19,7 @@ import com.example.mdgapp.data.viewmodel.NfcViewModel
 import com.example.mdgapp.data.viewmodel.ProfileViewModel
 import com.example.mdgapp.ui.theme.iOsBackground
 import com.example.mdgapp.ui.theme.iOsBlue
+import com.example.mdgapp.ui.theme.iOsComponentBackground
 import com.example.mdgapp.ui.theme.iOsTextPrimary
 import com.example.mdgapp.ui.theme.iOsTextSecondary
 
@@ -33,16 +34,9 @@ fun CardCheckInScreen(
     val nfcUiState by nfcViewModel.uiState.collectAsState()
     val userProfile = profileUiState.userProfile
 
-    // ✅ 頁面載入時就取得使用者資料
+    // 頁面載入時獲取使用者資料
     LaunchedEffect(Unit) {
         if (userProfile == null && !profileUiState.isLoading) {
-            profileViewModel.fetchUserProfile()
-        }
-    }
-
-    // ✅ 如果資料還在載入中，強制觸發載入
-    LaunchedEffect(profileUiState.isLoading) {
-        if (!profileUiState.isLoading && userProfile == null && profileUiState.errorMessage == null) {
             profileViewModel.fetchUserProfile()
         }
     }
@@ -64,7 +58,7 @@ fun CardCheckInScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = iOsBackground,
+                    containerColor = iOsComponentBackground,
                     titleContentColor = iOsTextPrimary,
                     navigationIconContentColor = iOsTextPrimary
                 )
@@ -120,28 +114,32 @@ fun CardCheckInScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.CreditCard,
-                            contentDescription = "感應卡圖示",
-                            tint = iOsTextSecondary,
+                            contentDescription = "實體卡片圖示",
+                            tint = iOsBlue,
                             modifier = Modifier.size(120.dp)
                         )
+
                         Spacer(modifier = Modifier.height(32.dp))
+
                         Text(
-                            "準備就緒",
+                            "準備註冊卡片",
                             color = iOsTextPrimary,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
                         )
+
                         Spacer(modifier = Modifier.height(16.dp))
+
                         Text(
-                            "請將您的實體卡片，靠近手機背面的 NFC 感應區。",
+                            "請將您的實體卡片\n靠近手機背面的 NFC 感應區",
                             color = iOsTextSecondary,
-                            fontSize = 18.sp,
+                            fontSize = 16.sp,
                             textAlign = TextAlign.Center
                         )
 
                         // 顯示後端綁定進度
                         if (nfcUiState.isBindingInProgress) {
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(32.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -158,6 +156,53 @@ fun CardCheckInScreen(
                                 )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        // 顯示當前綁定狀態
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = iOsComponentBackground
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.Start
+                            ) {
+                                Text(
+                                    text = "當前綁定狀態",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = iOsTextPrimary
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                val currentUid = userProfile.personnelprofile?.nfcCardId
+                                if (currentUid != null) {
+                                    Text(
+                                        text = "已綁定 UID: $currentUid",
+                                        fontSize = 12.sp,
+                                        color = iOsTextSecondary
+                                    )
+                                } else {
+                                    Text(
+                                        text = "尚未綁定任何裝置",
+                                        fontSize = 12.sp,
+                                        color = iOsTextSecondary
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Text(
+                            "注意：一位使用者只能綁定一個 UID\n註冊新裝置將覆蓋原有綁定",
+                            fontSize = 12.sp,
+                            color = iOsTextSecondary,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
