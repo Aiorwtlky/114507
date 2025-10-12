@@ -281,7 +281,7 @@
                 
                 const typeBadge = ann.type === 'SYSTEM' ? '<span class="announcement-badge system">系統公告</span>' : '<span class="announcement-badge group">群組公告</span>';
                 
-                // 【核心修改】這裡的 href 使用後端傳來的完整 ann.id (例如 "grp-5") 
+                //這裡的 href 使用後端傳來的完整 ann.id (例如 "grp-5") 
                 announcementsList.innerHTML += `<div class="announcement-row">${typeBadge}<div class="announcement-info"><a href="/announcement_detail/${ann.id}" class="announcement-title">${ann.content}</a><div class="announcement-meta"><span class="meta-item"><i class="fa-solid fa-user"></i> ${ann.publisher}</span><span class="meta-item"><i class="fa-solid fa-calendar"></i> ${publishDate}</span></div></div>${actionButtons}</div>`;
             });
         } else {

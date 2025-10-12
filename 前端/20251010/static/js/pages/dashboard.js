@@ -144,7 +144,7 @@
         initGauge(trendsData);
     }
     
-    // 【核心修改】更新 initGauge 函式以包含評語邏輯 
+    //更新 initGauge 函式以包含評語邏輯 
     function initGauge(trendsData) {
         const gaugeNeedle = document.getElementById('trends-gauge-needle');
         const gaugeCenter = document.querySelector('.gauge-center');

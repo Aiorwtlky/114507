@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateGauge(trendsData); // 呼叫我們修正後的 updateGauge
     }
 
-    // ▼▼▼【核心修改】用這個完整的新版本取代您舊的 updateGauge 函式 ▼▼▼
+    //【核心修改】用這個完整的新版本取代您舊的 updateGauge 函式
     function updateGauge(trendsData) {
         // 1. 選取所有需要的 HTML 元素
         const scoreElement = document.getElementById('gauge-score');

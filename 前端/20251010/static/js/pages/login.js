@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const profileData = await profileResponse.json();
                 localStorage.setItem('userProfile', JSON.stringify(profileData));
                 
-                // 【核心修改】無論角色，一律跳轉到儀表板 
+                //無論角色，一律跳轉到儀表板 
                 window.location.href = '/dashboard';
                 
             } else {

@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
-# 【核心修改】從匯入列表中移除 RouteLog 
+#從匯入列表中移除 RouteLog 
 from .models import (
     PersonnelProfile,
     Group,

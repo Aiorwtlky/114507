@@ -52,10 +52,10 @@
             // 只有非建立者的成員才能被變更權限
             if (!isOwner) {
                 if (isAdmin) {
-                    // 【核心修改】套用新的 btn-demote 樣式並加入圖示 
+                    //套用新的 btn-demote 樣式並加入圖示 
                     actionButton = `<button class="btn btn-sm btn-demote" data-user-id="${member.id}" data-action="demote"><i class="fa-solid fa-arrow-down"></i> 移除管理員</button>`;
                 } else {
-                    // 【核心修改】套用新的 btn-promote 樣式並加入圖示 
+                    //套用新的 btn-promote 樣式並加入圖示 
                     actionButton = `<button class="btn btn-sm btn-promote" data-user-id="${member.id}" data-action="promote"><i class="fa-solid fa-arrow-up"></i> 擢升為管理員</button>`;
                 }
             }
