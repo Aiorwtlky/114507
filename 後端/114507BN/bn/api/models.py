@@ -182,7 +182,7 @@ class Trip(models.Model):
         verbose_name = "行程"
         verbose_name_plural = "7. 行程管理"
 
-# ▼▼▼【核心修改】RouteLog 模型已被移除 ▼▼▼
+# 【核心修改】RouteLog 模型已被移除 
 # class RouteLog(models.Model): ...
 
 class ScoringStandard(models.Model):

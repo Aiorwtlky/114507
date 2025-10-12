@@ -84,7 +84,7 @@
                 sidebarUserRole.textContent = roleText;
             }
 
-            // ▼▼▼【核心新增】動態更新「我的行車影像」連結 ▼▼▼
+            // 【核心新增】動態更新「我的行車影像」連結 
             if (myVideosLink && userProfile.id) {
                 // 將 href 從 '#' 更新為正確的 URL
                 myVideosLink.href = `/member_videos/${userProfile.id}`;

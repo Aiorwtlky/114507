@@ -4,7 +4,7 @@ import os
 import vertexai
 from vertexai.generative_models import GenerativeModel
 
-# ▼▼▼【 唯一需要您手動修改的地方 】▼▼▼
+# 【 唯一需要您手動修改的地方 】
 # 請將這裡的路徑，換成您電腦上「新金鑰檔案」的「絕對路徑」。
 # Mac範例: '/Users/joych53/114507/後端/114507BN/secrets/YOUR_NEW_KEY.json'
 # Windows範例: 'C:\\Users\\supernova\\Desktop\\114507\\後端\\114507BN\\secrets\\YOUR_NEW_KEY.json'

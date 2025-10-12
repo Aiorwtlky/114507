@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {Promise<Response>}
      */
     async function fetchWithAuth(endpoint, options = {}) {
-        // ▼▼▼【核心修正 1】將 'access_token' 改為 'accessToken' ▼▼▼
+        // 【核心修正 1】將 'access_token' 改為 'accessToken' 
         const token = localStorage.getItem('accessToken');
         
         if (!token) {
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             sendBtn.disabled = true; 
             
-            // ▼▼▼【核心修正 2】使用我們標準的 fetchWithAuth 函式 ▼▼▼
+            // 【核心修正 2】使用我們標準的 fetchWithAuth 函式 
             const response = await fetchWithAuth(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({

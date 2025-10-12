@@ -533,7 +533,7 @@ class UserTrendsAPIView(views.APIView):
         # 建立基本的查詢 QuerySet
         queryset = Trip.objects.filter(personnel=target_user, score__isnull=False)
 
-        # ▼▼▼【核心升級】處理日期範圍篩選 ▼▼▼
+        # 【核心升級】處理日期範圍篩選 
         start_date_str = request.query_params.get('start_date')
         end_date_str = request.query_params.get('end_date')
 

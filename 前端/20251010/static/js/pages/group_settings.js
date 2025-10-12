@@ -52,10 +52,10 @@
             // 只有非建立者的成員才能被變更權限
             if (!isOwner) {
                 if (isAdmin) {
-                    // ▼▼▼【核心修改】套用新的 btn-demote 樣式並加入圖示 ▼▼▼
+                    // 【核心修改】套用新的 btn-demote 樣式並加入圖示 
                     actionButton = `<button class="btn btn-sm btn-demote" data-user-id="${member.id}" data-action="demote"><i class="fa-solid fa-arrow-down"></i> 移除管理員</button>`;
                 } else {
-                    // ▼▼▼【核心修改】套用新的 btn-promote 樣式並加入圖示 ▼▼▼
+                    // 【核心修改】套用新的 btn-promote 樣式並加入圖示 
                     actionButton = `<button class="btn btn-sm btn-promote" data-user-id="${member.id}" data-action="promote"><i class="fa-solid fa-arrow-up"></i> 擢升為管理員</button>`;
                 }
             }
@@ -119,7 +119,7 @@
         }
     }
     
-    // ▼▼▼【核心新增】處理變更角色的函式 ▼▼▼
+    // 【核心新增】處理變更角色的函式 
     async function handleRoleChange(event) {
         const button = event.target.closest('button[data-action]');
         if (!button) return;
@@ -222,7 +222,7 @@
         document.getElementById('settings-form').addEventListener('submit', handleSaveChanges);
         document.getElementById('delete-group-btn').addEventListener('click', handleDeleteGroup);
         
-        // ▼▼▼【核心新增】使用事件委派來監聽成員列表中的按鈕點擊 ▼▼▼
+        // 【核心新增】使用事件委派來監聽成員列表中的按鈕點擊 
         document.getElementById('leaders-management-list').addEventListener('click', handleRoleChange);
     });
 

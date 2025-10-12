@@ -43,7 +43,7 @@
             const roleText = role === 'ADMIN' ? '管理員' : '一般成員';
             const roleClass = role === 'ADMIN' ? 'role-leader' : 'role-member';
             
-            // ▼▼▼【核心修改】移除判斷邏輯，直接使用統一的 URL ▼▼▼
+            // 【核心修改】移除判斷邏輯，直接使用統一的 URL 
             const targetUrl = `/group_leader_view?group_id=${group.id}`;
             
             const groupElement = document.createElement('li');

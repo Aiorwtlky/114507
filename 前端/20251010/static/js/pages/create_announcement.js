@@ -94,7 +94,7 @@
             form.addEventListener('submit', handleFormSubmit);
         }
         
-        // --- ▼▼▼ 【核心修正】檢查 group_id 是否存在 ▼▼▼ ---
+        // ---  【核心修正】檢查 group_id 是否存在  ---
         const urlParams = new URLSearchParams(window.location.search);
         const groupId = urlParams.get('group_id');
 

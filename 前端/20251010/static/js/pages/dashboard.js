@@ -1,10 +1,11 @@
+// 檔案路徑: static/js/pages/dashboard.js (最終完整版)
+
 (function() {
     'use strict';
 
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
     async function fetchWithAuth(endpoint, options = {}) {
-        // ... (此函式內容不變) ...
         const token = localStorage.getItem('accessToken');
         if (!token) {
             alert('您尚未登入或登入已逾時，將跳轉至登入頁面。');
@@ -27,7 +28,6 @@
     }
 
     async function handlePdfPreview(tripId) {
-        // ... (此函式內容不變) ...
         if (!tripId) return;
         const printButton = document.querySelector(`button[data-trip-id="${tripId}"]`);
         if (printButton) {
@@ -51,18 +51,12 @@
         }
     }
 
-    // ▼▼▼【核心修正 1】新增一個安全的格式化分數輔助函式 ▼▼▼
-    /**
-     * 安全地格式化分數，如果分數無效則回傳佔位符
-     * @param {number|null} score - 原始分數
-     * @returns {string} 格式化後的分數字串或 '--'
-     */
     function formatScore(score) {
         const numericScore = parseFloat(score);
         if (typeof numericScore === 'number' && !isNaN(numericScore)) {
             return numericScore.toFixed(2);
         }
-        return '--'; // 如果分數是 null 或無效，回傳佔位符
+        return '--';
     }
 
     function updateUI(userData, groupData, tripsData, trendsData) {
@@ -95,10 +89,9 @@
         tripsList.innerHTML = '';
         if (tripsData.results && tripsData.results.length > 0) {
             tripsData.results.slice(0, 5).forEach(trip => {
-                // ▼▼▼【核心修正 2】使用新的輔助函式來處理分數 ▼▼▼
                 const score = parseFloat(trip.score);
-                const scoreDisplay = formatScore(trip.score); // 使用 formatScore
-                const scoreClass = score < 60 ? 'danger' : (score < 85 ? 'warning' : 'excellent');
+                const scoreDisplay = formatScore(trip.score);
+                const scoreClass = score <= 80 ? 'danger' : (score <= 90 ? 'warning' : 'excellent');
                 
                 tripsList.innerHTML += `
                     <li class="trip-item">
@@ -119,7 +112,7 @@
         const latestTripReport = document.getElementById('latest-trip-report');
         if (latestTripReport && latestTrip) {
             const startTime = new Date(latestTrip.start_time);
-            const endTime = latestTrip.end_time ? new Date(latestTrip.end_time) : null; // 處理 end_time 可能為 null 的情況
+            const endTime = latestTrip.end_time ? new Date(latestTrip.end_time) : null;
             let durationDisplay = '--';
             if(endTime) {
                 const durationMs = endTime - startTime;
@@ -128,7 +121,6 @@
                 durationDisplay = `${hours}h ${minutes}m`;
             }
 
-            // ▼▼▼【核心修正 3】將所有分數顯示都透過輔助函式處理 ▼▼▼
             latestTripReport.innerHTML = `
                 <div class="card-header with-meta">
                     <div><h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3><p class="card-meta">${startTime.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} - ${endTime ? endTime.toLocaleTimeString([], { timeStyle: 'short' }) : '進行中'}</p></div>
@@ -152,47 +144,61 @@
         initGauge(trendsData);
     }
     
-    /**
-     * 初始化儀表板計分盤 (Gauge)
-     * @param {Array} trendsData - 趨勢圖資料
-     */
+    // 【核心修改】更新 initGauge 函式以包含評語邏輯 
     function initGauge(trendsData) {
         const gaugeNeedle = document.getElementById('trends-gauge-needle');
         const gaugeCenter = document.querySelector('.gauge-center');
         const gaugeText = document.getElementById('trends-gauge-text')?.querySelector('strong');
+        const gaugeStatusText = document.getElementById('gauge-status-text');
+        const gaugeComment = document.getElementById('gauge-comment'); // 選取評語元素
         
-        if (!gaugeNeedle || !gaugeText || !gaugeCenter) return;
+        if (!gaugeNeedle || !gaugeText || !gaugeCenter || !gaugeStatusText || !gaugeComment) return;
 
         let score = 0;
         if (trendsData && trendsData.length > 0) {
-            // 儀表板顯示的是最後一個月的平均分(四捨五入為整數)
             score = Math.round(trendsData[trendsData.length - 1].average_score);
         }
 
         gaugeText.textContent = score;
 
-        // 根據分數動態設定指針顏色
-        const scoreClass = score < 60 ? 'danger' : (score < 85 ? 'warning' : 'excellent');
+        let scoreClass = '';
+        let statusText = '';
+        let commentText = ''; // 用於儲存評語
+
+        if (score <= 80) {
+            scoreClass = 'danger';
+            statusText = '危險駕駛';
+            commentText = '您的駕駛習慣存在較大風險，請立即改善。';
+        } else if (score <= 90) {
+            scoreClass = 'warning';
+            statusText = '普通危險駕駛';
+            commentText = '表現尚有改善空間，請多注意駕駛細節。';
+        } else {
+            scoreClass = 'excellent';
+            statusText = '普通駕駛';
+            commentText = '表現良好，請繼續保持安全的駕駛習慣。';
+        }
         
+        // 更新指針和中心圓點的顏色
         gaugeNeedle.classList.remove('danger', 'warning', 'excellent');
         gaugeCenter.classList.remove('danger', 'warning', 'excellent');
-        
         gaugeNeedle.classList.add(scoreClass);
         gaugeCenter.classList.add(scoreClass);
 
-        // 計算指針旋轉角度並套用
+        // 更新下方的狀態文字和顏色
+        gaugeStatusText.textContent = statusText;
+        gaugeStatusText.className = 'gauge-status ' + scoreClass;
+
+        // 更新評語文字
+        gaugeComment.textContent = commentText;
+
         const rotation = (score / 100) * 180;
 
         setTimeout(() => {
-            // 使用 CSS 變數來控制旋轉，確保動畫流暢
             gaugeNeedle.style.setProperty('--gauge-rotation', `${rotation}deg`);
         }, 100);
     }
 
-    /**
-     * 初始化趨勢圖 (Chart.js)
-     * @param {Array} trendsData - 趨勢圖資料
-     */
     function initTrendsChart(trendsData) {
         const canvas = document.getElementById('trendsChart');
         if (!canvas) return;
@@ -220,12 +226,8 @@
         });
     }
 
-    /**
-     * 儀表板初始化主函式
-     */
     async function initializeDashboard() {
         try {
-            // 使用 Promise.all 一次性發出所有需要的 API 請求
             const [profileRes, groupsRes, tripsRes, trendsRes] = await Promise.all([
                 fetchWithAuth('/api/auth/profile/'),
                 fetchWithAuth('/api/me/groups/'),
@@ -241,18 +243,15 @@
                 tripsRes.json(),
                 trendsRes.json()
             ]);
-            // 將所有獲取的資料傳給 UI 更新函式
             updateUI(userData, groupData, tripData, trendsData);
         } catch (error) {
             console.error("載入儀表板資料失敗:", error.message);
         }
     }
 
-    // 當 DOM 載入完成後，開始執行儀表板初始化
     document.addEventListener('DOMContentLoaded', () => {
         initializeDashboard();
 
-        // 使用事件代理來處理動態新增的 "列印報表" 按鈕
         document.body.addEventListener('click', function(event) {
             const printButton = event.target.closest('.btn-print-dynamic');
             if (printButton) {

@@ -88,7 +88,7 @@ def calculate_trip_score(trip_id: int):
                 elif category == 'B': interval['out_car_deductions'] += deduction
                 break
 
-    # 計算所有區間的分數，而不僅僅是有扣分的區間 ▼▼▼
+    # 計算所有區間的分數，而不僅僅是有扣分的區間 
     in_car_interval_scores = [max(0, 100 - i['in_car_deductions']) for i in intervals]
     out_car_interval_scores = [max(0, 100 - i['out_car_deductions']) for i in intervals]
 
@@ -195,7 +195,7 @@ def get_chatbot_response(chat_history: list) -> str:
     if not hf_client: 
         return "抱歉，助理系統目前無法連線，請稍後再試。"
     
-    # 建立符合 Llama-3 模型的對話歷史 Prompt ▼▼▼
+    # 建立符合 Llama-3 模型的對話歷史 Prompt 
     system_prompt = """<persona>
 你是「吾仙」，一個專為「吾駕仙」(My Driving God) 智慧交通系統服務的頂尖 AI 助理。
 </persona>
