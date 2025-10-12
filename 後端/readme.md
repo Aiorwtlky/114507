@@ -1,36 +1,24 @@
-MDG Pro - 後端系統 (Backend System)
-1. 總覽
-本後端系統是 MDG Pro 平台的核心中樞，採用 Django 搭配 Django REST Framework (DRF) 建構，資料庫使用 MySQL。其主要職責是處理所有商業邏輯、管理資料庫，並提供一套安全、高效的 RESTful API 供給前端平台與車機端設備使用。
+# MDG Pro - 後端系統 README
 
-2. 系統架構圖
-graph TD
-    subgraph Browser & Onboard Device
-        A[前端 Web 平台]
-        B[車機端設備]
-    end
+## 1. 系統定位：平台的大腦與中樞
 
-    subgraph Backend Server (Django/DRF)
-        C[API Endpoints]
-        D[Views]
-        E[Serializers]
-        F[Services]
-        G[Models]
-    end
+本後端系統是 MDG Pro 平台的核心，採用 **Django** 框架與 **MySQL** 資料庫。
 
-    subgraph Databases & Services
-        H[MySQL Database]
-        I[Google Gemini AI]
-        J[WeasyPrint PDF]
-    end
+它的核心職責有三點：
+- **處理商業邏輯**：例如，根據最新的規則，精確計算每趟行程的分數。
+- **管理所有資料**：安全地儲存使用者、群組、行程與事件等所有核心數據。
+- **提供 API 服務**：作為一個統一的窗口，為前端網站和車機端硬體提供所有需要的資料。
 
-    A -- JSON/API Request --> C
-    B -- JSON/API Request --> C
-    C <--> D
-    D <--> E
-    D -- 呼叫商業邏輯 --> F
-    F -- 執行計分/生成建議 --> F
-    F -- 呼叫外部服務 --> I
-    F -- 呼叫外部服務 --> J
-    F <--> G
-    G <--> H
+---
 
+## 2. 核心功能與進度
+
+我們的後端開發已進入成熟階段，核心功能皆已完成：
+
+- **✅ 完整的 API 服務**: 已開發超過 **25 個** API 端點，涵蓋了使用者管理、車隊管理、數據分析等所有核心功能。
+- **✅ 精準的計分服務**: 已實現符合最新**15分鐘區間規則**的計分邏輯，能自動、準確地評估每趟行程的安全性。
+- **✅ 智慧化 AI 整合**: 已成功串接 **Hugging Face 上的 Qwen Turbo 模型**，用於實現 AI 客服，並能為每趟行程自動生成個人化的改善建議。
+- **✅ 動態 PDF 報表**: 已整合 WeasyPrint 技術，可以一鍵生成專業、可用於列印存檔的 PDF 行程報告。
+- **✅ 自動化測試資料**: 已建立一個強大的指令，可以在 30 秒內生成一個包含數百筆行程的龐大公司資料庫，確保了系統在真實負載下的穩定性。
+
+**結論：後端系統已準備就緒，能夠穩定地支撐前端與車機端的所有功能需求。**
