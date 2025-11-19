@@ -82,7 +82,7 @@
             });
         }
 
-        // --- 【核心修改】表單提交處理 ---
+        // ---表單提交處理 ---
         const form = document.getElementById('changePasswordForm');
         if (form) {
             form.addEventListener('submit', async function(e) {

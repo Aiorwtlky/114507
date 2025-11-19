@@ -78,7 +78,7 @@
     text-align: center;
 }
 
-/* ▼▼▼【核心新增】管理員列表的美化樣式 ▼▼▼ */
+/* 【核心新增】管理員列表的美化樣式  */
 .leaders-management {
     border: 1px solid #e9ecef;
     border-radius: 6px;
@@ -173,7 +173,7 @@
     border-color: #d39e00;
 }
 
-/* ▼▼▼【核心新增】美化儲存與刪除按鈕 ▼▼▼ */
+/* 【核心新增】美化儲存與刪除按鈕  */
 
 .form-actions {
     gap: 1rem; /* 在兩個按鈕之間增加一些間距 */

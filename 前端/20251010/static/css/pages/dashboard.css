@@ -1,7 +1,4 @@
-/* ===================================
-   檔案：static/css/pages/dashboard.css
-   用途：個人儀表板頁面樣式（優化版）
-   =================================== */
+/* 檔案路徑: static/css/pages/dashboard.css (最終顏色修正版) */
 
 /* --- 1. 基礎變數與重置 --- */
 :root {
@@ -26,43 +23,36 @@
     width: 100%;
 }
 
-/* 每一排的容器 */
 .dashboard-row {
     display: grid;
     gap: var(--spacing-lg);
     grid-template-columns: 1fr;
 }
 
-/* 行內的每一欄 */
 .dashboard-col {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg); /* ✨ 新增：確保內部卡片有間距 */
-    min-width: 0; /* 防止內容溢出 */
+    gap: var(--spacing-lg);
+    min-width: 0;
 }
 
 /* --- 3. RWD 響應式佈局 --- */
-
-/* 平板以上：側邊欄 + 主要內容 */
 @media (min-width: 992px) {
     .dashboard-row:first-child {
         grid-template-columns: 320px 1fr;
     }
 }
 
-/* 第二排在手機版時是單欄 */
 .dashboard-row:last-child {
     grid-template-columns: 1fr;
 }
 
-/* 大螢幕：側邊欄稍寬 */
 @media (min-width: 1400px) {
     .dashboard-row:first-child {
         grid-template-columns: 360px 1fr;
     }
 }
 
-/* 手機版：全部單欄 */
 @media (max-width: 991px) {
     .dashboard-row {
         grid-template-columns: 1fr;
@@ -86,7 +76,6 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* 卡片內的標題區 */
 .card-header {
     display: flex;
     justify-content: space-between;
@@ -120,14 +109,12 @@
     color: var(--text-muted);
 }
 
-/* 卡片底部 */
 .card-footer {
     margin-top: auto;
     padding-top: var(--spacing-md);
     border-top: 1px solid var(--border-light);
 }
 
-/* 小節標題 */
 .section-subtitle {
     margin: 0 0 var(--spacing-md) 0;
     font-size: 0.95rem;
@@ -261,7 +248,6 @@
     gap: var(--spacing-lg);
 }
 
-/* 分數網格 */
 .scores-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -310,7 +296,7 @@
     font-weight: 600;
     color: var(--text-dark);
 }
-/* 違規項目區 */
+
 .violations-section {
     display: grid;
     grid-template-columns: 1fr;
@@ -386,7 +372,6 @@
     white-space: nowrap;
 }
 
-/* 手機版優化 */
 @media (max-width: 576px) {
     .violation-item {
         grid-template-columns: 1fr auto;
@@ -399,7 +384,6 @@
     }
 }
 
-/* AI 建議區 */
 .ai-suggestions {
     padding: var(--spacing-lg);
     background: linear-gradient(135deg, #e7f3ff 0%, #f0f8ff 100%);
@@ -431,7 +415,6 @@
     transform: translateY(-1px);
 }
 
-/* 操作按鈕區 */
 .card-actions {
     display: flex;
     gap: var(--spacing-md);
@@ -443,25 +426,22 @@
     min-height: 400px;
 }
 
-/* ✨ 新增：底部統一卡片容器 */
 .bottom-unified-card {
-    padding: 0; /* 移除外層 padding，由內部控制 */
+    padding: 0;
 }
 
 .bottom-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0; /* 內部不需要間距 */
+    gap: 0;
 }
 
-/* 桌面版：兩欄並排，中間有分隔線 */
 @media (min-width: 768px) {
     .bottom-grid {
         grid-template-columns: 1fr 1fr;
     }
 }
 
-/* 底部區塊樣式 */
 .bottom-section {
     padding: var(--spacing-lg);
     display: flex;
@@ -470,21 +450,18 @@
     min-height: 400px;
 }
 
-/* 左邊區塊（過往數據）有右邊框 */
 @media (min-width: 768px) {
     .stats-section {
         border-right: 1px solid var(--border-light);
     }
 }
 
-/* 手機版：區塊之間有下邊框 */
 @media (max-width: 767px) {
     .stats-section {
         border-bottom: 1px solid var(--border-light);
     }
 }
 
-/* 區塊標題 */
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -493,7 +470,6 @@
     flex-wrap: wrap;
 }
 
-/* 區塊底部 */
 .section-footer {
     margin-top: auto;
     padding-top: var(--spacing-md);
@@ -505,7 +481,7 @@
     grid-template-columns: 1fr;
     gap: var(--spacing-xl);
     align-items: center;
-    flex: 1; /* 佔滿可用空間 */
+    flex: 1;
 }
 
 @media (min-width: 600px) {
@@ -514,14 +490,12 @@
     }
 }
 
-/* 手機版時改為單欄 */
 @media (max-width: 599px) {
     .stats-content {
         grid-template-columns: 1fr;
     }
 }
 
-/* 儀表盤 */
 .gauge-section {
     display: flex;
     flex-direction: column;
@@ -537,15 +511,16 @@
     aspect-ratio: 2 / 1;
 }
 
+/* 更新儀表板顏色區間 */
 .gauge-bg {
     position: absolute;
     width: 100%;
     height: 100%;
     background: conic-gradient(
-        from -90deg,
-        #dc3545 0deg 144deg,
-        #ffc107 144deg 162deg,
-        #28a745 162deg 180deg
+        from -120deg,
+        #dc3545 0deg 144deg,     /* 紅色區間 (0-80分) */
+        #ffc107 190deg 200deg,   /* 黃色區間 (81-90分) */
+        #28a745 240deg 300deg    /* 綠色區間 (91-100分) */
     );
     border-radius: 50% / 100% 100% 0 0;
     -webkit-mask-image: radial-gradient(
@@ -568,10 +543,22 @@
     height: 40%;
     background: linear-gradient(to top, #343a40, #6c757d);
     transform-origin: bottom center;
-    transform: translateX(-50%) rotate(var(--gauge-rotation));
+    transform: translateX(-50%) rotate(calc(var(--gauge-rotation) - 90deg)); 
     transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     border-radius: 2px 2px 0 0;
     z-index: 2;
+}
+
+.gauge-needle.danger {
+    background: linear-gradient(to top, #a71d2a, #dc3545);
+}
+
+.gauge-needle.warning {
+    background: linear-gradient(to top, #c79500, #ffc107);
+}
+
+.gauge-needle.excellent {
+    background: linear-gradient(to top, #1e7e34, #28a745);
 }
 
 .gauge-center {
@@ -585,7 +572,12 @@
     border-radius: 50%;
     transform: translateX(-50%);
     z-index: 3;
+    transition: border-color 0.3s ease;
 }
+
+.gauge-center.danger { border-color: #a71d2a; }
+.gauge-center.warning { border-color: #c79500; }
+.gauge-center.excellent { border-color: #1e7e34; }
 
 .gauge-text {
     position: absolute;
@@ -603,6 +595,28 @@
     font-weight: 700;
     color: var(--text-dark);
     line-height: 1;
+}
+
+.gauge-status {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    transition: color 0.3s ease;
+    min-height: 1.2em;
+}
+
+.gauge-status.danger { color: #dc3545; }
+.gauge-status.warning { color: #ffc107; }
+.gauge-status.excellent { color: #28a745; }
+
+.gauge-comment {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    min-height: 1.2em;
+    padding: 0 1rem;
 }
 
 /* 趨勢圖表 */
@@ -628,9 +642,7 @@
 }
 
 /* --- 9. 過往行程列表樣式 --- */
-.trips-section {
-    /* 繼承 bottom-section 的樣式 */
-}
+.trips-section { }
 
 .trips-list {
     list-style: none;
@@ -639,8 +651,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    flex: 1; /* 佔滿可用空間 */
-    overflow-y: auto; /* 如果內容太多，允許滾動 */
+    flex: 1;
+    overflow-y: auto;
 }
 
 .trip-item {
@@ -822,7 +834,6 @@
     }
 }
 
-/* 鍵盤焦點 */
 .list-link:focus-visible,
 .btn:focus-visible,
 .link-more:focus-visible {

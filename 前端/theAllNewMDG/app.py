@@ -86,7 +86,7 @@ def login():
                 session['access_token'], session['refresh_token'] = tokens['access'], tokens['refresh']
                 session.permanent = True
 
-                # --- ▼▼▼ 【關鍵修改】登入成功後的跳轉邏輯 ▼▼▼ ---
+                # ---  【關鍵修改】登入成功後的跳轉邏輯  ---
                 if next_url:
                     flash('登入成功！', 'success')
                     return redirect(next_url) # 如果有 next 參數，就跳轉到該網址
@@ -104,7 +104,6 @@ def login():
                 else:
                     flash('登入成功！', 'success')
                     return redirect(url_for('dashboard'))
-                # --- ▲▲▲ 修改結束 ▲▲▲ ---
 
             else:
                 flash('帳號或密碼錯誤。', 'error')
@@ -341,7 +340,7 @@ def member_videos(member_id):
     return f"這裡是成員 {member_id} 的影片列表 (尚未實作)"
 
 
-# --- ▼▼▼ 【最終修正版】公告相關路由 ▼▼▼ ---
+# ---  【最終修正版】公告相關路由  ---
 
 @app.route("/create_announcement/<int:group_id>", methods=['GET', 'POST'])
 def create_announcement(group_id):
@@ -431,7 +430,6 @@ def delete_announcement(announcement_id):
     
     return redirect(url_for('group_leader_view', group_id=group_id))
 
-# --- ▲▲▲ 公告路由結束 ▲▲▲ ---
 
 
 @app.route("/create_group", methods=['GET', 'POST'])

@@ -1,48 +1,63 @@
-# test_ai.py
-from transformers import pipeline, set_seed
-import time
+# test_gcp.py - 獨立的 GCP 連線測試腳本
 
-print("正在載入 AI 模型，第一次可能會需要幾分鐘下載...")
-start_time = time.time()
-# 確保使用和您 service.py 中完全相同的模型
-try:
-    generator = pipeline('text-generation', model='uer/gpt2-chinese-cluecorpussmall')
-    load_time = time.time() - start_time
-    print(f"模型載入完成！耗時: {load_time:.2f} 秒")
-    print("-" * 50)
-except Exception as e:
-    print(f"模型載入失敗，錯誤訊息: {e}")
-    exit()
+import os
+import vertexai
+from vertexai.generative_models import GenerativeModel
 
+# 【 唯一需要您手動修改的地方 】
+# 請將這裡的路徑，換成您電腦上「新金鑰檔案」的「絕對路徑」。
+# Mac範例: '/Users/joych53/114507/後端/114507BN/secrets/YOUR_NEW_KEY.json'
+# Windows範例: 'C:\\Users\\supernova\\Desktop\\114507\\後端\\114507BN\\secrets\\YOUR_NEW_KEY.json'
+#
+# (請務必確認這是從「MDG Backend Test」這個新專案下載的金鑰)
+#
+KEY_FILE_PATH = "/Users/joych53/114507/後端/114507BN/bn/secrets/mdg_gemini.json"
+# ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-# 這是我們在 service.py 中使用的 prompt
-event_summary = "1 次「車道偏離 (未打方向燈)」"
-prompt = f"針對一次駕駛行為分析，該駕駛的危險事件摘要如下：{event_summary}。請根據這些事件，以一位專業駕駛教練的口吻，提供一段大約50字的簡短、溫和且具體的改善建議："
+# --- 以下程式碼無需修改 ---
 
-print("使用的 Prompt (提示詞):")
-print(prompt)
-print("-" * 50)
+PROJECT_ID = "mdg-backend-test"
+LOCATION = "us-central1"
+MODEL_NAME = "gemini-1.0-pro"
 
-print("正在生成建議...")
-set_seed(42) # 固定隨機種子以確保結果可重現
-start_time = time.time()
+def run_test():
+    """執行最直接的 Vertex AI API 呼叫測試"""
+    print("=========================================================")
+    print("🚀 開始執行獨立的 GCP 連線診斷測試...")
+    
+    if KEY_FILE_PATH == "請在這裡貼上您的金鑰檔案的絕對路徑":
+        print("❌ 錯誤：請先修改 test_gcp.py 檔案，填寫 KEY_FILE_PATH 的絕對路徑。")
+        return
 
-# 執行生成，我們也可以加入一些額外參數來調整行為
-outputs = generator(
-    prompt, 
-    max_length=150, 
-    num_return_sequences=1,
-    # no_repeat_ngram_size=2, # 防止重複詞語
-    # temperature=0.7, # 讓回答不那麼死板
-)
+    try:
+        # 1. 強制設定環境變數，確保使用的是正確的金鑰
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = KEY_FILE_PATH
+        print(f"✅ 步驟 1/4: 已強制設定認證檔案路徑為 -> {KEY_FILE_PATH}")
 
-generation_time = time.time() - start_time
-print(f"生成完成！耗時: {generation_time:.2f} 秒")
-print("-" * 50)
+        # 2. 初始化 Vertex AI
+        vertexai.init(project=PROJECT_ID, location=LOCATION)
+        print(f"✅ 步驟 2/4: Vertex AI 初始化成功 (專案: {PROJECT_ID})")
 
-# 清理並印出結果
-generated_text = outputs[0]['generated_text']
-suggestion = generated_text.replace(prompt, "").strip()
+        # 3. 載入模型
+        model = GenerativeModel(MODEL_NAME)
+        print(f"✅ 步驟 3/4: 成功載入模型 '{MODEL_NAME}'")
 
-print("AI 模型生成的原始建議:")
-print(suggestion)
+        # 4. 發送請求
+        print("⏳ 步驟 4/4: 正在向 Gemini 發送請求...")
+        response = model.generate_content("Hello")
+        
+        print("\n🎉🎉🎉 診斷成功！🎉🎉🎉")
+        print("已成功收到來自 Google Gemini 的回覆！")
+        print(f"收到的回覆內容: {response.text}")
+        print("\n這證明您的本地環境、Python 套件和金鑰檔案都是正常的。")
+
+    except Exception as e:
+        print("\n🔥🔥🔥 診斷失敗 🔥🔥🔥")
+        print("在直接呼叫 API 時發生錯誤，這幾乎可以肯定是您的 Google Cloud 帳戶或專案本身的問題。")
+        print("\n--- 詳細錯誤訊息 ---")
+        print(e)
+        print("--------------------")
+        print("\n建議的下一步：請帶著這個錯誤訊息聯繫 Google Cloud 技術支援。")
+
+if __name__ == "__main__":
+    run_test()

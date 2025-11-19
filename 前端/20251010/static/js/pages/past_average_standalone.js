@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/pages/past_average_standalone.js (最終修正版)
+// 檔案路徑: static/js/pages/past_average_standalone.js (最終完整版)
 
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
@@ -25,9 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetchWithAuth(`/api/statistics/trends/?start_date=${startDate}&end_date=${endDate}`);
-            if (!response.ok) {
-                throw new Error('無法獲取趨勢資料');
-            }
+            if (!response.ok) { throw new Error('無法獲取趨勢資料'); }
             const data = await response.json();
             updateUI(data);
         } catch (error) {
@@ -40,16 +38,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updateUI(trendsData) {
         renderTrendsChart(trendsData);
-        updateGauge(trendsData);
+        updateGauge(trendsData); // 呼叫我們修正後的 updateGauge
     }
 
-    // ▼▼▼【這是唯一且正確的 updateGauge 函式，帶有動畫邏輯】▼▼▼
+    //【核心修改】用這個完整的新版本取代您舊的 updateGauge 函式
     function updateGauge(trendsData) {
+        // 1. 選取所有需要的 HTML 元素
         const scoreElement = document.getElementById('gauge-score');
         const needleElement = document.getElementById('gauge-needle');
+        const centerCircleElement = document.getElementById('gauge-center-circle');
         const titleElement = document.getElementById('gauge-title');
-        if (!scoreElement || !needleElement || !titleElement) return;
+        const statusTextElement = document.getElementById('gauge-status-text');
+        const commentTextElement = document.getElementById('gauge-comment');
+        
+        if (!scoreElement || !needleElement || !titleElement || !statusTextElement || !commentTextElement || !centerCircleElement) return;
 
+        // 2. 計算選定區間內的總平均分
         let averageScore = 0;
         if (trendsData && trendsData.length > 0) {
             const totalScore = trendsData.reduce((sum, item) => sum + item.average_score, 0);
@@ -58,12 +62,41 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const clampedScore = Math.round(Math.max(0, Math.min(100, averageScore)));
         
+        // 3. 根據新的分數規則，決定顏色、狀態文字和評語
+        let scoreClass = '';
+        let statusText = '';
+        let commentText = '';
+
+        if (clampedScore <= 80) {
+            scoreClass = 'danger';
+            statusText = '危險駕駛';
+            commentText = '您的駕駛習慣存在較大風險，請立即改善。';
+        } else if (clampedScore <= 90) {
+            scoreClass = 'warning';
+            statusText = '普通危險駕駛';
+            commentText = '表現尚有改善空間，請多注意駕駛細節。';
+        } else {
+            scoreClass = 'excellent';
+            statusText = '普通駕駛';
+            commentText = '表現良好，請繼續保持安全的駕駛習慣。';
+        }
+        
+        // 4. 更新 UI 介面
         scoreElement.textContent = clampedScore;
         titleElement.textContent = '選定區間平均';
+        statusTextElement.textContent = statusText;
+        commentTextElement.textContent = commentText;
 
+        // 5. 更新顏色
+        const elementsToColor = [needleElement, centerCircleElement, statusTextElement];
+        elementsToColor.forEach(el => {
+            el.classList.remove('danger', 'warning', 'excellent');
+            el.classList.add(scoreClass);
+        });
+        
+        // 6. 計算並套用指針旋轉角度
         const rotation = (clampedScore / 100) * 180 - 90;
 
-        // 使用 setTimeout 來確保動畫被觸發
         setTimeout(() => {
             needleElement.style.transform = `rotate(${rotation}deg)`;
         }, 100);

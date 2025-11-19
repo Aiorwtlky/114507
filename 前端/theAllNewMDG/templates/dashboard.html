@@ -26,12 +26,11 @@
         <a href="{{ url_for('edit_profile') }}" class="btn-edit-profile" title="編輯個人資料"><i class="fa-solid fa-pencil"></i></a>
       </div>
       <div class="profile-details">
-        {# --- ▼▼▼ 【關鍵修正】以下所有欄位都改用 `[]` 語法，並加上 if 判斷 --- ▼▼▼ #}
+        {# ---  【關鍵修正】以下所有欄位都改用 `[]` 語法，並加上 if 判斷 ---  #}
         <div class="detail-item"><i class="fa-solid fa-envelope"></i> <span>{{ profile.email or '未提供' }}</span></div>
         <div class="detail-item"><i class="fa-solid fa-phone"></i> <span>{{ profile['personnelprofile']['phone'] if profile['personnelprofile'] else '未提供' }}</span></div>
         <div class="detail-item"><i class="fa-solid fa-id-card"></i> <span>駕照: {{ profile['personnelprofile']['license_type'] if profile['personnelprofile'] else '未提供' }}</span></div>
         <div class="detail-item"><i class="fa-solid fa-calendar-days"></i> <span>年資: {{ (profile['personnelprofile']['driving_experience'] ~ ' 年') if profile['personnelprofile'] and profile['personnelprofile']['driving_experience'] is not none else '未提供' }}</span></div>
-        {# --- ▲▲▲ 修正結束 ▲▲▲ --- #}
       </div>
     </div>
   </div>

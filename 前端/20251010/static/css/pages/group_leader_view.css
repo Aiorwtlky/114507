@@ -1,7 +1,4 @@
-/* ===================================
-   檔案：static/css/pages/group_leader_view.css
-   用途：群組組長管理頁面樣式
-   =================================== */
+/* 檔案路徑: static/css/pages/group_leader_view.css (最終修正版) */
 
 /* --- 1. 基礎變數 --- */
 :root {
@@ -43,12 +40,13 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* 群組資訊卡片例外：使用紫色漸層 */
+/* 在這裡加上 position: relative，建立定位錨點 */
 .d-card.group-info-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: var(--white-bg);
     border: none;
     padding: var(--spacing-xl);
+    position: relative; /* <--- 修正點 */
 }
 
 .card-header {
@@ -84,7 +82,6 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-lg);
-    position: relative;
 }
 
 .group-icon {
@@ -124,29 +121,30 @@
 
 .btn-settings {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 44px;
-    height: 44px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: none;
-    border-radius: 50%;
+    top: 1.5rem; /* 給予舒適的上邊距 */
+    right: 1.5rem; /* 給予舒適的右邊距 */
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
+    gap: var(--spacing-sm);
+    padding: 0.6rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
     color: var(--white-bg);
-    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px; /* 圓角矩形 */
+    font-weight: 600;
+    cursor: pointer;
     transition: var(--transition);
+    text-decoration: none;
+    backdrop-filter: blur(10px);
 }
 
 .btn-settings:hover {
     background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* 群組組長區域 */
+/* ... (檔案中剩餘的所有 CSS 內容維持不變) ... */
 .group-leaders {
     display: flex;
     align-items: center;
@@ -180,7 +178,6 @@
     color: var(--white-bg);
 }
 
-/* 我的組長身分 */
 .my-identity {
     display: flex;
     flex-direction: column;
@@ -596,8 +593,9 @@
     }
 
     .btn-settings {
-        position: static;
-        margin-top: var(--spacing-md);
+        position: absolute; /* 手機版也維持絕對定位，但位置微調 */
+        top: 1rem;
+        right: 1rem;
     }
 
     .group-icon {

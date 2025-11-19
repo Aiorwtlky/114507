@@ -9,10 +9,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
   <style>
     /* ========================================
-       儀表板頁面樣式 - v2 (加入速度表)
+       儀表板頁面樣式 - v3 (最終修正版)
        ======================================== */
 
-    /* --- 全域變數 (與前版相同) --- */
     :root {
       --primary-color: #4f46e5;
       --primary-dark: #4338ca;
@@ -32,7 +31,6 @@
       --transition: all 0.3s ease;
     }
 
-    /* --- 頁面容器與標題區 (與前版相同) --- */
     body { background-color: var(--light-bg); }
     .dashboard-page { max-width: 1400px; margin: 0 auto; padding: var(--spacing-xl); }
     .page-header { background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: var(--white-bg); padding: var(--spacing-lg) var(--spacing-xl); border-radius: 12px; margin-bottom: var(--spacing-xl); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); }
@@ -48,106 +46,56 @@
     .card-title { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: var(--spacing-sm); }
     .card-title i { color: var(--primary-color); }
     .card-body { flex-grow: 1; display: flex; flex-direction: column; }
-    .stat-card { grid-column: span 2; }
-    .stat-card .card-body { justify-content: center; align-items: center; text-align: center; }
-    .stat-value { font-size: 3rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
-    .stat-label { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
     .chart-card { grid-column: span 4; }
     .chart-area { flex-grow: 1; position: relative; min-height: 300px; }
-    
-    /* --- 新增：卡片內的篩選器 --- */
-    .card-header-control select {
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--border-light);
-        border-radius: 6px;
-        background-color: var(--light-bg);
-        font-weight: 500;
-    }
+    .card-header-control select { padding: 0.5rem 1rem; border: 1px solid var(--border-light); border-radius: 6px; background-color: var(--light-bg); font-weight: 500; }
 
-    /* --- 新增：速度表 (Speedometer) 樣式 --- */
+    /* --- 速度表 (Speedometer) 樣式 --- */
     .gauge-card { grid-column: span 4; }
-    .gauge-area {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-grow: 1;
-        padding: var(--spacing-md) 0;
-    }
-    .speedometer-gauge {
-        width: 300px;
-        height: 150px; /* 寬度的一半，形成半圓 */
-        position: relative;
-        overflow: hidden;
-    }
+    .gauge-area { display: flex; flex-direction: column; justify-content: center; align-items: center; flex-grow: 1; padding: var(--spacing-md) 0; }
+    .speedometer-gauge { width: 300px; height: 150px; position: relative; overflow: hidden; }
+    
     .gauge-body {
-        width: 300px;
-        height: 300px;
-        border-radius: 50%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        /* 使用錐形漸層來畫出顏色弧度 */
+        width: 300px; height: 300px; border-radius: 50%;
+        position: absolute; top: 0; left: 0;
         background: conic-gradient(
             from -90deg,
-            var(--danger-color) 0% 25%, 
-            var(--warning-color) 25% 60%, 
-            var(--success-color) 60% 100%
+            #dc3545 0deg 144deg,
+            #ffc107 144deg 162deg,
+            #28a745 162deg 180deg
         );
-        /* 透過 clip-path 只顯示上半部分 */
         clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%);
     }
-    .gauge-mask { /* 白色遮罩，製造出環形效果 */
-        width: 260px;
-        height: 260px;
-        background: var(--white-bg);
-        border-radius: 50%;
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 1;
-    }
-    .gauge-needle {
-        width: 4px;
-        height: 120px;
-        background: var(--text-dark);
-        border-radius: 2px;
-        position: absolute;
-        bottom: -90px; /* 調整位置讓旋轉中心在底部 */
-        left: calc(50% - 2px);
-        transform-origin: bottom center;
-        transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        z-index: 2;
-    }
-    .gauge-center-circle {
-        width: 20px;
-        height: 20px;
-        background: var(--text-dark);
-        border: 4px solid var(--white-bg);
-        border-radius: 50%;
-        position: absolute;
-        top: 130px;
-        left: calc(50% - 10px);
-        z-index: 3;
-    }
-    .gauge-display {
-        position: absolute;
-        bottom: 5px;
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-        z-index: 2;
-    }
-    .gauge-score {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--text-dark);
-    }
-    .gauge-score-label {
-        font-size: 1rem;
-        color: var(--text-muted);
+    .gauge-mask { width: 260px; height: 260px; background: var(--white-bg); border-radius: 50%; position: absolute; top: 20px; left: 20px; z-index: 1; }
+    
+    /* ▼▼▼【核心修正】將指針的底部位置修正回 0 ▼▼▼ */
+    .gauge-needle { 
+        width: 4px; height: 120px; background: var(--text-dark); border-radius: 2px; 
+        position: absolute; 
+        bottom: 0; /* <--- 從 -90px 改回 0，讓它回到容器內 */
+        left: calc(50% - 2px); 
+        transform-origin: bottom center; 
+        transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55), background 0.3s ease; 
+        z-index: 2; 
     }
 
-    /* --- 其他 (與前版相同) --- */
+    .gauge-center-circle { width: 20px; height: 20px; background: var(--text-dark); border: 4px solid var(--white-bg); border-radius: 50%; position: absolute; top: 130px; left: calc(50% - 10px); z-index: 3; transition: background 0.3s ease; }
+    
+    .gauge-needle.danger, .gauge-center-circle.danger { background: var(--danger-color); }
+    .gauge-needle.warning, .gauge-center-circle.warning { background: var(--warning-color); }
+    .gauge-needle.excellent, .gauge-center-circle.excellent { background: var(--success-color); }
+
+    .gauge-display { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 2; }
+    .gauge-score { font-size: 2.5rem; font-weight: 700; color: var(--text-dark); }
+    .gauge-score-label { font-size: 1rem; color: var(--text-muted); }
+
+    .gauge-status { margin-top: 1.25rem; font-size: 1.25rem; font-weight: 700; text-align: center; transition: color 0.3s ease; min-height: 1.2em; }
+    .gauge-status.danger { color: var(--danger-color); }
+    .gauge-status.warning { color: var(--warning-color); }
+    .gauge-status.excellent { color: var(--success-color); }
+    .gauge-comment { margin-top: 0.5rem; font-size: 1rem; color: var(--text-muted); text-align: center; min-height: 1.2em; }
+
+    /* --- 其他 --- */
     .btn-return { display: block; width: fit-content; margin: var(--spacing-xl) auto 0; padding: 0.875rem 2rem; background: var(--light-bg); color: var(--text-dark); border: 1px solid var(--border-light); border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); text-decoration: none; }
     .btn-return:hover { background: var(--border-light); transform: translateY(-2px); }
     @media (max-width: 992px) { .stat-card { grid-column: span 4; } }
@@ -181,11 +129,15 @@
             <div class="gauge-body"></div>
             <div class="gauge-mask"></div>
             <div class="gauge-needle" id="gauge-needle" style="transform: rotate(-90deg);"></div>
-            <div class="gauge-center-circle"></div>
+            <div class="gauge-center-circle" id="gauge-center-circle"></div>
             <div class="gauge-display">
                 <div class="gauge-score" id="gauge-score">0</div>
                 <div class="gauge-score-label">分數</div>
             </div>
+          </div>
+          <div class="gauge-feedback">
+              <p class="gauge-status" id="gauge-status-text">--</p>
+              <p class="gauge-comment" id="gauge-comment">正在分析您的駕駛評語...</p>
           </div>
         </div>
       </div>
@@ -194,6 +146,7 @@
   <a href="{{ url_for('dashboard') }}" class="btn-return">返回儀表板</a>
 </div>
 {% endblock %}
+
 {% block extra_js %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

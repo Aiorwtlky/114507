@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/pages/dashboard.js (最終修正版)
+// 檔案路徑: static/js/pages/dashboard.js (最終完整版)
 
 (function() {
     'use strict';
@@ -51,6 +51,14 @@
         }
     }
 
+    function formatScore(score) {
+        const numericScore = parseFloat(score);
+        if (typeof numericScore === 'number' && !isNaN(numericScore)) {
+            return numericScore.toFixed(2);
+        }
+        return '--';
+    }
+
     function updateUI(userData, groupData, tripsData, trendsData) {
         const profile = userData.personnelprofile || {};
 
@@ -61,15 +69,11 @@
             document.getElementById('dashboard-last-login').textContent = `上次登入: ${new Date(userData.last_login).toLocaleString()}`;
         }
         
-        // --- 更新群組列表 ---
         const groupsList = document.getElementById('dashboard-groups-list');
         groupsList.innerHTML = '';
         if (groupData.results && groupData.results.length > 0) {
-            // ▼▼▼【核心修改】移除判斷邏輯，直接定義唯一的目標 URL ▼▼▼
             const targetUrl = '/group_leader_view';
-            
             groupData.results.slice(0, 5).forEach(group => {
-                // 直接使用統一的 URL
                 groupsList.innerHTML += `<li class="list-item"><a href="${targetUrl}?group_id=${group.id}" class="list-link"><i class="fa-solid fa-user-group"></i><span>${group.name}</span></a></li>`;
             });
         } else {
@@ -85,9 +89,20 @@
         tripsList.innerHTML = '';
         if (tripsData.results && tripsData.results.length > 0) {
             tripsData.results.slice(0, 5).forEach(trip => {
-                const score = Math.round(trip.score);
-                const scoreClass = score >= 80 ? 'excellent' : (score >= 60 ? 'warning' : 'danger');
-                tripsList.innerHTML += `<li class="trip-item"><div class="trip-info"><span class="trip-date">${new Date(trip.start_time).toLocaleDateString()}</span><span class="trip-group">${trip.group}</span></div><a href="/trip_report?trip_id=${trip.id}" class="trip-score ${scoreClass}">${score}分</a></li>`;
+                const score = parseFloat(trip.score);
+                const scoreDisplay = formatScore(trip.score);
+                const scoreClass = score <= 80 ? 'danger' : (score <= 90 ? 'warning' : 'excellent');
+                
+                tripsList.innerHTML += `
+                    <li class="trip-item">
+                        <div class="trip-info">
+                            <span class="trip-date">${new Date(trip.start_time).toLocaleDateString()}</span>
+                            <span class="trip-group">${trip.group}</span>
+                        </div>
+                        <a href="/trip_report?trip_id=${trip.id}" class="trip-score ${scoreClass}">
+                            ${scoreDisplay}分
+                        </a>
+                    </li>`;
             });
         } else {
             tripsList.innerHTML = '<li class="trip-item"><span>尚無行程記錄</span></li>';
@@ -97,20 +112,24 @@
         const latestTripReport = document.getElementById('latest-trip-report');
         if (latestTripReport && latestTrip) {
             const startTime = new Date(latestTrip.start_time);
-            const endTime = new Date(latestTrip.end_time);
-            const durationMs = endTime - startTime;
-            const hours = Math.floor(durationMs / 3600000);
-            const minutes = Math.round((durationMs % 3600000) / 60000);
+            const endTime = latestTrip.end_time ? new Date(latestTrip.end_time) : null;
+            let durationDisplay = '--';
+            if(endTime) {
+                const durationMs = endTime - startTime;
+                const hours = Math.floor(durationMs / 3600000);
+                const minutes = Math.round((durationMs % 3600000) / 60000);
+                durationDisplay = `${hours}h ${minutes}m`;
+            }
 
             latestTripReport.innerHTML = `
                 <div class="card-header with-meta">
-                    <div><h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3><p class="card-meta">${startTime.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} - ${endTime.toLocaleTimeString([], { timeStyle: 'short' })}</p></div>
+                    <div><h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3><p class="card-meta">${startTime.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} - ${endTime ? endTime.toLocaleTimeString([], { timeStyle: 'short' }) : '進行中'}</p></div>
                 </div>
                 <div class="scores-grid">
-                    <div class="score-box primary"><div class="score-value">${Math.round(latestTrip.score)}</div><div class="score-label">安全總分</div></div>
-                    <div class="score-box"><div class="score-value">${Math.round(latestTrip.in_car_score)}</div><div class="score-label">車內分數</div></div>
-                    <div class="score-box"><div class="score-value">${Math.round(latestTrip.out_car_score)}</div><div class="score-label">車外分數</div></div>
-                    <div class="score-box"><div class="score-value">${hours}h ${minutes}m</div><div class="score-label">總耗時</div></div>
+                    <div class="score-box primary"><div class="score-value">${formatScore(latestTrip.score)}</div><div class="score-label">安全總分</div></div>
+                    <div class="score-box"><div class="score-value">${formatScore(latestTrip.in_car_score)}</div><div class="score-label">車內分數</div></div>
+                    <div class="score-box"><div class="score-value">${formatScore(latestTrip.out_car_score)}</div><div class="score-label">車外分數</div></div>
+                    <div class="score-box"><div class="score-value">${durationDisplay}</div><div class="score-label">總耗時</div></div>
                 </div>
                 <div class="card-actions">
                     <button data-trip-id="${latestTrip.id}" class="btn btn-outline btn-print-dynamic"><i class="fa-solid fa-print"></i> 列印報表</button>
@@ -125,44 +144,15 @@
         initGauge(trendsData);
     }
     
-    async function initializeDashboard() {
-        try {
-            const [profileRes, groupsRes, tripsRes, trendsRes] = await Promise.all([
-                fetchWithAuth('/api/auth/profile/'),
-                fetchWithAuth('/api/me/groups/'),
-                fetchWithAuth('/api/trips/?ordering=-start_time&limit=5'),
-                fetchWithAuth('/api/statistics/trends/')
-            ]);
-            if (!profileRes.ok || !groupsRes.ok || !tripsRes.ok || !trendsRes.ok) {
-                throw new Error('一個或多個 API 請求失敗');
-            }
-            const [userData, groupData, tripData, trendsData] = await Promise.all([
-                profileRes.json(),
-                groupsRes.json(),
-                tripsRes.json(),
-                trendsRes.json()
-            ]);
-            updateUI(userData, groupData, tripData, trendsData);
-        } catch (error) {
-            console.error("載入儀表板資料失敗:", error.message);
-        }
-
-        const logoutButton = document.getElementById('logoutButton');
-        if (logoutButton) {
-            logoutButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (confirm('您確定要登出嗎？')) {
-                    localStorage.clear();
-                    window.location.href = '/logout';
-                }
-            });
-        }
-    }
-    
+    //更新 initGauge 函式以包含評語邏輯 
     function initGauge(trendsData) {
         const gaugeNeedle = document.getElementById('trends-gauge-needle');
+        const gaugeCenter = document.querySelector('.gauge-center');
         const gaugeText = document.getElementById('trends-gauge-text')?.querySelector('strong');
-        if (!gaugeNeedle || !gaugeText) return;
+        const gaugeStatusText = document.getElementById('gauge-status-text');
+        const gaugeComment = document.getElementById('gauge-comment'); // 選取評語元素
+        
+        if (!gaugeNeedle || !gaugeText || !gaugeCenter || !gaugeStatusText || !gaugeComment) return;
 
         let score = 0;
         if (trendsData && trendsData.length > 0) {
@@ -170,10 +160,42 @@
         }
 
         gaugeText.textContent = score;
-        const rotation = (score / 100) * 180 - 90;
+
+        let scoreClass = '';
+        let statusText = '';
+        let commentText = ''; // 用於儲存評語
+
+        if (score <= 80) {
+            scoreClass = 'danger';
+            statusText = '危險駕駛';
+            commentText = '您的駕駛習慣存在較大風險，請立即改善。';
+        } else if (score <= 90) {
+            scoreClass = 'warning';
+            statusText = '普通危險駕駛';
+            commentText = '表現尚有改善空間，請多注意駕駛細節。';
+        } else {
+            scoreClass = 'excellent';
+            statusText = '普通駕駛';
+            commentText = '表現良好，請繼續保持安全的駕駛習慣。';
+        }
+        
+        // 更新指針和中心圓點的顏色
+        gaugeNeedle.classList.remove('danger', 'warning', 'excellent');
+        gaugeCenter.classList.remove('danger', 'warning', 'excellent');
+        gaugeNeedle.classList.add(scoreClass);
+        gaugeCenter.classList.add(scoreClass);
+
+        // 更新下方的狀態文字和顏色
+        gaugeStatusText.textContent = statusText;
+        gaugeStatusText.className = 'gauge-status ' + scoreClass;
+
+        // 更新評語文字
+        gaugeComment.textContent = commentText;
+
+        const rotation = (score / 100) * 180;
 
         setTimeout(() => {
-            gaugeNeedle.style.transform = `rotate(${rotation}deg)`;
+            gaugeNeedle.style.setProperty('--gauge-rotation', `${rotation}deg`);
         }, 100);
     }
 
@@ -202,6 +224,29 @@
             }, 
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } 
         });
+    }
+
+    async function initializeDashboard() {
+        try {
+            const [profileRes, groupsRes, tripsRes, trendsRes] = await Promise.all([
+                fetchWithAuth('/api/auth/profile/'),
+                fetchWithAuth('/api/me/groups/'),
+                fetchWithAuth('/api/trips/?ordering=-start_time&limit=5'),
+                fetchWithAuth('/api/statistics/trends/')
+            ]);
+            if (!profileRes.ok || !groupsRes.ok || !tripsRes.ok || !trendsRes.ok) {
+                throw new Error('一個或多個 API 請求失敗');
+            }
+            const [userData, groupData, tripData, trendsData] = await Promise.all([
+                profileRes.json(),
+                groupsRes.json(),
+                tripsRes.json(),
+                trendsRes.json()
+            ]);
+            updateUI(userData, groupData, tripData, trendsData);
+        } catch (error) {
+            console.error("載入儀表板資料失敗:", error.message);
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {

@@ -533,7 +533,7 @@ class UserTrendsAPIView(views.APIView):
         # 建立基本的查詢 QuerySet
         queryset = Trip.objects.filter(personnel=target_user, score__isnull=False)
 
-        # ▼▼▼【核心升級】處理日期範圍篩選 ▼▼▼
+        # 【核心升級】處理日期範圍篩選 
         start_date_str = request.query_params.get('start_date')
         end_date_str = request.query_params.get('end_date')
 
@@ -631,7 +631,7 @@ def health_check(request):
     try:
         from django.db import connection
         with connection.cursor() as cursor: cursor.execute("SELECT 1")
-        from .services import client
+        from .services import hf_client as client # <--- 修改後，並使用 as 取個別名
         ai_status = "available" if client else "unavailable"
         return JsonResponse({'status': 'healthy', 'database': 'connected', 'ai_service': ai_status})
     except Exception as e:
