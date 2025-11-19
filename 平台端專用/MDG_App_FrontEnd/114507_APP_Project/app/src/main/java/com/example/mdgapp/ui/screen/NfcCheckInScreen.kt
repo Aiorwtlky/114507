@@ -1,3 +1,5 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/ui/screen/NfcCheckInScreen.kt
+
 package com.example.mdgapp.ui.screen
 
 import android.provider.Settings
@@ -18,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mdgapp.NfcHandler
 import com.example.mdgapp.data.viewmodel.BindingResultType
 import com.example.mdgapp.data.viewmodel.NfcViewModel
 import com.example.mdgapp.data.viewmodel.ProfileViewModel
@@ -57,10 +58,23 @@ fun NfcCheckInScreen(
         }
     }
 
+    // 監聽 nfcViewModel 的狀態變化，以顯示 Toast 並導航
+    LaunchedEffect(nfcUiState) {
+        if (nfcUiState.successMessage != null) {
+            Toast.makeText(context, nfcUiState.successMessage, Toast.LENGTH_LONG).show()
+            navController.popBackStack()
+            nfcViewModel.resetState() // 清理狀態，避免重複觸發
+        }
+        if (nfcUiState.errorMessage != null) {
+            Toast.makeText(context, nfcUiState.errorMessage, Toast.LENGTH_LONG).show()
+            nfcViewModel.resetState()
+        }
+    }
+
     // 處理註冊按鈕點擊
     fun handleRegisterClick() {
         if (userProfile == null) {
-            Toast.makeText(context, "請先載入使用者資料", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "正在載入使用者資料，請稍候", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -72,26 +86,25 @@ fun NfcCheckInScreen(
                     Settings.Secure.ANDROID_ID
                 )
 
-                // 生成手機 NFC UID (使用 Android ID 的後8位轉大寫)
+                // ✅✅✅ 關鍵修改：生成與實體卡格式一致的手機 NFC UID ✅✅✅
                 val phoneNfcUid = androidId
-                    .takeLast(8)
-                    .uppercase()
-                    .padStart(8, '0')
+                    .takeLast(8) // 取 Android ID 的後 8 位
+                    .uppercase() // 轉為大寫
+                    .padStart(8, '0') // 如果不足 8 位，前面補 0
+                    .chunked(2) // 將字串每 2 個字元分割成一組 (例如: ["C2", "24", "56", "96"])
+                    .joinToString(":") // 用冒號將它們連接起來 (例如: "C2:24:56:96")
 
-                // 取得當前使用者已綁定的 UID (從 personnelprofile 的 nfcCardId)
+                // 取得當前使用者已綁定的 UID
                 val currentUserUid = userProfile.personnelprofile?.nfcCardId
 
-                // 判斷註冊邏輯
                 when {
                     // 情境 1: 首次註冊
                     currentUserUid == null -> {
-                        nfcViewModel.bindNfcCard(phoneNfcUid, BindingResultType.FIRST_TIME_REGISTRATION)
-                        Toast.makeText(
-                            context,
-                            "✅ 手機 NFC 註冊成功！\nUID: $phoneNfcUid",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        navController.popBackStack()
+                        nfcViewModel.bindNfcCard(
+                            phoneNfcUid,
+                            BindingResultType.FIRST_TIME_REGISTRATION,
+                            isPhoneNfc = true
+                        )
                     }
                     // 情境 3: 已註冊相同 UID
                     currentUserUid == phoneNfcUid -> {
@@ -103,13 +116,11 @@ fun NfcCheckInScreen(
                     }
                     // 情境 2: 更新註冊
                     else -> {
-                        nfcViewModel.bindNfcCard(phoneNfcUid, BindingResultType.UPDATE_REGISTRATION)
-                        Toast.makeText(
-                            context,
-                            "🔄 已切換綁定至手機 NFC！\nUID: $phoneNfcUid",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        navController.popBackStack()
+                        nfcViewModel.bindNfcCard(
+                            phoneNfcUid,
+                            BindingResultType.UPDATE_REGISTRATION,
+                            isPhoneNfc = true
+                        )
                     }
                 }
 
@@ -216,7 +227,6 @@ fun NfcCheckInScreen(
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        // 顯示當前綁定狀態
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
@@ -254,7 +264,6 @@ fun NfcCheckInScreen(
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        // 註冊按鈕
                         Button(
                             onClick = { handleRegisterClick() },
                             modifier = Modifier

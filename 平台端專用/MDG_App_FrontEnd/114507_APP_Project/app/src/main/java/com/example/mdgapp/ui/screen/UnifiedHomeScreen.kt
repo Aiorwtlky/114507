@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -28,6 +29,8 @@ import coil.compose.AsyncImage
 import com.example.mdgapp.data.viewmodel.ProfileViewModel
 import com.example.mdgapp.ui.theme.*
 
+// ... (UnifiedHomeScreen Composable 宣告與開頭程式碼保持不變)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnifiedHomeScreen(
@@ -37,12 +40,7 @@ fun UnifiedHomeScreen(
     val uiState by profileViewModel.uiState.collectAsState()
     val userProfile = uiState.userProfile
 
-    // ✅ 修改重點：頁面載入時就取得使用者資料
-    LaunchedEffect(Unit) {
-        if (userProfile == null && !uiState.isLoading) {
-            profileViewModel.fetchUserProfile()
-        }
-    }
+    // ... (LaunchedEffect, Scaffold, BottomAppBar 程式碼保持不變)
 
     Scaffold(
         containerColor = iOsBackground,
@@ -84,6 +82,7 @@ fun UnifiedHomeScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             when {
+                // ... (when block 保持不變)
                 uiState.isLoading -> {
                     CircularProgressIndicator(color = iOsBlue)
                     Spacer(modifier = Modifier.height(16.dp))
@@ -147,16 +146,7 @@ fun UnifiedHomeScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                RegisterButton(
-                    icon = Icons.Default.Nfc,
-                    text = "手機 NFC 註冊",
-                    onClick = {
-                        if (userProfile != null) {
-                            navController.navigate("nfcCheckIn")
-                        }
-                    },
-                    enabled = userProfile != null && !uiState.isLoading
-                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 RegisterButton(
@@ -166,6 +156,18 @@ fun UnifiedHomeScreen(
                         if (userProfile != null) {
                             navController.navigate("cardCheckIn")
                         }
+                    },
+                    enabled = userProfile != null && !uiState.isLoading
+                )
+
+                // ✅ 新增：行駛軌跡追蹤按鈕 (第二階段功能)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                RegisterButton(
+                    icon = Icons.Filled.LocationOn,
+                    text = "行駛軌跡追蹤",
+                    onClick = {
+                        navController.navigate("route_tracking_screen") // 導航到新的追蹤畫面
                     },
                     enabled = userProfile != null && !uiState.isLoading
                 )

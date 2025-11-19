@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MDG Scanner</string>
+    <string name="hce_service_description">MDG App HCE Service</string>
 </resources>

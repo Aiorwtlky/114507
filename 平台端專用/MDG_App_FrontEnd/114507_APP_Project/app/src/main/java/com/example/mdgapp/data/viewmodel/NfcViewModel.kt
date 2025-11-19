@@ -1,6 +1,10 @@
+// 檔案路徑: app/src/main/java/com/example/mdgapp/data/viewmodel/NfcViewModel.kt
+
 package com.example.mdgapp.data.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mdgapp.data.local.TokenManager
 import com.example.mdgapp.data.model.NfcBindRequest
@@ -27,17 +31,18 @@ enum class BindingResultType {
     ALREADY_REGISTERED        // 已註冊
 }
 
-class NfcViewModel : ViewModel() {
+class NfcViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(NfcUiState())
     val uiState: StateFlow<NfcUiState> = _uiState.asStateFlow()
 
     /**
-     * 綁定 NFC 卡片（後端 API 呼叫）
+     * 綁定 NFC 裝置（後端 API 呼叫）
      */
     fun bindNfcCard(
         nfcSerialNumber: String,
-        resultType: BindingResultType = BindingResultType.FIRST_TIME_REGISTRATION
+        resultType: BindingResultType = BindingResultType.FIRST_TIME_REGISTRATION,
+        isPhoneNfc: Boolean = false // 新增參數以區分是手機還是卡片
     ) {
         viewModelScope.launch {
             _uiState.update {
@@ -62,17 +67,24 @@ class NfcViewModel : ViewModel() {
             }
 
             try {
+                // 呼叫後端 API
                 val response = RetrofitInstance.api.bindNfcCard(
                     nfcBindRequest = NfcBindRequest(nfcId = nfcSerialNumber)
                 )
 
+                // ✅ 如果是手機 NFC 且後端綁定成功，就將 UID 儲存到 SharedPreferences
+                if (isPhoneNfc) {
+                    savePhoneUidToPrefs(nfcSerialNumber)
+                }
+
+                val deviceName = if (isPhoneNfc) "手機 NFC" else "卡片"
                 val successMsg = when (resultType) {
                     BindingResultType.FIRST_TIME_REGISTRATION ->
-                        "卡片註冊成功！\n卡號: $nfcSerialNumber"
+                        "$deviceName 註冊成功！\nUID: $nfcSerialNumber"
                     BindingResultType.UPDATE_REGISTRATION ->
-                        "卡片資料更新成功！\n卡號: $nfcSerialNumber"
+                        "綁定已更新至此 $deviceName！\nUID: $nfcSerialNumber"
                     BindingResultType.ALREADY_REGISTERED ->
-                        "該卡片已註冊\n卡號: $nfcSerialNumber"
+                        "該 $deviceName 已註冊\nUID: $nfcSerialNumber"
                 }
 
                 _uiState.update {
@@ -84,7 +96,7 @@ class NfcViewModel : ViewModel() {
 
             } catch (e: HttpException) {
                 val message = when (e.code()) {
-                    409 -> "此 NFC 卡已被其他使用者綁定"
+                    409 -> "此 NFC 裝置已被其他使用者綁定"
                     401 -> "身份驗證失敗，請重新登入"
                     403 -> "權限不足"
                     else -> "綁定失敗 (${e.code()})"
@@ -110,6 +122,18 @@ class NfcViewModel : ViewModel() {
                     )
                 }
             }
+        }
+    }
+
+    /**
+     * 新增一個私有函式，用於將手機的 UID 儲存到 SharedPreferences
+     */
+    private fun savePhoneUidToPrefs(uid: String) {
+        val context = getApplication<Application>().applicationContext
+        val sharedPrefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        with(sharedPrefs.edit()) {
+            putString("phone_nfc_uid", uid)
+            apply()
         }
     }
 

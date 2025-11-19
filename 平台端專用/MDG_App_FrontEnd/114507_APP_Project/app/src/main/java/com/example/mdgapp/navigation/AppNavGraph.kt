@@ -17,6 +17,9 @@ fun AppNavGraph(navController: NavHostController) {
     val groupManagementViewModel: GroupManagementViewModel = viewModel()
     val driverDownloadViewModel: DriverDownloadViewModel = viewModel()
 
+    // ✅ 新增 RouteTrackingViewModel 的宣告，以確保其生命週期與 NavHost 綁定
+    val routeTrackingViewModel: RouteTrackingViewModel = viewModel()
+
     NavHost(navController = navController, startDestination = "launch") {
 
         // ==================== 基礎流程路由 ====================
@@ -45,6 +48,16 @@ fun AppNavGraph(navController: NavHostController) {
         // 實體卡片註冊
         composable("cardCheckIn") {
             CardCheckInScreen(navController = navController)
+        }
+
+        // ==================== 行駛軌跡功能路由 (第二階段實作) ====================
+        // ✅ 新增行駛軌跡頁面路由
+        composable("route_tracking_screen") {
+            // 將 RouteTrackingViewModel 傳遞給畫面，以便控制追蹤狀態
+            RouteTrackingScreen(
+                navController = navController,
+                viewModel = routeTrackingViewModel
+            )
         }
 
         // ==================== 以下路由暫時註解（保留以備後用）====================
