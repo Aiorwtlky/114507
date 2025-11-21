@@ -90,7 +90,7 @@
 
 .card-title {
     margin: 0;
-    font-size: 1.15rem;
+    font-size: 1.4rem; /* [主要修改] 加大標題字體 */
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -100,12 +100,12 @@
 
 .card-title i {
     color: var(--primary-color);
-    font-size: 1.1rem;
+    font-size: 1.2rem; /* [次要修改] 配合標題放大圖示 */
 }
 
 .card-meta {
-    margin: 0.25rem 0 0 0;
-    font-size: 0.875rem;
+    margin: 0.35rem 0 0 0;
+    font-size: 0.95rem; /* [主要修改] 加大 meta 字體 */
     color: var(--text-muted);
 }
 
@@ -245,13 +245,15 @@
 
 /* --- 7. 行程報告卡片 --- */
 .trip-report-card {
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md); /* 調回中等間距 */
+    flex: 1; 
+    justify-content: space-between; /* [主要修改] 透過 space-between 分散對齊來填滿空間 */
 }
 
 .scores-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg); 
     padding: var(--spacing-lg);
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 8px;
@@ -265,7 +267,7 @@
 
 .score-box {
     text-align: center;
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg); 
     background: var(--white-bg);
     border-radius: 8px;
     border: 1px solid var(--border-light);
@@ -273,7 +275,7 @@
 
 .score-value {
     display: block;
-    font-size: 2rem;
+    font-size: 2.75rem; 
     font-weight: 700;
     color: var(--text-dark);
     line-height: 1;
@@ -281,14 +283,14 @@
 
 .score-label {
     display: block;
-    margin-top: var(--spacing-xs);
-    font-size: 0.8rem;
+    margin-top: var(--spacing-sm); 
+    font-size: 0.875rem; 
     color: var(--text-muted);
     font-weight: 500;
 }
 
 .score-box.primary .score-value {
-    font-size: 2.5rem;
+    font-size: 3.5rem; 
     color: var(--primary-color);
 }
 

@@ -4,6 +4,9 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Avg
+from google.cloud import storage
+from datetime import timedelta
+from urllib.parse import urlparse
 from django.utils import timezone 
 from .models import (
     PersonnelProfile, Group, Trip, ScoringStandard,
@@ -171,10 +174,50 @@ class AiVisionLogSerializer(serializers.ModelSerializer):
         fields = ['timestamp', 'event_details', 'confidence_score', 'event']
 
 class VideoRecordSerializer(serializers.ModelSerializer):
-    """序列化影像紀錄的文字資訊。"""
+    """序列化影像紀錄的文字資訊，並動態生成有時效性的 GCS 簽署後 URL。"""
+    
+    # 將 video_url 改為 SerializerMethodField
+    video_url = serializers.SerializerMethodField()
+
     class Meta:
         model = VideoRecord
-        fields = ['video_number', 'start_time', 'end_time', 'location', 'video_url']
+        # 確保 video_url 和 file_size 都在 fields 中
+        fields = ['video_number', 'start_time', 'end_time', 'location', 'video_url', 'file_size']
+
+    def get_video_url(self, obj):
+        """
+        將 GCS URI (gs://bucket/object) 轉換為有時效性的 HTTPS URL。
+        """
+        gcs_uri = obj.video_url
+        if not gcs_uri or not gcs_uri.startswith('gs://'):
+            # 如果 URL 無效或不是 GCS URI，則直接返回 None
+            return None
+
+        try:
+            # 初始化 GCS 客戶端 (它會自動讀取您設定的環境變數)
+            storage_client = storage.Client()
+            
+            # 解析 GCS URI
+            parsed_uri = urlparse(gcs_uri)
+            bucket_name = parsed_uri.netloc
+            object_name = parsed_uri.path.lstrip('/')
+
+            # 獲取 bucket 和 blob (檔案) 物件
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(object_name)
+
+            # 生成一個 15 分鐘後過期的簽署後 URL
+            signed_url = blob.generate_signed_url(
+                version="v4",
+                expiration=timedelta(minutes=15),
+                method="GET",
+            )
+            return signed_url
+            
+        except Exception as e:
+            # 如果出錯，在後端日誌中印出錯誤，並回傳 None
+            print(f"Error generating signed URL for {gcs_uri}: {e}")
+            return None
 
 class TripListSerializer(serializers.ModelSerializer):
     """序列化行程列表，用於顯示簡化的行程資訊，提高 API 效能。"""
