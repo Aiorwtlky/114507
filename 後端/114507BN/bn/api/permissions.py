@@ -12,20 +12,40 @@ from .models import GroupMember
 
 class IsOwnerOrAdmin(BasePermission):
     """
-    自訂權限：僅允許物件的擁有者 (owner) 或網站管理員 (staff) 進行操作。
+    自訂權限：允許物件的擁有者、網站管理員，以及【所屬群組的管理員】進行操作。
 
     - 適用於 `Trip`, `UserProfile` 等具有直接使用者關聯的模型。
-    - 會自動檢查 `obj.personnel` 或 `obj.user` 是否等於 `request.user`。
+    - 修正後邏輯：
+        1. 網站管理員 (is_staff) -> 通行
+        2. 物件擁有者 (owner) -> 通行
+        3. 物件所屬群組的管理員 (Group Admin) -> 通行
     """
     def has_object_permission(self, request, view, obj):
-        # 網站管理員擁有所有權限
+        # 1. 網站管理員擁有所有權限
         if request.user and request.user.is_staff:
             return True
 
-        # 檢查請求的使用者是否為物件的擁有者
-        # 使用 getattr 安全地獲取擁有者屬性，使其能兼容不同模型
+        # 2. 檢查請求的使用者是否為物件的擁有者
+        # 使用 getattr 安全地獲取擁有者屬性，使其能兼容不同模型 (Trip 用 personnel, 其他用 user)
         owner = getattr(obj, 'personnel', getattr(obj, 'user', None))
-        return owner == request.user
+        if owner == request.user:
+            return True
+        
+        # 3. 【核心修正】檢查是否為該物件所屬群組的管理員
+        # 如果這個物件有 'group' 屬性 (例如 Trip, GroupAnnouncement) 且 group 不為空
+        if hasattr(obj, 'group') and obj.group:
+            # 查詢：發出請求的使用者，在這個群組裡的角色是否為 ADMIN
+            is_group_admin = GroupMember.objects.filter(
+                group=obj.group,
+                user=request.user,
+                role='ADMIN'
+            ).exists()
+            
+            if is_group_admin:
+                return True
+
+        # 如果以上皆非，則拒絕存取
+        return False
 
 
 class IsGroupOwnerOrAdmin(BasePermission):

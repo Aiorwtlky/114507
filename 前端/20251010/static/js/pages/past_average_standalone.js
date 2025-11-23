@@ -1,36 +1,26 @@
-// 檔案路徑: static/js/pages/past_average_standalone.js (最終完整版)
+// 檔案路徑: static/js/pages/past_average_standalone.js
 
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
-    const API_BASE_URL = 'http://127.0.0.1:8000';
+    // 1. 移除 API_BASE_URL 和 fetchWithAuth
     let trendsChart = null;
-
-    async function fetchWithAuth(endpoint, options = {}) {
-        const token = localStorage.getItem('accessToken');
-        if (!token) { window.location.href = '/login'; throw new Error('Not Authenticated'); }
-        const headers = options.headers || new Headers();
-        headers.append('Authorization', `Bearer ${token}`);
-        headers.append('Content-Type', 'application/json');
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (response.status === 401) { localStorage.clear(); window.location.href = '/login'; throw new Error('Token Expired'); }
-        return response;
-    }
 
     async function fetchTrendsData(startDate, endDate) {
         const chartArea = document.querySelector('.chart-area');
         const gaugeArea = document.querySelector('.gauge-area');
-        chartArea.innerHTML = '<p>載入數據中...</p>';
+        if (chartArea) chartArea.innerHTML = '<p>載入數據中...</p>';
         if (gaugeArea) gaugeArea.style.opacity = 0.5;
 
         try {
+            // 直接呼叫全域 fetchWithAuth
             const response = await fetchWithAuth(`/api/statistics/trends/?start_date=${startDate}&end_date=${endDate}`);
             if (!response.ok) { throw new Error('無法獲取趨勢資料'); }
             const data = await response.json();
             updateUI(data);
         } catch (error) {
             console.error('獲取趨勢數據失敗:', error);
-            chartArea.innerHTML = '<p style="color: red;">載入數據失敗。</p>';
+            if (chartArea) chartArea.innerHTML = '<p style="color: red;">載入數據失敗。</p>';
         } finally {
             if (gaugeArea) gaugeArea.style.opacity = 1;
         }
@@ -38,12 +28,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updateUI(trendsData) {
         renderTrendsChart(trendsData);
-        updateGauge(trendsData); // 呼叫我們修正後的 updateGauge
+        updateGauge(trendsData);
     }
 
-    //【核心修改】用這個完整的新版本取代您舊的 updateGauge 函式
     function updateGauge(trendsData) {
-        // 1. 選取所有需要的 HTML 元素
         const scoreElement = document.getElementById('gauge-score');
         const needleElement = document.getElementById('gauge-needle');
         const centerCircleElement = document.getElementById('gauge-center-circle');
@@ -51,9 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusTextElement = document.getElementById('gauge-status-text');
         const commentTextElement = document.getElementById('gauge-comment');
         
-        if (!scoreElement || !needleElement || !titleElement || !statusTextElement || !commentTextElement || !centerCircleElement) return;
+        if (!scoreElement || !needleElement) return;
 
-        // 2. 計算選定區間內的總平均分
         let averageScore = 0;
         if (trendsData && trendsData.length > 0) {
             const totalScore = trendsData.reduce((sum, item) => sum + item.average_score, 0);
@@ -62,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const clampedScore = Math.round(Math.max(0, Math.min(100, averageScore)));
         
-        // 3. 根據新的分數規則，決定顏色、狀態文字和評語
         let scoreClass = '';
         let statusText = '';
         let commentText = '';
@@ -81,22 +67,19 @@ document.addEventListener('DOMContentLoaded', function() {
             commentText = '表現良好，請繼續保持安全的駕駛習慣。';
         }
         
-        // 4. 更新 UI 介面
         scoreElement.textContent = clampedScore;
-        titleElement.textContent = '選定區間平均';
-        statusTextElement.textContent = statusText;
-        commentTextElement.textContent = commentText;
+        if(titleElement) titleElement.textContent = '選定區間平均';
+        if(statusTextElement) statusTextElement.textContent = statusText;
+        if(commentTextElement) commentTextElement.textContent = commentText;
 
-        // 5. 更新顏色
-        const elementsToColor = [needleElement, centerCircleElement, statusTextElement];
-        elementsToColor.forEach(el => {
-            el.classList.remove('danger', 'warning', 'excellent');
-            el.classList.add(scoreClass);
+        [needleElement, centerCircleElement, statusTextElement].forEach(el => {
+            if(el) {
+                el.classList.remove('danger', 'warning', 'excellent');
+                el.classList.add(scoreClass);
+            }
         });
         
-        // 6. 計算並套用指針旋轉角度
         const rotation = (clampedScore / 100) * 180 - 90;
-
         setTimeout(() => {
             needleElement.style.transform = `rotate(${rotation}deg)`;
         }, 100);
@@ -104,6 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderTrendsChart(trendsData) {
         const chartArea = document.querySelector('.chart-area');
+        if (!chartArea) return;
+        
         chartArea.innerHTML = '<canvas id="trendsChart"></canvas>'; 
         const ctx = document.getElementById('trendsChart').getContext('2d');
         
@@ -115,9 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const labels = trendsData.map(item => item.month);
         const scores = trendsData.map(item => item.average_score);
         
-        if (trendsChart) {
-            trendsChart.destroy();
-        }
+        if (trendsChart) trendsChart.destroy();
 
         trendsChart = new Chart(ctx, {
             type: 'line',
@@ -126,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 datasets: [{
                     label: '每月駕駛分數平均',
                     data: scores,
-                    borderColor: 'var(--primary-color)',
+                    borderColor: '#4f46e5', // 使用具體顏色而非 var，避免 CSS 變數未定義
                     backgroundColor: 'rgba(79, 70, 229, 0.1)',
                     fill: true,
                     tension: 0.4
@@ -137,6 +120,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function initializePage() {
+        // 如果沒有 flatpickr，簡單的防呆
+        if (typeof flatpickr === 'undefined') {
+            console.warn('Flatpickr library not found');
+            const now = new Date();
+            const lastYear = new Date();
+            lastYear.setFullYear(now.getFullYear() - 1);
+            fetchTrendsData(lastYear.toISOString().split('T')[0], now.toISOString().split('T')[0]);
+            return;
+        }
+
         const formatDate = (date) => date.toISOString().split('T')[0];
         const endDate = new Date();
         const startDate = new Date();
@@ -150,9 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             defaultDate: [defaultStartDateStr, defaultEndDateStr],
             onClose: function(selectedDates) {
                 if (selectedDates.length === 2) {
-                    const newStartDate = formatDate(selectedDates[0]);
-                    const newEndDate = formatDate(selectedDates[1]);
-                    fetchTrendsData(newStartDate, newEndDate);
+                    fetchTrendsData(formatDate(selectedDates[0]), formatDate(selectedDates[1]));
                 }
             }
         });

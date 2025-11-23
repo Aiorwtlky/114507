@@ -1,8 +1,9 @@
-// 檔案路徑: static/js/pages/dashboard.js (最終完整版)
+// 檔案路徑: static/js/pages/dashboard.js (最終完整修正版)
 
 (function() {
     'use strict';
 
+    // 1. 設定與工具函式 (注意：若已使用 config.js/utils.js 架構，這些可刪除)
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
     async function fetchWithAuth(endpoint, options = {}) {
@@ -27,6 +28,7 @@
         return response;
     }
 
+    // 2. 報表預覽功能
     async function handlePdfPreview(tripId) {
         if (!tripId) return;
         const printButton = document.querySelector(`button[data-trip-id="${tripId}"]`);
@@ -51,6 +53,7 @@
         }
     }
 
+    // 3. 數值格式化輔助函式
     function formatScore(score) {
         const numericScore = parseFloat(score);
         if (typeof numericScore === 'number' && !isNaN(numericScore)) {
@@ -59,16 +62,43 @@
         return '--';
     }
 
+    // 4. UI 更新核心邏輯
     function updateUI(userData, groupData, tripsData, trendsData) {
         const profile = userData.personnelprofile || {};
 
+        // --- A. 更新儀表板主要區域 ---
+        // 注意路徑是否正確 (img vs images)
         document.getElementById('dashboard-avatar').src = profile.avatar || '/static/images/user-placeholder.svg';
         document.getElementById('dashboard-username').textContent = userData.first_name || userData.username;
         document.getElementById('dashboard-email').textContent = userData.email;
         if (userData.last_login) {
             document.getElementById('dashboard-last-login').textContent = `上次登入: ${new Date(userData.last_login).toLocaleString()}`;
         }
-        
+
+        // --- B. 【核心修正】同步更新左側 Sidebar (解決側邊欄不同步問題) ---
+        const sidebarAvatar = document.getElementById('sidebar-avatar');
+        const sidebarName = document.getElementById('sidebar-username');
+        const sidebarRole = document.getElementById('sidebar-user-role');
+
+        if (sidebarAvatar) {
+            sidebarAvatar.src = profile.avatar || '/static/images/user-placeholder.svg';
+        }
+        if (sidebarName) {
+            sidebarName.textContent = userData.first_name || userData.username;
+        }
+        if (sidebarRole) {
+            // 根據權限顯示對應的中文角色
+            if (userData.is_staff) {
+                sidebarRole.textContent = '網站管理員';
+            } else if (userData.is_group_admin) {
+                sidebarRole.textContent = '群組管理員';
+            } else {
+                sidebarRole.textContent = '一般成員';
+            }
+        }
+        // -------------------------------------------------------------
+
+        // --- C. 更新群組列表 ---
         const groupsList = document.getElementById('dashboard-groups-list');
         groupsList.innerHTML = '';
         if (groupData.results && groupData.results.length > 0) {
@@ -80,11 +110,13 @@
             groupsList.innerHTML = '<li class="list-item"><span>您尚未加入任何群組</span></li>';
         }
 
+        // --- D. 權限控制：顯示管理入口 ---
         const managementEntryPoint = document.getElementById('management-entry-point');
         if (managementEntryPoint && (userData.is_staff || userData.is_group_admin)) {
             managementEntryPoint.style.display = 'block';
         }
 
+        // --- E. 更新行程列表 ---
         const tripsList = document.getElementById('dashboard-trips-list');
         tripsList.innerHTML = '';
         if (tripsData.results && tripsData.results.length > 0) {
@@ -108,6 +140,7 @@
             tripsList.innerHTML = '<li class="trip-item"><span>尚無行程記錄</span></li>';
         }
 
+        // --- F. 更新「前次行程報告」卡片 ---
         const latestTrip = tripsData.results && tripsData.results[0];
         const latestTripReport = document.getElementById('latest-trip-report');
         if (latestTripReport && latestTrip) {
@@ -140,11 +173,12 @@
             latestTripReport.innerHTML = '<div class="card-header"><div><h3 class="card-title"><i class="fa-solid fa-flag-checkered"></i> 前次行程報告</h3></div></div><p style="text-align: center; padding: 2rem;">尚無任何行程記錄可供顯示。</p>';
         }
 
+        // --- G. 初始化圖表 ---
         initTrendsChart(trendsData);
         initGauge(trendsData);
     }
     
-    //更新 initGauge 函式以包含評語邏輯 
+    // 5. 初始化儀表圖 (包含評語邏輯)
     function initGauge(trendsData) {
         const gaugeNeedle = document.getElementById('trends-gauge-needle');
         const gaugeCenter = document.querySelector('.gauge-center');
@@ -199,6 +233,7 @@
         }, 100);
     }
 
+    // 6. 初始化趨勢圖
     function initTrendsChart(trendsData) {
         const canvas = document.getElementById('trendsChart');
         if (!canvas) return;
@@ -226,6 +261,7 @@
         });
     }
 
+    // 7. 頁面初始化主程序
     async function initializeDashboard() {
         try {
             const [profileRes, groupsRes, tripsRes, trendsRes] = await Promise.all([
@@ -249,6 +285,7 @@
         }
     }
 
+    // 8. 綁定事件
     document.addEventListener('DOMContentLoaded', () => {
         initializeDashboard();
 

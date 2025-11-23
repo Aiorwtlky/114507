@@ -1,34 +1,20 @@
-// 檔案路徑: static/js/pages/group_leader_view.js (最終分數規則修正版)
+// 檔案路徑: static/js/pages/group_leader_view.js
 
 (function() {
     'use strict';
 
-    // 頁面守衛：檢查使用者是否已登入
+    // 1. 移除 API_BASE_URL 和 fetchWithAuth
+
+    // 頁面守衛
     const userProfile = JSON.parse(localStorage.getItem('userProfile'));
     if (!userProfile) {
-        alert('無法獲取使用者資訊，請重新登入。');
         window.location.href = '/login';
         return;
     }
 
-    // --- 全域變數 ---
-    const API_BASE_URL = 'http://127.0.0.1:8000';
     let currentGroupId = null;
     let groupTrendsChart = null;
 
-    // --- 核心 API 呼叫函式 ---
-    async function fetchWithAuth(endpoint, options = {}) {
-        const token = localStorage.getItem('accessToken');
-        if (!token) { window.location.href = '/login'; throw new Error('Not Authenticated'); }
-        const headers = new Headers(options.headers || {});
-        headers.append('Authorization', `Bearer ${token}`);
-        if (!(options.body instanceof FormData)) { headers.append('Content-Type', 'application/json'); }
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (response.status === 401) { localStorage.clear(); window.location.href = '/login'; throw new Error('Token Expired'); }
-        return response;
-    }
-
-    // --- 根據權限，動態顯示/隱藏 UI 元素 ---
     function setupUIByRole(canManage) {
         const managementElements = [
             document.getElementById('invite-member-link'),
@@ -50,14 +36,14 @@
         }
     }
 
-    // --- 趨勢分析圖表相關 ---
     async function fetchAndUpdateGroupTrends(startDate, endDate) {
         if (!currentGroupId || !startDate || !endDate) return;
         const summaryContainer = document.querySelector('.trends-summary');
         const chartWrapper = document.querySelector('.chart-wrapper');
         if (summaryContainer) summaryContainer.style.opacity = 0.5;
-        if (chartWrapper) chartWrapper.innerHTML = '<p>載入趨勢數據中...</p>';
+        
         try {
+            // 直接使用 fetchWithAuth
             const response = await fetchWithAuth(`/api/groups/${currentGroupId}/statistics/trends/?start_date=${startDate}&end_date=${endDate}`);
             if (!response.ok) throw new Error('無法獲取群組趨勢資料');
             const trendsData = await response.json();
@@ -79,17 +65,16 @@
 
         if (!trendsData || trendsData.length === 0) {
             if (summaryAvg) summaryAvg.textContent = 'N/A';
-            if (summaryChange) summaryChange.textContent = '--';
-            if (summaryMax) summaryMax.textContent = 'N/A';
-            if (summaryMin) summaryMin.textContent = 'N/A';
             if (chartWrapper) chartWrapper.innerHTML = '<p>選定範圍內無資料可供顯示。</p>';
             if (groupTrendsChart) groupTrendsChart.destroy();
             return;
         }
+        
         const latestData = trendsData[trendsData.length - 1] || {};
         if (summaryAvg) summaryAvg.textContent = `${parseFloat(latestData.average_score || 0).toFixed(1)}分`;
         if (summaryMax) summaryMax.textContent = `${parseFloat(latestData.max_score || 0).toFixed(1)}分`;
         if (summaryMin) summaryMin.textContent = `${parseFloat(latestData.min_score || 0).toFixed(1)}分`;
+        
         let changeText = '--';
         if (trendsData.length >= 2) {
             const latest = trendsData[trendsData.length - 1].average_score;
@@ -103,9 +88,11 @@
             }
         }
         if (summaryChange) summaryChange.textContent = changeText;
+
         if (chartWrapper) chartWrapper.innerHTML = '<canvas id="groupTrendsChart"></canvas>';
         const ctx = document.getElementById('groupTrendsChart')?.getContext('2d');
         if (!ctx) return;
+        
         if (groupTrendsChart) groupTrendsChart.destroy();
         groupTrendsChart = new Chart(ctx, {
             type: 'line',
@@ -125,23 +112,23 @@
     }
 
     function initFilterControls() {
+        if (typeof flatpickr === 'undefined') return;
         const formatDate = (date) => date.toISOString().split('T')[0];
         const endDate = new Date();
         const startDate = new Date();
         startDate.setMonth(endDate.getMonth() - 5);
-        const defaultStartDateStr = formatDate(startDate);
-        const defaultEndDateStr = formatDate(endDate);
+        
         flatpickr("#group-date-range-picker", {
             mode: "range",
             dateFormat: "Y-m-d",
-            defaultDate: [defaultStartDateStr, defaultEndDateStr],
+            defaultDate: [formatDate(startDate), formatDate(endDate)],
             onClose: function(selectedDates) {
                 if (selectedDates.length === 2) {
                     fetchAndUpdateGroupTrends(formatDate(selectedDates[0]), formatDate(selectedDates[1]));
                 }
             }
         });
-        fetchAndUpdateGroupTrends(defaultStartDateStr, defaultEndDateStr);
+        fetchAndUpdateGroupTrends(formatDate(startDate), formatDate(endDate));
     }
 
     async function initializeGroupViewPage() {
@@ -154,36 +141,52 @@
                 const myGroupsData = await myGroupsRes.json();
                 if (myGroupsData.results && myGroupsData.results.length > 0) {
                     groupId = myGroupsData.results[0].id;
-                    window.history.replaceState({}, '', `?group_id=${groupId}`);
+                    // 更新網址但不跳轉
+                    const newUrl = `${window.location.pathname}?group_id=${groupId}`;
+                    window.history.replaceState({}, '', newUrl);
                 } else {
                     document.querySelector('.group-leader-container').innerHTML = '<h1>您尚未加入任何群組</h1>';
                     return;
                 }
             }
             currentGroupId = parseInt(groupId);
+            
+            // 平行請求
             const [groupRes, membersRes, announcementsRes] = await Promise.all([
                 fetchWithAuth(`/api/groups/${currentGroupId}/`),
                 fetchWithAuth(`/api/groups/${currentGroupId}/members/`),
                 fetchWithAuth(`/api/groups/${currentGroupId}/all-announcements/`)
             ]);
+
             if (!groupRes.ok || !membersRes.ok || !announcementsRes.ok) throw new Error('無法獲取群組詳細資料');
+            
             const groupData = await groupRes.json();
             const membersData = await membersRes.json();
             const announcementsData = await announcementsRes.json();
+            
             const membership = userProfile.group_memberships.find(m => m.group_id === currentGroupId);
             const isGroupAdmin = membership && membership.role === 'ADMIN';
             const canManage = userProfile.is_staff || isGroupAdmin;
+            
             setupUIByRole(canManage);
             updateGroupInfoUI(groupData, membersData.results || membersData);
             updateMembersTableUI(membersData.results || membersData, canManage);
             updateAnnouncementsListUI(announcementsData, canManage);
+            
             if (canManage) initFilterControls();
-            document.getElementById('invite-member-link').href = `/invite_member?group_id=${currentGroupId}`;
-            document.getElementById('group-settings-link').href = `/group_settings?group_id=${currentGroupId}`;
-            document.getElementById('add-announcement-link').href = `/create_announcement?group_id=${currentGroupId}`;
+            
+            const inviteLink = document.getElementById('invite-member-link');
+            if(inviteLink) inviteLink.href = `/invite_member?group_id=${currentGroupId}`;
+            
+            const settingsLink = document.getElementById('group-settings-link');
+            if(settingsLink) settingsLink.href = `/group_settings?group_id=${currentGroupId}`;
+            
+            const addAnnounceLink = document.getElementById('add-announcement-link');
+            if(addAnnounceLink) addAnnounceLink.href = `/create_announcement?group_id=${currentGroupId}`;
+
         } catch (error) {
             console.error("載入群組管理頁面失敗:", error.message);
-            document.querySelector('.group-leader-container').innerHTML = `<h1>載入群組資料時發生錯誤</h1><p>${error.message}</p>`;
+            document.querySelector('.group-leader-container').innerHTML = `<h1>載入失敗</h1><p>${error.message}</p>`;
         }
     }
 
@@ -214,19 +217,14 @@
                 const scoreDisplay = isNaN(score) ? 'N/A' : score.toFixed(1);
                 const joinDate = member.joined_at ? new Date(member.joined_at).toLocaleDateString() : 'N/A';
                 
-                // ▼▼▼【核心修改】更新分數顏色的判斷邏輯 ▼▼▼
                 let scoreClass = '';
-                if (score < 80) { // 79.9 (含) 以下
-                    scoreClass = 'danger';
-                } else if (score < 90) { // 80 - 89.9
-                    scoreClass = 'warning';
-                } else { // 90 (含) 以上
-                    scoreClass = 'excellent';
-                }
+                if (score < 80) scoreClass = 'danger';
+                else if (score < 90) scoreClass = 'warning';
+                else scoreClass = 'excellent';
                 
                 const actionsCell = canManage ?
                     `<td class="actions-col">
-                        <a href="/member_dashboard?member_id=${member.id}&group_id=${currentGroupId}" class="btn-action" title="查看成員儀表板">
+                        <a href="/member_dashboard?member_id=${member.id}&group_id=${currentGroupId}" class="btn-action" title="查看儀表板">
                             <i class="fa-solid fa-chart-bar"></i>
                         </a>
                         <a href="/member_videos?member_id=${member.id}" class="btn-action" title="行車影片">
@@ -236,7 +234,7 @@
 
                 tableBody.innerHTML += `
                     <tr>
-                        <td class="avatar-col"><img src="${member.personnelprofile?.avatar || '/static/images/user-placeholder.svg'}" alt="${member.first_name || member.username}" class="member-avatar-small"></td>
+                        <td class="avatar-col"><img src="${member.personnelprofile?.avatar || '/static/images/user-placeholder.svg'}" alt="${member.first_name}" class="member-avatar-small"></td>
                         <td class="name-col">${member.last_name}${member.first_name || member.username}</td>
                         <td><span class="score-badge ${scoreClass}">${scoreDisplay}</span></td>
                         <td>${joinDate}</td>
@@ -257,7 +255,7 @@
                 let actionButtons = '';
                 if (ann.type === 'GROUP' && canManage) {
                     const numericId = ann.id.split('-')[1]; 
-                    actionButtons = `<div class="announcement-actions"><a href="/edit_announcement/${numericId}" class="btn-action-icon" title="編輯"><i class="fa-solid fa-pencil"></i></a><button class="btn-action-icon danger" title="刪除" onclick="confirmDelete('${numericId}', '${ann.content.substring(0, 20)}...')"><i class="fa-solid fa-trash"></i></button></div>`;
+                    actionButtons = `<div class="announcement-actions"><a href="/edit_announcement/${numericId}" class="btn-action-icon" title="編輯"><i class="fa-solid fa-pencil"></i></a><button class="btn-action-icon danger" onclick="window.confirmDelete('${numericId}', '${ann.content.substring(0, 10)}...')" title="刪除"><i class="fa-solid fa-trash"></i></button></div>`;
                 }
                 const typeBadge = ann.type === 'SYSTEM' ? '<span class="announcement-badge system">系統公告</span>' : '<span class="announcement-badge group">群組公告</span>';
                 announcementsList.innerHTML += `<div class="announcement-row">${typeBadge}<div class="announcement-info"><a href="/announcement_detail/${ann.id}" class="announcement-title">${ann.content}</a><div class="announcement-meta"><span class="meta-item"><i class="fa-solid fa-user"></i> ${ann.publisher}</span><span class="meta-item"><i class="fa-solid fa-calendar"></i> ${publishDate}</span></div></div>${actionButtons}</div>`;
@@ -267,18 +265,19 @@
         }
     }
 
+    // 全域函式供 HTML onclick 使用
     window.confirmDelete = async function(id, title) {
-        if (confirm(`確定要刪除公告「${title}」嗎？此操作無法復原。`)) {
+        if (confirm(`確定要刪除公告？`)) {
             try {
                 const response = await fetchWithAuth(`/api/announcements/${id}/`, { method: 'DELETE' });
                 if (response.ok) {
-                    alert('公告已成功刪除！');
+                    alert('公告已刪除！');
                     window.location.reload();
                 } else {
-                    alert(`刪除失敗：伺服器回應狀態 ${response.status}`);
+                    alert('刪除失敗');
                 }
             } catch (error) {
-                alert('刪除失敗，請檢查網路連線。');
+                alert('刪除失敗');
             }
         }
     };

@@ -1,7 +1,4 @@
-/**
- * 檔案名稱：static/js/main_app.js
- * 用途：MDG Pro 應用的核心交互功能（側邊欄、共用 UI 更新等）
- */
+// 檔案路徑: static/js/main_app.js (已修復登出功能)
 
 (function() {
     'use strict';
@@ -11,6 +8,8 @@
     const appSidebar = document.getElementById('appSidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const body = document.body;
+    // 【新增】選取登出按鈕
+    const logoutBtn = document.getElementById('logoutButton');
 
     // ========== 側邊欄控制功能 ==========
     function openSidebar() {
@@ -46,14 +45,11 @@
     }
 
     // ========== 【核心】共用 UI 更新功能 ==========
-    /**
-     * 讀取 localStorage 中的使用者資料，並更新所有共用的 UI 元素 (側邊欄)。
-     */
     function updateSidebarUI() {
         const userProfileString = localStorage.getItem('userProfile');
         
         if (!userProfileString) {
-            console.warn('userProfile not found in localStorage. Sidebar will not be updated.');
+            // 如果沒有使用者資料，可能代表未登入，這裡不做強制導向，交給各頁面自己判斷
             return;
         }
 
@@ -63,17 +59,14 @@
             const sidebarAvatar = document.getElementById('sidebar-avatar');
             const sidebarUsername = document.getElementById('sidebar-username');
             const sidebarUserRole = document.getElementById('sidebar-user-role');
-            const myVideosLink = document.getElementById('sidebar-my-videos-link'); // <-- 找到我們的連結
+            const myVideosLink = document.getElementById('sidebar-my-videos-link');
 
-            // 更新頭像
             if (sidebarAvatar) {
                 sidebarAvatar.src = userProfile.personnelprofile?.avatar || '/static/images/user-placeholder.svg';
             }
-            // 更新使用者名稱
             if (sidebarUsername) {
                 sidebarUsername.textContent = userProfile.first_name || userProfile.username;
             }
-            // 更新角色
             if (sidebarUserRole) {
                 let roleText = '一般成員';
                 if (userProfile.is_staff) {
@@ -83,18 +76,25 @@
                 }
                 sidebarUserRole.textContent = roleText;
             }
-
-            // 【核心新增】動態更新「我的行車影像」連結 
             if (myVideosLink && userProfile.id) {
-                // 將 href 從 '#' 更新為正確的 URL
                 myVideosLink.href = `/member_videos/${userProfile.id}`;
             }
 
         } catch (error) {
-            console.error('Failed to parse userProfile from localStorage or update sidebar:', error);
+            console.error('更新側邊欄 UI 失敗:', error);
         }
     }
 
+    // ========== 【新增】全域登出功能 ==========
+    function handleLogout(e) {
+        e.preventDefault();
+        if (confirm('您確定要登出系統嗎？')) {
+            // 1. 清除所有本地暫存 (Token, UserProfile)
+            localStorage.clear();
+            // 2. 導向後端的登出路由
+            window.location.href = '/logout';
+        }
+    }
 
     // ========== 事件監聽器 ==========
     if (hamburgerBtn) {
@@ -103,21 +103,30 @@
     if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', closeSidebar);
     }
+    
+    // 【新增】綁定登出按鈕事件
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && appSidebar && appSidebar.classList.contains('is-active')) {
             closeSidebar();
         }
     });
+
     if (appSidebar) {
         const navLinks = appSidebar.querySelectorAll('.nav-item');
         navLinks.forEach(link => {
             link.addEventListener('click', function() {
+                // 如果是手機版，點擊連結後自動收起側邊欄
                 if (window.innerWidth <= 768) {
                     closeSidebar();
                 }
             });
         });
     }
+
     let resizeTimer;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
@@ -133,12 +142,10 @@
         }, 250);
     });
 
-    // ========== 頁面載入完成後的初始化 ==========
+    // ========== 初始化 ==========
     document.addEventListener('DOMContentLoaded', function() {
-        // 在每個頁面載入完成時，自動呼叫更新側邊欄的函式
         updateSidebarUI();
-        
-        console.log('✅ MDG Pro App JavaScript 已載入');
+        console.log('✅ MDG Pro App JavaScript 已載入 (含登出功能)');
     });
 
     // ========== 公開 API ==========

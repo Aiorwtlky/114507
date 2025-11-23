@@ -24,7 +24,7 @@
         right: 2rem;
         width: 60px;
         height: 60px;
-        background-color: var(--primary-color); /* 使用您的主要顏色 */
+        background-color: var(--primary-color);
         color: white;
         border-radius: 50%;
         border: none;
@@ -33,12 +33,12 @@
         justify-content: center;
         font-size: 1.75rem;
         cursor: pointer;
-        box-shadow: var(--shadow-md); /* 使用您的陰影變數 */
+        box-shadow: var(--shadow-md);
         z-index: 999;
         transition: all 0.3s ease;
       }
       .chat-fab:hover {
-        background-color: var(--primary-hover); /* 使用您的 hover 顏色 */
+        background-color: var(--primary-hover);
         transform: scale(1.1);
       }
 
@@ -50,7 +50,6 @@
         width: 90%;
         max-width: 380px;
         z-index: 998;
-        /* 動畫初始狀態 */
         opacity: 0;
         visibility: hidden;
         transform: translateY(30px);
@@ -67,8 +66,8 @@
         width: 100%;
         height: 500px;
         max-height: 70vh;
-        background: var(--white-bg); /* 使用您的白色背景 */
-        border-radius: 8px; /* 統一圓角 */
+        background: var(--white-bg);
+        border-radius: 8px;
         box-shadow: var(--shadow-md);
         display: flex;
         flex-direction: column;
@@ -126,7 +125,7 @@
         color: white; border-radius: 8px; font-size: 1.25rem; cursor: pointer; transition: background-color var(--transition-speed);
       }
       .composer-area button:hover { background: var(--primary-hover); }
-      .composer-area button:disabled { background-color: #ccc; cursor: not-allowed; } /* 新增禁用樣式 */
+      .composer-area button:disabled { background-color: #ccc; cursor: not-allowed; }
 
       @media (max-width: 480px) {
         .chat-widget-container { right: 1rem; bottom: 6rem; width: calc(100% - 2rem); }
@@ -266,6 +265,10 @@
         <i class="fa-solid fa-headset"></i>
     </button>
     
+    <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+    
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+
     <script src="{{ url_for('static', filename='js/main_app.js') }}" defer></script>
     
     {% block extra_js %}{% endblock %}
@@ -279,36 +282,13 @@
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
         
-        const API_BASE_URL = 'http://127.0.0.1:8000';
-        const API_URL = `${API_BASE_URL}/api/chatbot/`;
+        // 修正：直接使用相對路徑，utils.js 會自動加上 Base URL
+        const API_ENDPOINT = '/api/chatbot/';
 
         // 儲存對話歷史
         let chatHistory = [
             { role: 'model', content: '您好！我是吾仙，MDG的AI客服，請問有什麼可以為您服務的嗎？' }
         ];
-
-        // 函式：執行帶有認證的 fetch 請求
-        async function fetchWithAuth(endpoint, options = {}) {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                alert('您尚未登入或登入已逾時，無法使用此功能。');
-                window.location.href = '/login';
-                throw new Error('Not Authenticated');
-            }
-            const headers = options.headers || new Headers();
-            headers.append('Authorization', `Bearer ${token}`);
-            if (!(options.body instanceof FormData)) {
-                headers.append('Content-Type', 'application/json');
-            }
-            const response = await fetch(endpoint, { ...options, headers });
-            if (response.status === 401) {
-                alert('您的登入已過期，請重新登入。');
-                localStorage.clear();
-                window.location.href = '/login';
-                throw new Error('Token Expired');
-            }
-            return response;
-        }
 
         // 函式：將訊息泡泡加到畫面
         function appendMessage(text, type, author = '吾仙') {
@@ -331,9 +311,9 @@
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
         
-        // 函式：初始化聊天室，顯示歡迎訊息
+        // 函式：初始化聊天室
         function initializeChat() {
-            messagesArea.innerHTML = ''; // 清空
+            messagesArea.innerHTML = ''; 
             appendMessage(chatHistory[0].content, 'is-admin');
         }
 
@@ -350,7 +330,8 @@
             try {
                 sendBtn.disabled = true; 
                 
-                const response = await fetchWithAuth(API_URL, {
+                // 修正：使用全域 fetchWithAuth
+                const response = await fetchWithAuth(API_ENDPOINT, {
                     method: 'POST',
                     body: JSON.stringify({ messages: chatHistory })
                 });
@@ -368,18 +349,16 @@
 
             } catch (error) {
                 console.error("Chat API Error:", error);
-                // 如果 API 呼叫失敗，將剛剛加入的使用者訊息從歷史中移除
                 chatHistory.pop(); 
                 appendMessage(`抱歉，連線時發生錯誤：${error.message || '無法取得 AI 回覆。'}`, 'is-admin');
             } finally {
                 sendBtn.disabled = false;
-                messageInput.focus(); // 讓使用者可以繼續輸入
+                messageInput.focus(); 
             }
         }
 
         // --- 事件監聽 ---
         if (chatFab && chatWidget && chatCloseBtn) {
-            // 控制聊天視窗的開關
             chatFab.addEventListener('click', () => chatWidget.classList.toggle('is-open'));
             chatCloseBtn.addEventListener('click', () => chatWidget.classList.remove('is-open'));
             document.addEventListener('keydown', (e) => {
@@ -388,7 +367,6 @@
                 }
             });
 
-            // 處理訊息發送
             sendBtn.addEventListener('click', sendMessage);
             messageInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -397,13 +375,11 @@
                 }
             });
 
-            // 讓輸入框自動增高
             messageInput.addEventListener('input', () => {
                 messageInput.style.height = 'auto';
                 messageInput.style.height = `${messageInput.scrollHeight}px`;
             });
             
-            // 初始化聊天室
             initializeChat();
         }
       });

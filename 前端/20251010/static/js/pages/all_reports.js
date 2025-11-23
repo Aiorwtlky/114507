@@ -3,27 +3,7 @@
 (function() {
     'use strict';
 
-    const API_BASE_URL = 'http://127.0.0.1:8000';
-
-    async function fetchWithAuth(endpoint, options = {}) {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-            window.location.href = '/login';
-            throw new Error('Not Authenticated');
-        }
-        const headers = options.headers || new Headers();
-        headers.append('Authorization', `Bearer ${token}`);
-        if (!(options.body instanceof FormData)) {
-            headers.append('Content-Type', 'application/json');
-        }
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (response.status === 401) {
-            localStorage.clear();
-            window.location.href = '/login';
-            throw new Error('Token Expired');
-        }
-        return response;
-    }
+    // 1. 移除 API_BASE_URL 和 fetchWithAuth (改用 utils.js 的共用版)
 
     function getScoreClass(score) {
         if (score >= 90) return 'score-high';
@@ -66,8 +46,14 @@
     }
 
     async function initializePage() {
+        // 加入 URL 參數支援：如果網址有 ?user_id=... 就只查那個人的
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
+        const endpoint = userId ? `/api/trips/?user_id=${userId}` : '/api/trips/';
+
         try {
-            const response = await fetchWithAuth(`/api/trips/`);
+            // 直接呼叫全域 fetchWithAuth
+            const response = await fetchWithAuth(endpoint);
             if (!response.ok) {
                 throw new Error('無法獲取行程列表');
             }
