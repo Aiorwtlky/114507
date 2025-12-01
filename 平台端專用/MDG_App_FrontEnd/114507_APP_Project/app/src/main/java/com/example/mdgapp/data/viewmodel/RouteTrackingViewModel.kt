@@ -1,116 +1,147 @@
-// 檔案路徑: app/src/main/java/com/example/mdgapp/data/viewmodel/RouteTrackingViewModel.kt
 package com.example.mdgapp.data.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import android.location.Location
-import android.util.Log
-import com.example.mdgapp.data.LocationService // 匯入實際的位置服務 [cite: 1404]
+import com.example.mdgapp.data.SimulatedLocationService
 import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// ✅ 狀態調整為即時追蹤
+/**
+ * 路線追蹤 UI 狀態
+ */
 data class RouteTrackingUiState(
-    val totalDistance: Float = 0f,
-    val time: Int = 0, // 應透過計時器實現，這裡暫時保留
-    val userPath: List<LatLng> = emptyList(),
-    val currentPosition: LatLng? = null, // 即時目前位置
-    val startLocation: LatLng? = null,
-    val endLocation: LatLng? = null,
-    val isTracking: Boolean = false, // ✅ 新增：追蹤狀態
-    val locationError: String? = null // 處理位置服務錯誤，例如權限問題
+    val totalDistance: Float = 0f,         // 總距離（公里）
+    val time: Int = 0,                     // 總時間（秒）
+    val averageSpeed: Float = 0f,          // 平均速度（公里/小時）
+    val userPath: List<LatLng> = emptyList(), // 使用者路徑
+    val routePath: List<LatLng> = emptyList(), // 路線路徑（用於顯示）
+    val startLocation: LatLng? = null,     // 起點
+    val endLocation: LatLng? = null,       // 終點
+    val currentIndex: Int = 0,             // 當前位置索引（用於動畫）
+    val isLoading: Boolean = false,        // 載入狀態
+    val locationError: String? = null      // 錯誤訊息
 )
 
 class RouteTrackingViewModel(application: Application) : AndroidViewModel(application) {
 
-    // 實例化位置服務
-    private val locationService = LocationService(application.applicationContext)
-    private var trackingJob: Job? = null // 用於管理位置數據流的 Job
-
-    private val _uiState = MutableStateFlow(RouteTrackingUiState())
+    private val _uiState = MutableStateFlow(RouteTrackingUiState(isLoading = true))
     val uiState: StateFlow<RouteTrackingUiState> = _uiState.asStateFlow()
 
+    private val simulatedLocationService = SimulatedLocationService()
+
     init {
-        // 移除載入模擬路線的邏輯
+        loadFullRoute()
     }
 
-    // ✅ 開始追蹤
-    fun startTracking() {
-        if (_uiState.value.isTracking) return
+    /**
+     * 載入完整路線資料
+     */
+    private fun loadFullRoute() {
+        _uiState.update { it.copy(isLoading = true) }
 
-        // 1. 重設狀態
-        _uiState.update {
-            it.copy(
-                isTracking = true,
-                userPath = emptyList(),
-                currentPosition = null,
-                startLocation = null,
-                endLocation = null,
-                totalDistance = 0f,
-                time = 0,
-                locationError = null
-            )
-        }
+        viewModelScope.launch {
+            try {
+                // 模擬載入延遲
+                kotlinx.coroutines.delay(800)
 
-        // 2. 開始收集位置更新
-        trackingJob?.cancel() // 取消任何舊的 Job
-        trackingJob = viewModelScope.launch {
-            locationService.locationUpdates
-                .catch { e ->
-                    // 處理錯誤，例如權限不足
-                    _uiState.update { it.copy(locationError = e.message, isTracking = false) }
-                    Log.e("Tracking", "位置流錯誤: ${e.message}")
+                // 取得平滑的模擬路徑（smoothFactor = 3，在每兩點間插入3個點）
+                val fullPath = simulatedLocationService.getSmoothSimulatedPath(smoothFactor = 3)
+
+                // 計算統計資料
+                var totalDistance = 0f
+                fullPath.forEachIndexed { index, location ->
+                    if (index > 0) {
+                        totalDistance += location.distanceTo(fullPath[index - 1])
+                    }
                 }
-                .collect { location ->
-                    handleNewLocation(location)
+
+                // 轉換為 LatLng 列表
+                val latLngPath = fullPath.map { location ->
+                    LatLng(location.latitude, location.longitude)
                 }
-        }
-    }
 
-    // ✅ 停止追蹤
-    fun stopTracking() {
-        trackingJob?.cancel()
-        trackingJob = null
-        _uiState.update { it.copy(isTracking = false) }
-        // TODO: 這裡應該加入將最終行程數據儲存到資料庫或 API 的邏輯
-    }
+                // 取得路線路徑（用於地圖顯示）
+                val routePath = simulatedLocationService.getSimulatedSnappedRoute()
 
-    // ✅ 處理新的位置座標
-    private fun handleNewLocation(location: Location) {
-        val newLatLng = LatLng(location.latitude, location.longitude)
+                val start = latLngPath.firstOrNull()
+                val end = latLngPath.lastOrNull()
 
-        _uiState.update { currentState ->
-            val updatedPath = currentState.userPath + newLatLng
+                // 計算總時間（秒）
+                val totalTime = simulatedLocationService.getEstimatedTime()
 
-            // 簡易距離計算 (生產環境應使用更精確的服務)
-            var distanceIncrease = 0f
-            if (currentState.userPath.isNotEmpty() && currentState.userPath.size > 1) {
-                val lastLocation = Location("").apply {
-                    latitude = currentState.userPath.last().latitude
-                    longitude = currentState.userPath.last().longitude
+                // 計算平均速度（公里/小時）
+                val averageSpeed = if (totalTime > 0) {
+                    (totalDistance / 1000f) / (totalTime / 3600f)
+                } else {
+                    0f
                 }
-                // distanceTo 回傳的是公尺，/ 1000f 轉成公里
-                distanceIncrease = location.distanceTo(lastLocation) / 1000f
+
+                _uiState.update {
+                    it.copy(
+                        userPath = latLngPath,
+                        routePath = routePath,
+                        startLocation = start,
+                        endLocation = end,
+                        totalDistance = totalDistance / 1000f, // 轉換為公里
+                        time = totalTime,
+                        averageSpeed = averageSpeed,
+                        isLoading = false,
+                        locationError = null
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        locationError = "載入路線失敗：${e.message}"
+                    )
+                }
             }
-
-            currentState.copy(
-                userPath = updatedPath,
-                currentPosition = newLatLng,
-                startLocation = currentState.startLocation ?: newLatLng,
-                endLocation = newLatLng,
-                totalDistance = currentState.totalDistance + distanceIncrease,
-                locationError = null
-            )
         }
     }
 
-    // 移除原有的 loadSimulatedRoute 和 getSimulatedSnappedRoute
+    /**
+     * 重新載入路線
+     */
+    fun reloadRoute() {
+        loadFullRoute()
+    }
+
+    /**
+     * 取得路線統計資訊
+     */
+    fun getRouteStats(): RouteStats {
+        val state = _uiState.value
+        return RouteStats(
+            distance = state.totalDistance,
+            duration = state.time,
+            averageSpeed = state.averageSpeed,
+            estimatedCalories = calculateCalories(state.totalDistance, state.time)
+        )
+    }
+
+    /**
+     * 計算消耗卡路里（簡化計算）
+     */
+    private fun calculateCalories(distanceKm: Float, timeSeconds: Int): Float {
+        // 假設以中等速度騎車，每分鐘約消耗 5-8 卡路里
+        val timeMinutes = timeSeconds / 60f
+        return timeMinutes * 6.5f
+    }
 }
+
+/**
+ * 路線統計資料
+ */
+data class RouteStats(
+    val distance: Float,        // 距離（公里）
+    val duration: Int,          // 時長（秒）
+    val averageSpeed: Float,    // 平均速度（公里/小時）
+    val estimatedCalories: Float // 預估消耗卡路里
+)
