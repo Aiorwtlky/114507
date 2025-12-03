@@ -141,35 +141,33 @@ fun UnifiedHomeScreen(
                 }
             }
 
+            // ✅ 修正點 1: 增加頭像與選項區域之間的間隔
+            Spacer(modifier = Modifier.height(88.dp))
+
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ){
+                // 1. 實體卡片註冊 (cardCheckIn)
                 RegisterButton(
                     icon = Icons.Default.CreditCard,
                     text = "實體卡片註冊",
-                    onClick = {
-                        if (userProfile != null) {
-                            navController.navigate("cardCheckIn")
-                        }
-                    },
-                    enabled = userProfile != null && !uiState.isLoading
+                    onClick = { navController.navigate("cardCheckIn") }
                 )
 
-                // ✅ 新增：行駛軌跡追蹤按鈕 (第二階段功能)
-                Spacer(modifier = Modifier.height(16.dp))
-
+                // 2. 手機NFC註冊 (nfcCheckIn)
                 RegisterButton(
-                    icon = Icons.Filled.LocationOn,
+                    icon = Icons.Default.Nfc,
+                    text = "手機NFC註冊",
+                    onClick = { navController.navigate("nfcCheckIn") }
+                )
+
+                // 3. 行駛軌跡追蹤 (route_tracking_screen)
+                RegisterButton(
+                    // ✅ 使用 LocationOn 圖示
+                    icon = Icons.Default.LocationOn,
                     text = "行駛軌跡追蹤",
-                    onClick = {
-                        navController.navigate("route_tracking_screen") // 導航到新的追蹤畫面
-                    },
-                    enabled = userProfile != null && !uiState.isLoading
+                    onClick = { navController.navigate("route_tracking_screen") }
                 )
             }
 
