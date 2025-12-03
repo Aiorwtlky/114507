@@ -195,6 +195,14 @@
                         <span>我的行車影像</span>
                     </a>
 
+                    <a href="{{ url_for('system_weights') }}" 
+                       id="nav-system-weights" 
+                       class="nav-item {% if request.endpoint == 'system_weights' %}is-active{% endif %}"
+                       style="display: none;">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>參數調整</span>
+                    </a>
+
                     <a href="{{ url_for('profile') }}" 
                        class="nav-item {% if request.endpoint in ['profile', 'edit_profile_basic'] %}is-active{% endif %}"
                        {% if request.endpoint in ['profile', 'edit_profile_basic'] %}aria-current="page"{% endif %}>

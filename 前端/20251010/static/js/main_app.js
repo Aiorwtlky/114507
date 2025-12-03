@@ -1,4 +1,4 @@
-// 檔案路徑: static/js/main_app.js (已修復登出功能)
+// 檔案路徑: static/js/main_app.js (已新增參數調整頁面權限控管)
 
 (function() {
     'use strict';
@@ -8,7 +8,6 @@
     const appSidebar = document.getElementById('appSidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const body = document.body;
-    // 【新增】選取登出按鈕
     const logoutBtn = document.getElementById('logoutButton');
 
     // ========== 側邊欄控制功能 ==========
@@ -49,13 +48,13 @@
         const userProfileString = localStorage.getItem('userProfile');
         
         if (!userProfileString) {
-            // 如果沒有使用者資料，可能代表未登入，這裡不做強制導向，交給各頁面自己判斷
             return;
         }
 
         try {
             const userProfile = JSON.parse(userProfileString);
 
+            // 1. 更新基本個人資料
             const sidebarAvatar = document.getElementById('sidebar-avatar');
             const sidebarUsername = document.getElementById('sidebar-username');
             const sidebarUserRole = document.getElementById('sidebar-user-role');
@@ -80,18 +79,25 @@
                 myVideosLink.href = `/member_videos/${userProfile.id}`;
             }
 
+            // 2. 【新增】檢查權限並顯示「參數調整」連結
+            // 只要是「系統管理員 (is_staff)」或「群組管理員 (is_group_admin)」就顯示
+            const isManager = userProfile.is_staff || userProfile.is_group_admin;
+            const systemWeightsLink = document.getElementById('nav-system-weights');
+            
+            if (systemWeightsLink && isManager) {
+                systemWeightsLink.style.display = 'flex'; // 解除隱藏
+            }
+
         } catch (error) {
             console.error('更新側邊欄 UI 失敗:', error);
         }
     }
 
-    // ========== 【新增】全域登出功能 ==========
+    // ========== 全域登出功能 ==========
     function handleLogout(e) {
         e.preventDefault();
         if (confirm('您確定要登出系統嗎？')) {
-            // 1. 清除所有本地暫存 (Token, UserProfile)
             localStorage.clear();
-            // 2. 導向後端的登出路由
             window.location.href = '/logout';
         }
     }
@@ -103,8 +109,6 @@
     if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', closeSidebar);
     }
-    
-    // 【新增】綁定登出按鈕事件
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
     }
@@ -119,7 +123,6 @@
         const navLinks = appSidebar.querySelectorAll('.nav-item');
         navLinks.forEach(link => {
             link.addEventListener('click', function() {
-                // 如果是手機版，點擊連結後自動收起側邊欄
                 if (window.innerWidth <= 768) {
                     closeSidebar();
                 }
@@ -145,7 +148,7 @@
     // ========== 初始化 ==========
     document.addEventListener('DOMContentLoaded', function() {
         updateSidebarUI();
-        console.log('✅ MDG Pro App JavaScript 已載入 (含登出功能)');
+        console.log('✅ MDG Pro App JavaScript 已載入 (含權限控管)');
     });
 
     // ========== 公開 API ==========

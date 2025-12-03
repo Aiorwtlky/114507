@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吾駕仙 My Driving God - 駕駛行為記錄系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        .logo {
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .tagline {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            opacity: 0;
+            animation: slideUp 1s 0.5s forwards;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            opacity: 0;
+            animation: slideUp 1s 0.8s forwards;
+        }
+
+        .english {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-top: 20px;
+            opacity: 0;
+            animation: slideUp 1s 1.1s forwards;
+        }
+
+        /* Problem Section */
+        .problem-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 1s 2s forwards;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .problem-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.3s;
+            opacity: 0;
+            animation: slideUp 0.8s forwards;
+        }
+
+        .problem-card:nth-child(1) { animation-delay: 2.2s; }
+        .problem-card:nth-child(2) { animation-delay: 2.4s; }
+        .problem-card:nth-child(3) { animation-delay: 2.6s; }
+
+        .problem-card:hover {
+            transform: translateY(-10px);
+            border-color: #ff6b6b;
+            box-shadow: 0 20px 60px rgba(255, 107, 107, 0.3);
+        }
+
+        .problem-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .problem-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+
+        .problem-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        /* Solution Section */
+        .solution-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 1s 4s forwards;
+        }
+
+        .solution-title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(45deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 136, 0.1));
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            opacity: 0;
+            animation: popIn 0.6s forwards;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 4.2s; }
+        .feature-card:nth-child(2) { animation-delay: 4.4s; }
+        .feature-card:nth-child(3) { animation-delay: 4.6s; }
+        .feature-card:nth-child(4) { animation-delay: 4.8s; }
+
+        .feature-card:hover {
+            transform: scale(1.05) rotate(2deg);
+            border-color: #00d4ff;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.4);
+        }
+
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+
+        /* Technology Section */
+        .tech-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 1s 6s forwards;
+            padding: 60px 0;
+        }
+
+        .tech-title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(45deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .tech-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            opacity: 0;
+            animation: slideUp 0.8s forwards;
+            transition: all 0.3s;
+        }
+
+        .tech-card:nth-child(1) { animation-delay: 6.2s; }
+        .tech-card:nth-child(2) { animation-delay: 6.4s; }
+        .tech-card:nth-child(3) { animation-delay: 6.6s; }
+
+        .tech-card:hover {
+            transform: translateY(-10px);
+            border-color: #a855f7;
+            box-shadow: 0 20px 60px rgba(168, 85, 247, 0.4);
+        }
+
+        .tech-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .tech-card-title {
+            font-size: 1.8rem;
+            color: #a855f7;
+            margin-bottom: 20px;
+        }
+
+        .tech-list {
+            list-style: none;
+            font-size: 1.1rem;
+            line-height: 2;
+            color: #ccc;
+        }
+
+        .tech-list li {
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .tech-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #a855f7;
+        }
+
+        /* Architecture Section */
+        .architecture-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 1s 8s forwards;
+        }
+
+        .architecture-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 60px 0;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .arch-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px solid #00d4ff;
+            border-radius: 20px;
+            padding: 40px;
+            min-width: 280px;
+            text-align: center;
+            opacity: 0;
+            animation: slideUp 0.8s forwards;
+        }
+
+        .arch-box:nth-child(1) { animation-delay: 8.2s; }
+        .arch-box:nth-child(2) { animation-delay: 8.5s; }
+        .arch-box:nth-child(3) { animation-delay: 8.8s; }
+
+        .arch-box:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.5);
+        }
+
+        .arch-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .arch-title {
+            font-size: 1.8rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+
+        .arch-desc {
+            font-size: 1rem;
+            color: #aaa;
+            line-height: 1.8;
+        }
+
+        /* Partners Section */
+        .partners-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 1s 10s forwards;
+        }
+
+        .partners-title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(45deg, #ffd93d, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .partners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .partner-card {
+            background: linear-gradient(135deg, rgba(255, 217, 61, 0.1), rgba(255, 107, 107, 0.1));
+            border: 2px solid rgba(255, 217, 61, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            opacity: 0;
+            animation: popIn 0.6s forwards;
+            transition: all 0.3s;
+        }
+
+        .partner-card:nth-child(1) { animation-delay: 10.2s; }
+        .partner-card:nth-child(2) { animation-delay: 10.5s; }
+
+        .partner-card:hover {
+            transform: scale(1.05);
+            border-color: #ffd93d;
+            box-shadow: 0 20px 60px rgba(255, 217, 61, 0.4);
+        }
+
+        .partner-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .partner-name {
+            font-size: 1.8rem;
+            color: #ffd93d;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .partner-desc {
+            font-size: 1.1rem;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        /* Future Section */
+        .future-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 1s 12s forwards;
+        }
+
+        .future-title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .future-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        .future-card {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            opacity: 0;
+            animation: slideUp 0.8s forwards;
+            transition: all 0.3s;
+        }
+
+        .future-card:nth-child(1) { animation-delay: 12.2s; }
+        .future-card:nth-child(2) { animation-delay: 12.5s; }
+
+        .future-card:hover {
+            transform: translateY(-10px);
+            border-color: #00ff88;
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.4);
+        }
+
+        .future-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .future-card-title {
+            font-size: 1.8rem;
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+
+        .future-desc {
+            font-size: 1.1rem;
+            color: #ccc;
+            line-height: 1.8;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 1s 14s forwards;
+        }
+
+        .cta-title {
+            font-size: 4rem;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #00d4ff, #00ff88, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cta-subtitle {
+            font-size: 2rem;
+            margin-bottom: 50px;
+            color: #ccc;
+        }
+
+        .contact-info {
+            font-size: 1.5rem;
+            line-height: 2;
+            color: #00d4ff;
+        }
+
+        .contact-info a {
+            color: #00ff88;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .contact-info a:hover {
+            color: #ffd93d;
+            text-shadow: 0 0 20px rgba(255, 217, 61, 0.8);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(0, 212, 255, 0.5),
+                             0 0 40px rgba(0, 212, 255, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 30px rgba(0, 212, 255, 0.8),
+                             0 0 60px rgba(0, 212, 255, 0.5);
+            }
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+            opacity: 0;
+            animation: fadeIn 1s 1.5s forwards, bounce 2s 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="logo">吾駕仙</div>
+            <div class="tagline">駕駛行為記錄系統</div>
+            <div class="subtitle">My Driving God</div>
+            <div class="english">See More. React Faster. Drive Safer.</div>
+            <div class="scroll-indicator">↓</div>
+        </section>
+
+        <!-- Problem Section -->
+        <section class="problem-section">
+            <h2 class="section-title">傳統行車記錄器的問題</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">📹</div>
+                    <div class="problem-title">有錄但無用</div>
+                    <div class="problem-desc">僅能事後回放影片<br>事故發生後才有價值</div>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">⚠️</div>
+                    <div class="problem-title">無法識別危險</div>
+                    <div class="problem-desc">無法識別危險駕駛行為<br>未打方向燈、滑手機、未保持車距</div>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">📊</div>
+                    <div class="problem-title">無法數據化</div>
+                    <div class="problem-desc">管理者無法數據化分析<br>無法追蹤駕駛品質改善</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution Section -->
+        <section class="solution-section">
+            <h2 class="solution-title">吾駕仙 = 真正的行車記錄器</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI 影像辨識</div>
+                    <div class="problem-desc">車內外全面危險行為偵測</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <div class="feature-title">駕駛行為量化</div>
+                    <div class="problem-desc">客觀公正的評分系統</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">個人化儀表板</div>
+                    <div class="problem-desc">建立可追蹤的改善軌跡</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚛</div>
+                    <div class="feature-title">車隊管理</div>
+                    <div class="problem-desc">高效的數據化管理工具</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Section -->
+        <section class="tech-section">
+            <h2 class="tech-title">核心技術</h2>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-icon">🧠</div>
+                    <div class="tech-card-title">AI 辨識技術</div>
+                    <ul class="tech-list">
+                        <li>車內行為辨識（疲勞、使用手機、臉部離開）</li>
+                        <li>車外環境辨識（車距、方向燈使用）</li>
+                        <li>即時危險行為偵測</li>
+                        <li>多場景適應能力</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">📊</div>
+                    <div class="tech-card-title">評分機制</div>
+                    <ul class="tech-list">
+                        <li>15分鐘區間評分制</li>
+                        <li>A類（車內）+ B類（車外）雙維度</li>
+                        <li>加權計算行程總分</li>
+                        <li>風險等級自動判定</li>
+                        <li>可追溯的改善軌跡</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">💬</div>
+                    <div class="tech-card-title">AI 駕駛顧問</div>
+                    <ul class="tech-list">
+                        <li>LLM 輔助分析</li>
+                        <li>個性化改善建議</li>
+                        <li>行程報告自動生成</li>
+                        <li>知識庫範圍限制</li>
+                        <li>模板化安全輸出</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section class="architecture-section">
+            <h2 class="solution-title">系統架構</h2>
+            <div class="architecture-diagram">
+                <div class="arch-box">
+                    <div class="arch-icon">📷</div>
+                    <div class="arch-title">邊緣運算端</div>
+                    <div class="arch-desc">
+                        車內外鏡頭影像擷取<br>
+                        本地 AI 模型推論<br>
+                        即時危險行為偵測<br>
+                        低延遲快速反應
+                    </div>
+                </div>
+                <div class="arch-box">
+                    <div class="arch-icon">☁️</div>
+                    <div class="arch-title">雲端平台</div>
+                    <div class="arch-desc">
+                        MDG Pro 車隊管理<br>
+                        數據分析與洞察<br>
+                        雲端影片儲存<br>
+                        多設備同步存取
+                    </div>
+                </div>
+                <div class="arch-box">
+                    <div class="arch-icon">💡</div>
+                    <div class="arch-title">AI 分析</div>
+                    <div class="arch-desc">
+                        駕駛行為量化評分<br>
+                        行程報告生成<br>
+                        改善建議提供<br>
+                        風險預警通知
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Partners Section -->
+        <section class="partners-section">
+            <h2 class="partners-title">產業驗證與合作</h2>
+            <div class="partners-grid">
+                <div class="partner-card">
+                    <div class="partner-icon">🍔</div>
+                    <div class="partner-name">夏暉物流 HAVI Group</div>
+                    <div class="partner-desc">
+                        問卷調查與專業訪談<br>
+                        取得駕駛員真實回饋<br>
+                        驗證系統實用性與準確度
+                    </div>
+                </div>
+                <div class="partner-card">
+                    <div class="partner-icon">🚚</div>
+                    <div class="partner-name">昱成交通有限公司</div>
+                    <div class="partner-desc">
+                        桃園在地優良運輸物流業者<br>
+                        研擬簽訂合作備忘錄（MOU）<br>
+                        提供實際營運數據與資料<br>
+                        共同精進系統準確度
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Future Section -->
+        <section class="future-section">
+            <h2 class="future-title">未來展望</h2>
+            <div class="future-grid">
+                <div class="future-card">
+                    <div class="future-icon">☁️</div>
+                    <div class="future-card-title">平台雲端化轉型</div>
+                    <div class="future-desc">
+                        將現有平台全面遷移至雲端架構，提升系統擴展性與可用性。實現跨平台無縫存取，降低硬體維護成本，提供更穩定的服務體驗。
+                    </div>
+                </div>
+                <div class="future-card">
+                    <div class="future-icon">🚀</div>
+                    <div class="future-card-title">AI 模型持續優化</div>
+                    <div class="future-desc">
+                        強化 AI 辨識準確度，擴充更多危險行為類型偵測。優化模型運算效率，降低邊緣運算資源需求，提升即時反應速度。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="cta-title">成為每個人的吾駕仙</div>
+            <div class="cta-subtitle">完全終結危險駕駛習慣</div>
+            <div class="contact-info">
+                📧 <a href="mailto:mydrivinggod@gmail.com">mydrivinggod@gmail.com</a><br>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

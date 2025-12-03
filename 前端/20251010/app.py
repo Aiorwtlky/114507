@@ -126,6 +126,9 @@ def edit_announcement(announcement_id):
 def reset_password():
     return render_template("reset_password.html")
 
+@app.route('/system_weights')
+def system_weights():
+    return render_template('system_weights.html')
 
 @app.errorhandler(404)
 def not_found(_):

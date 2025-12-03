@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國防戰略轉型簡報</title>
+    
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 React 和 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 引入 Babel 用於解析 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* 自定義動畫與捲軸樣式 */
+        @keyframes spin-slow {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 20s linear infinite;
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.1; transform: scale(1.05); }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 內建圖示組件 (SVG) ---
+        // 由於不使用 npm，我們直接定義 SVG 組件以確保單一檔案可執行
+        const IconWrapper = ({ children, className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                {children}
+            </svg>
+        );
+
+        const ChevronRight = (props) => <IconWrapper {...props}><polyline points="9 18 15 12 9 6" /></IconWrapper>;
+        const ChevronLeft = (props) => <IconWrapper {...props}><polyline points="15 18 9 12 15 6" /></IconWrapper>;
+        const Shield = (props) => <IconWrapper {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></IconWrapper>;
+        const Target = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></IconWrapper>;
+        const Anchor = (props) => <IconWrapper {...props}><circle cx="12" cy="5" r="3" /><line x1="12" y1="22" x2="12" y2="8" /><path d="M5 12H2a10 10 0 0 0 20 0h-3" /></IconWrapper>;
+        const Zap = (props) => <IconWrapper {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></IconWrapper>;
+        const Cpu = (props) => <IconWrapper {...props}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" /></IconWrapper>;
+        const AlertTriangle = (props) => <IconWrapper {...props}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></IconWrapper>;
+        const FileText = (props) => <IconWrapper {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></IconWrapper>;
+        const Crosshair = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10" /><line x1="22" y1="12" x2="18" y2="12" /><line x1="6" y1="12" x2="2" y2="12" /><line x1="12" y1="6" x2="12" y2="2" /><line x1="12" y1="22" x2="12" y2="18" /></IconWrapper>;
+        const Users = (props) => <IconWrapper {...props}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></IconWrapper>;
+        const Globe = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></IconWrapper>;
+        const Radar = (props) => <IconWrapper {...props}><path d="M12 12a10 10 0 0 1 10 10" /><path d="M16.24 16.24a6 6 0 0 1 0 8.49" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /><path d="M2 12h20" /><path d="M12 2v20" /></IconWrapper>; // 模擬 Radar 圖示
+        const BarChart3 = (props) => <IconWrapper {...props}><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></IconWrapper>;
+        const PlayCircle = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" /></IconWrapper>;
+        const ExternalLink = (props) => <IconWrapper {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></IconWrapper>;
+
+        // --- 主程式組件 ---
+        const DefenseStrategySlides = () => {
+            const [currentSlide, setCurrentSlide] = useState(0);
+
+            // 簡報資料內容
+            const slides = [
+                {
+                    id: 1,
+                    type: "title",
+                    title: "戰略指導",
+                    subtitle: "不對稱作戰、作戰構想",
+                    detail: "全民國防教育軍事訓練 - 國防政策",
+                    presenter: "五專資管五甲 - 李冠杉、吳佳憲 | 四技企管一乙 - 阮義棋、高睿均",
+                    date: "2025/11/28"
+                },
+                {
+                    id: 2,
+                    type: "standard",
+                    title: "戰略環境劇變：為什麼我們需要改變？",
+                    content: [
+                        { icon: <AlertTriangle className="text-red-400" />, text: "核心問題：傳統「對稱作戰」難以為繼", highlight: "red" },
+                        { icon: <Zap className="text-yellow-400" />, text: "預算差距：兩岸國防預算差距約 20 倍，無法進行消耗戰" },
+                        { icon: <Globe className="text-blue-400" />, text: "威脅轉變：由單一登陸威脅轉向「灰色地帶、封鎖、全面入侵」混合威脅" },
+                        { icon: <Target className="text-green-400" />, text: "結論：必須由「量」的競爭轉向「質」與「法」的不對稱", highlight: "green" }
+                    ]
+                },
+                {
+                    id: 3,
+                    type: "standard",
+                    title: "戰略指導的演變：從「有效」到「重層」",
+                    content: [
+                        { icon: <Shield className="text-cyan-400" />, text: "指導原則：防衛固守、重層嚇阻 (Defensive Bulwark, Multi-layered Deterrence)" },
+                        { icon: <FileText className="text-slate-300" />, text: "2025 最新趨勢 (QDR & 國防報告書)：" },
+                        { indent: true, text: "戰略重心：多域拒止、韌性防衛 (Multi-domain Denial)", highlight: "cyan" },
+                        { indent: true, text: "指管變革：全社會防衛韌性 ＋ 去中心化指管" }
+                    ]
+                },
+                {
+                    id: 4,
+                    type: "comparison",
+                    title: "核心概念：什麼是「不對稱作戰」？",
+                    leftTitle: "傳統作戰 (Symmetric)",
+                    rightTitle: "不對稱作戰 (Asymmetric)",
+                    comparisons: [
+                        { left: "殲滅敵軍主力部隊", right: "阻止敵軍登陸 / 無法達成政治目標" },
+                        { left: "追求機艦數量對等", right: "避其強點，攻其弱點 (打擊重心)" },
+                        { left: "爭奪全面制空制海", right: "區域性/時段性「拒止」 (Denial)" }
+                    ]
+                },
+                {
+                    id: 5,
+                    type: "diagram",
+                    title: "整體防衛構想 (ODC) 架構總覽",
+                    subtitle: "利用台海天險，層層削弱敵軍戰力",
+                    layers: [
+                        { name: "戰力防護", desc: "Force Preservation", color: "from-blue-900 to-blue-700", borderColor: "border-blue-500", icon: <Shield size={20} /> },
+                        { name: "濱海決勝", desc: "Littoral Victory", color: "from-cyan-800 to-cyan-600", borderColor: "border-cyan-400", icon: <Anchor size={20} /> },
+                        { name: "灘岸殲敵", desc: "Beachhead Annihilation", color: "from-red-900 to-red-700", borderColor: "border-red-500", icon: <Crosshair size={20} /> }
+                    ]
+                },
+                {
+                    id: 6,
+                    type: "standard",
+                    title: "第一階段：戰力防護 (Force Preservation)",
+                    subtitle: "生存是反擊的前提",
+                    content: [
+                        { icon: <Users className="text-blue-400" />, text: "目標：在首波飛彈飽和攻擊下存活" },
+                        { icon: <Cpu className="text-cyan-400" />, text: "關鍵手段：" },
+                        { indent: true, text: "機動化 (Mobility)：雷達車與飛彈車快速轉移" },
+                        { indent: true, text: "偽裝欺敵 (Deception)：充氣誘餌、電子訊號模擬" },
+                        { indent: true, text: "分散指管：2025 強調「去中心化」，斷網仍能作戰", highlight: "cyan" }
+                    ]
+                },
+                {
+                    id: 7,
+                    type: "standard",
+                    title: "第二階段：濱海決勝 (Littoral Victory)",
+                    subtitle: "致命殺戮區：離岸 50-100 公里",
+                    content: [
+                        { icon: <Target className="text-red-500" />, text: "目標：擊沉敵方高價值目標（兩棲船團、登陸艦）", highlight: "red" },
+                        { icon: <Anchor className="text-cyan-400" />, text: "戰術手段：" },
+                        { indent: true, text: "飽和攻擊：雄二、雄三、魚叉飛彈" },
+                        { indent: true, text: "以陸制海：利用機動岸置飛彈殲滅敵艦，不需出海硬碰硬" }
+                    ]
+                },
+                {
+                    id: 8,
+                    type: "standard",
+                    title: "第三階段：灘岸殲敵 (Last Line of Defense)",
+                    subtitle: "趁敵立足未穩，予以殲滅",
+                    content: [
+                        { icon: <Crosshair className="text-red-500" />, text: "時機：敵軍水陸轉換、最脆弱時刻" },
+                        { icon: <Zap className="text-yellow-400" />, text: "關鍵火力：" },
+                        { indent: true, text: "水雷封鎖：快速布雷艇建立阻絕區" },
+                        { indent: true, text: "精準打擊：雷霆2000 多管火箭、M109A6" },
+                        { indent: true, text: "單兵反裝甲：標槍飛彈、拖式飛彈 (不對稱核心)", highlight: "yellow" }
+                    ]
+                },
+                {
+                    id: 9,
+                    type: "grid",
+                    title: "不對稱戰力整建：刺蝟戰略",
+                    items: [
+                        { title: "雄風三型", desc: "超音速反艦，航母殺手", icon: "🚀", accent: "cyan" },
+                        { title: "岸置魚叉", desc: "數量優勢，飽和攻擊", icon: "🚛", accent: "blue" },
+                        { title: "劍翔無人機", desc: "自殺攻擊雷達，壓制防空", icon: "🛸", accent: "purple" },
+                        { title: "智慧水雷", desc: "低成本區域拒止利器", icon: "💣", accent: "yellow" }
+                    ]
+                },
+                {
+                    id: 10,
+                    type: "standard",
+                    title: "烏克蘭戰爭的啟示",
+                    content: [
+                        { icon: <Anchor className="text-cyan-400" />, text: "海王星飛彈擊沉莫斯科號 ➡️ 驗證「濱海決勝」與以陸制海" },
+                        { icon: <Users className="text-green-400" />, text: "標槍/刺針飛彈戰果 ➡️ 驗證單兵不對稱戰力之效能" },
+                        { icon: <Cpu className="text-purple-400" />, text: "星鏈 (Starlink) 與無人機 ➡️ 驗證數位韌性與戰場透明度", highlight: "purple" }
+                    ]
+                },
+                {
+                    id: 11,
+                    type: "video",
+                    title: "戰術實證與影像解析",
+                    subtitle: "影片觀摩：不對稱作戰之應用",
+                    videoId: "4NnE6ZKEKQE",
+                    desc: "透過影像資料，深入了解不對稱作戰在現代戰場的實際運用與戰術價值。"
+                },
+                {
+                    id: 12,
+                    type: "comparison",
+                    title: "挑戰與結語：戰略兩難與灰帶衝突",
+                    leftTitle: "困境 (Dilemma)",
+                    rightTitle: "解決方案 (Solution)",
+                    comparisons: [
+                        { left: "高價飛彈難以應對海警船騷擾", right: "高低配 (High-Low Mix) 兵力結構" },
+                        { left: "資源有限：優先巡弋 vs 優先生存", right: "平戰結合，主力保留於決戰" },
+                        { left: "社會恐慌與認知作戰", right: "強化全社會韌性與心防" }
+                    ]
+                },
+                {
+                    id: 13,
+                    type: "title",
+                    title: "結論：打造帶刺的毒蠍",
+                    subtitle: "多域拒止・韌性防衛",
+                    detail: "透過不對稱戰力，提高中共動武成本，達成「拒止性嚇阻」",
+                    presenter: "報告結束，敬請指教",
+                    date: ""
+                }
+            ];
+
+            const nextSlide = () => {
+                if (currentSlide < slides.length - 1) setCurrentSlide(currentSlide + 1);
+            };
+
+            const prevSlide = () => {
+                if (currentSlide > 0) setCurrentSlide(currentSlide - 1);
+            };
+
+            // Keyboard navigation
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+                    if (e.key === 'ArrowLeft') prevSlide();
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [currentSlide]);
+
+            const renderSlideContent = (slide) => {
+                switch (slide.type) {
+                    case "title":
+                        return (
+                            <div className="flex flex-col items-center justify-center min-h-full text-center space-y-8 relative z-10 py-10">
+                                <div className="absolute opacity-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-spin-slow pointer-events-none">
+                                    <Radar size={600} className="text-cyan-500" />
+                                </div>
+                                <div className="flex flex-col items-center space-y-4">
+                                    <div className="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+                                    <p className="text-lg text-cyan-300 tracking-[0.2em] uppercase font-medium drop-shadow-md">{slide.detail}</p>
+                                </div>
+                                <h1 className="text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-slate-200 leading-tight drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]">{slide.title}</h1>
+                                <h2 className="text-4xl text-cyan-400 font-bold mt-2 tracking-wide drop-shadow-lg">{slide.subtitle}</h2>
+                                <div className="w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent my-12 relative">
+                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-slate-900 border border-cyan-500 rotate-45"></div>
+                                </div>
+                                <div className="mt-8 text-slate-300 space-y-3 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-sm shadow-xl">
+                                    <p className="font-bold text-sm text-cyan-500 tracking-wider mb-1 uppercase">Presented By</p>
+                                    <div className="text-xl leading-relaxed whitespace-pre-line font-medium text-slate-200">
+                                        {slide.presenter.split('|').map((line, i) => (
+                                            <div key={i} className="my-1">{line.trim()}</div>
+                                        ))}
+                                    </div>
+                                    <p className="text-slate-500 mt-6 font-mono text-sm">{slide.date}</p>
+                                </div>
+                            </div>
+                        );
+
+                    case "standard":
+                        return (
+                            <div className="flex flex-col min-h-full px-8 justify-center relative z-10 py-10">
+                                <h2 className="text-5xl font-extrabold text-white mb-3 drop-shadow-lg tracking-tight">{slide.title}</h2>
+                                {slide.subtitle && <h3 className="text-2xl text-cyan-400 mb-10 font-medium tracking-wide flex items-center"><ChevronRight size={20} className="mr-2"/>{slide.subtitle}</h3>}
+                                <div className="space-y-5 mt-4">
+                                    {slide.content.map((item, idx) => (
+                                        <div key={idx} 
+                                            className={`flex items-start space-x-5 p-5 rounded-xl transition-all duration-300 hover:scale-[1.01]
+                                            ${item.indent ? 'ml-12 border-l-2 border-slate-700 pl-6' : 'bg-slate-900/40 border border-slate-700/50 shadow-lg backdrop-blur-sm'}
+                                            ${item.highlight === 'red' ? 'border-red-900/50 bg-gradient-to-r from-red-950/30 to-slate-900/30' : ''}
+                                            ${item.highlight === 'green' ? 'border-green-900/50 bg-gradient-to-r from-green-950/30 to-slate-900/30' : ''}
+                                            ${item.highlight === 'cyan' ? 'border-cyan-900/50 bg-gradient-to-r from-cyan-950/30 to-slate-900/30 shadow-[0_0_10px_rgba(6,182,212,0.1)]' : ''}
+                                            ${item.highlight === 'yellow' ? 'border-yellow-900/50 bg-gradient-to-r from-yellow-950/30 to-slate-900/30' : ''}
+                                            ${item.highlight === 'purple' ? 'border-purple-900/50 bg-gradient-to-r from-purple-950/30 to-slate-900/30' : ''}
+                                            `}>
+                                            {!item.indent && <div className={`mt-1 p-3 rounded-full border shadow-inner ${item.highlight === 'red' ? 'bg-red-950 border-red-800' : 'bg-slate-950 border-slate-700'}`}>{item.icon}</div>}
+                                            <p className="text-2xl text-slate-200 leading-relaxed font-medium">{item.text}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+
+                    case "comparison":
+                        return (
+                            <div className="flex flex-col min-h-full px-4 justify-center relative z-10 py-10">
+                                <h2 className="text-5xl font-extrabold text-white mb-12 text-center drop-shadow-lg">{slide.title}</h2>
+                                <div className="grid grid-cols-2 gap-10 relative">
+                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-900 p-2 rounded-full border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                                        <ChevronRight className="text-cyan-400" size={32} />
+                                    </div>
+                                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/90 p-8 rounded-2xl border border-slate-700 shadow-inner backdrop-blur-md relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-red-900"></div>
+                                        <h3 className="text-3xl font-bold text-red-400 mb-8 text-center pb-4 border-b border-red-900/30 tracking-wide flex justify-center items-center"><BarChart3 className="mr-3"/> {slide.leftTitle}</h3>
+                                        <div className="space-y-6">
+                                            {slide.comparisons.map((item, idx) => (
+                                                <div key={idx} className="bg-black/40 p-5 rounded-xl text-xl text-slate-400 border border-slate-800/50 flex items-start group">
+                                                    <div className="mr-4 mt-1 text-red-900 group-hover:text-red-600 transition-colors"><AlertTriangle size={20}/></div>
+                                                    {item.left}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="bg-gradient-to-br from-cyan-950/20 to-blue-950/20 p-8 rounded-2xl border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.05)] backdrop-blur-md relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500 shadow-[0_0_10px_cyan]"></div>
+                                        <h3 className="text-3xl font-bold text-cyan-400 mb-8 text-center pb-4 border-b border-cyan-800/50 tracking-wide flex justify-center items-center"><Radar className="mr-3"/> {slide.rightTitle}</h3>
+                                        <div className="space-y-6">
+                                            {slide.comparisons.map((item, idx) => (
+                                                <div key={idx} className="bg-cyan-950/40 p-5 rounded-xl text-xl text-white font-semibold border border-cyan-500/20 flex items-start shadow-md transition-all hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-cyan-900/40">
+                                                    <ChevronRight className="mr-3 mt-1 text-cyan-400 flex-shrink-0" size={24} />
+                                                    {item.right}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+
+                    case "diagram":
+                        return (
+                            <div className="flex flex-col min-h-full items-center justify-center relative z-10 py-10 overflow-hidden">
+                                <h2 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg text-center">{slide.title}</h2>
+                                <h3 className="text-2xl text-cyan-400 mb-16 font-medium tracking-wide text-center">{slide.subtitle}</h3>
+                                <div className="relative w-full max-w-5xl flex justify-center items-center h-96">
+                                    <div className="absolute border-2 border-dashed border-slate-700/30 rounded-full w-[600px] h-[600px] animate-pulse-slow pointer-events-none"></div>
+                                    <div className="absolute border-2 border-dashed border-slate-700/20 rounded-full w-[400px] h-[400px] pointer-events-none"></div>
+                                    <div className="flex w-full space-x-8 justify-center items-stretch h-72 z-20">
+                                        {slide.layers.map((layer, idx) => (
+                                            <div key={idx} className={`flex-1 bg-gradient-to-b ${layer.color} rounded-2xl p-1 flex flex-col items-center justify-center transition-all duration-500 hover:scale-105 hover:-translate-y-2 shadow-2xl group relative overflow-hidden`}>
+                                                <div className={`absolute inset-0 border-2 ${layer.borderColor} rounded-2xl opacity-50 group-hover:opacity-100 transition-opacity`}></div>
+                                                <div className="bg-slate-950/80 w-full h-full rounded-xl p-6 flex flex-col items-center justify-center backdrop-blur-sm relative z-10">
+                                                    <div className={`p-5 rounded-full mb-6 bg-gradient-to-br ${layer.color} shadow-lg group-hover:shadow-${layer.borderColor.split('-')[1]}-500/50`}>
+                                                        {layer.icon}
+                                                    </div>
+                                                    <h3 className="text-3xl font-bold text-white mb-2 text-center">{layer.name}</h3>
+                                                    <p className="text-sm text-cyan-200 uppercase tracking-widest font-semibold text-center">{layer.desc}</p>
+                                                    <div className="mt-6 text-xs bg-black/50 px-4 py-1.5 rounded-full font-mono border border-white/10 group-hover:border-white/30">Stage 0{idx + 1}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent -z-10">
+                                        <div className="absolute right-1/4 top-1/2 transform -translate-y-1/2 w-4 h-4 border-t-2 border-r-2 border-cyan-500 rotate-45"></div>
+                                        <div className="absolute left-1/4 top-1/2 transform -translate-y-1/2 w-4 h-4 border-t-2 border-r-2 border-cyan-500 rotate-45"></div>
+                                    </div>
+                                </div>
+                                <p className="mt-12 text-cyan-100 bg-gradient-to-r from-slate-900/50 via-slate-800/80 to-slate-900/50 border border-cyan-500/20 px-8 py-3 rounded-full text-lg font-medium shadow-lg backdrop-blur-md text-center">
+                                    💡 戰略邏輯：迫使敵軍在離岸越近的地方，承受越密集的火力
+                                </p>
+                            </div>
+                        );
+
+                    case "grid":
+                        return (
+                            <div className="flex flex-col min-h-full px-8 justify-center relative z-10 py-10">
+                                <h2 className="text-5xl font-extrabold text-white mb-12 drop-shadow-lg text-center">{slide.title}</h2>
+                                <div className="grid grid-cols-2 gap-8">
+                                    {slide.items.map((item, idx) => {
+                                        const accentColors = {
+                                            cyan: { border: 'border-cyan-500/30', bg: 'bg-cyan-950/30', glow: 'group-hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]' },
+                                            blue: { border: 'border-blue-500/30', bg: 'bg-blue-950/30', glow: 'group-hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]' },
+                                            purple: { border: 'border-purple-500/30', bg: 'bg-purple-950/30', glow: 'group-hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]' },
+                                            yellow: { border: 'border-yellow-500/30', bg: 'bg-yellow-950/30', glow: 'group-hover:shadow-[0_0_20px_rgba(234,179,8,0.2)]' },
+                                        };
+                                        const style = accentColors[item.accent] || accentColors.cyan;
+                                        return (
+                                            <div key={idx} className={`group ${style.bg} p-8 rounded-2xl border ${style.border} backdrop-blur-md flex items-center space-x-6 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-900/60 ${style.glow}`}>
+                                                <div className="text-6xl drop-shadow-md transform transition-transform group-hover:scale-110 grayscale group-hover:grayscale-0">{item.icon}</div>
+                                                <div>
+                                                    <h3 className="text-3xl font-bold text-white mb-2">{item.title}</h3>
+                                                    <p className="text-xl text-slate-300 font-medium">{item.desc}</p>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        );
+
+                    case "video":
+                        return (
+                            <div className="flex flex-col min-h-full items-center justify-center relative z-10 py-10">
+                                <h2 className="text-5xl font-extrabold text-white mb-4 drop-shadow-lg text-center">{slide.title}</h2>
+                                <h3 className="text-2xl text-cyan-400 mb-8 font-medium tracking-wide flex items-center">
+                                    <PlayCircle className="mr-2" /> {slide.subtitle}
+                                </h3>
+                                <div className="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden border-2 border-slate-700/50 bg-black shadow-2xl group z-20">
+                                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-cyan-500 z-30 pointer-events-none"></div>
+                                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-cyan-500 z-30 pointer-events-none"></div>
+                                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-cyan-500 z-30 pointer-events-none"></div>
+                                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-cyan-500 z-30 pointer-events-none"></div>
+                                    <iframe className="w-full h-full relative z-20" src={`https://www.youtube.com/embed/${slide.videoId}`} title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                                </div>
+                                <div className="mt-8 flex items-center space-x-4">
+                                    <div className="bg-slate-900/50 px-6 py-3 rounded-xl border border-slate-700 text-slate-300 backdrop-blur-sm max-w-3xl text-center">
+                                        <p>{slide.desc}</p>
+                                    </div>
+                                    <a href={`https://youtu.be/${slide.videoId}`} target="_blank" rel="noopener noreferrer" className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-bold shadow-lg z-20">
+                                        <ExternalLink size={16} className="mr-2"/> Watch on YouTube
+                                    </a>
+                                </div>
+                            </div>
+                        );
+
+                    default:
+                        return null;
+                }
+            };
+
+            return (
+                <div className="w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black text-white flex flex-col font-sans overflow-hidden relative">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 p-32 opacity-20 blur-3xl bg-blue-900 rounded-full w-96 h-96 pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 p-32 opacity-10 blur-3xl bg-red-900 rounded-full w-96 h-96 pointer-events-none"></div>
+                    
+                    <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 flex flex-col relative z-10 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                        <div className="absolute top-4 right-6 text-cyan-600/70 font-mono text-xs md:text-sm border border-cyan-900/30 px-3 py-1 rounded-full flex items-center bg-slate-950/50 backdrop-blur-sm pointer-events-none">
+                            <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2 animate-pulse"></span>
+                            機密等級：公開 (Unclassified) | 2025 Defense Review
+                        </div>
+                        <div className="flex-grow flex flex-col justify-center">
+                            {renderSlideContent(slides[currentSlide])}
+                        </div>
+                    </div>
+
+                    <div className="h-20 shrink-0 bg-slate-950/90 border-t border-slate-800/50 backdrop-blur-md flex items-center justify-between px-6 md:px-10 relative z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+                        <div className="text-slate-400 font-mono text-sm flex items-center">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                            SLIDE <span className="text-cyan-400 font-bold mx-1">{currentSlide + 1}</span> / {slides.length}
+                        </div>
+                        <div className="flex items-center space-x-4 md:space-x-6">
+                            <button onClick={prevSlide} disabled={currentSlide === 0} className={`p-3 rounded-full border border-slate-700 transition-all ${currentSlide === 0 ? 'text-slate-700 border-transparent opacity-50 cursor-not-allowed' : 'text-cyan-400 hover:bg-cyan-950/50 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'}`}>
+                                <ChevronLeft size={24} />
+                            </button>
+                            <div className="w-32 md:w-72 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
+                                <div className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500 ease-out relative" style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}>
+                                    <div className="absolute right-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                </div>
+                            </div>
+                            <button onClick={nextSlide} disabled={currentSlide === slides.length - 1} className={`p-3 rounded-full border border-slate-700 transition-all ${currentSlide === slides.length - 1 ? 'text-slate-700 border-transparent opacity-50 cursor-not-allowed' : 'text-cyan-400 hover:bg-cyan-950/50 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'}`}>
+                                <ChevronRight size={24} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<DefenseStrategySlides />);
+    </script>
+</body>
+</html>
